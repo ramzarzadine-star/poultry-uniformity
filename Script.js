@@ -131,9 +131,7 @@ document.getElementById("u10").innerHTML=u10.toFixed(1)+"%";
 document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
 
 
-drawWeight(weights);
-
-drawCV(cv);
+drawUniformity(weights,mean);
 
 
 }
@@ -141,11 +139,18 @@ drawCV(cv);
 
 
 
-function drawWeight(data){
+function drawUniformity(data,mean){
 
 
-if(weightChart)
+if(weightChart){
+
 weightChart.destroy();
+
+}
+
+
+
+let value=uniformity(data,mean,0.10);
 
 
 
@@ -155,66 +160,52 @@ document.getElementById("weightChart"),
 
 {
 
-type:"bar",
-
-data:{
-
-labels:data.map((x,i)=>i+1),
-
-datasets:[{
-
-label:"وزن",
-
-data:data
-
-}]
-
-}
-
-}
-
-);
-
-
-}
-
-
-
-
-
-
-
-function drawCV(value){
-
-
-if(cvChart)
-cvChart.destroy();
-
-
-
-cvChart=new Chart(
-
-document.getElementById("cvChart"),
-
-{
-
 type:"line",
 
 data:{
 
-labels:["CV"],
+labels:["گله"],
 
 datasets:[{
 
-label:"درصد CV",
+label:"یکنواختی ±10%",
 
 data:[value],
 
+borderWidth:3,
+
 fill:false,
 
-tension:.3
+tension:0.3
 
 }]
+
+},
+
+
+options:{
+
+responsive:true,
+
+scales:{
+
+y:{
+
+beginAtZero:true,
+
+max:100,
+
+title:{
+
+display:true,
+
+text:"درصد یکنواختی"
+
+}
+
+}
+
+}
 
 }
 
