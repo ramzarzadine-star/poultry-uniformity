@@ -171,7 +171,18 @@
 <body>
 
 <header>
-  <h1>🐔 مدیریت گله طیور</h1>
+ <h1>
+🐔 مدیریت گله طیور
+<span style="
+font-size:12px;
+font-weight:400;
+opacity:.85;
+display:block;
+margin-top:6px;
+">
+(مرکز تخصصی سلامت طیور آدینه)
+</span>
+</h1>
   <p>محاسبه وزن، یکنواختی و شاخص‌های گله</p>
 </header>
 
@@ -245,13 +256,13 @@
         <strong id="uniform15">-</strong>
       </div>
 
-      <div class="stat">
-        <span>حداقل وزن</span>
+      <div class="stat"> 
+        <span>کمترین وزن</span>
         <strong id="min">-</strong>
       </div>
 
       <div class="stat">
-        <span>حداکثر وزن</span>
+        <span>بیشترین وزن</span>
         <strong id="max">-</strong>
       </div>
 
@@ -270,9 +281,10 @@ function parseWeights(text) {
 
   return text
     .replace(/[،]/g, ",")
+    .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
     .split(/[\s,;]+/)
-    .map(x => parseFloat(x))
-    .filter(x => Number.isFinite(x) && x > 0);
+    .map(x => Number(x.trim()))
+    .filter(x => !isNaN(x) && x > 0);
 
 }
 
@@ -391,9 +403,9 @@ function drawChart(weights) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const min = Math.min(...weights);
+  const minimum = Math.min.apply(null, weights);
 
-  const max = Math.max(...weights);
+const maximum = Math.max.apply(null, weights);
 
   const range = max - min || 1;
 
