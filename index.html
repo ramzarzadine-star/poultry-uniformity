@@ -277,17 +277,24 @@ margin-top:6px;
 
 <script>
 
-function parseWeights(text) {
+function parseWeights(text){
 
-  return text
-    .replace(/[،]/g, ",")
-    .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
-    .split(/[\s,;]+/)
-    .map(x => Number(x.trim()))
-    .filter(x => !isNaN(x) && x > 0);
+return text
+.replace(/[۰-۹]/g,function(d){
+
+return "۰۱۲۳۴۵۶۷۸۹".indexOf(d);
+
+})
+.replace(/[،]/g,",")
+.split(/[\s,]+/)
+.map(Number)
+.filter(function(x){
+
+return !isNaN(x) && x>0;
+
+});
 
 }
-
 function average(arr) {
 
   return arr.reduce((a,b) => a+b, 0) / arr.length;
@@ -327,14 +334,17 @@ function calculate() {
     document.getElementById("weights").value
   );
 
-  if (weights.length < 2) {
+  if (weights.length === 0) {
 
-    alert("حداقل دو وزن وارد کنید.");
+    document.getElementById("min").textContent = "-";
+
+    document.getElementById("max").textContent = "-";
+
+    alert("لطفاً وزن‌ها را وارد کنید");
 
     return;
 
-  }
-
+}
   const mean = average(weights);
 
   const sd = standardDeviation(weights, mean);
