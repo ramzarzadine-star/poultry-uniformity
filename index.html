@@ -1,1 +1,554 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#166534">
+  <title>مدیریت گله طیور</title>
 
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Tahoma, Arial, sans-serif;
+      background: #f3f6f4;
+      color: #17221b;
+    }
+
+    header {
+      background: #166534;
+      color: white;
+      padding: 22px 18px;
+      padding-top: calc(22px + env(safe-area-inset-top));
+      border-radius: 0 0 22px 22px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 23px;
+    }
+
+    header p {
+      margin: 7px 0 0;
+      opacity: .9;
+      font-size: 14px;
+    }
+
+    main {
+      max-width: 700px;
+      margin: auto;
+      padding: 16px;
+      padding-bottom: 40px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 15px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.06);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin: 13px 0 6px;
+    }
+
+    input, textarea, button {
+      width: 100%;
+      font: inherit;
+    }
+
+    input, textarea {
+      border: 1px solid #d5ddd8;
+      border-radius: 12px;
+      padding: 12px;
+      background: #fbfcfb;
+      outline: none;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #166534;
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 13px;
+      margin-top: 12px;
+      background: #166534;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #e8eee9;
+      color: #166534;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat {
+      background: #f5f8f6;
+      border-radius: 13px;
+      padding: 12px;
+    }
+
+    .stat span {
+      display: block;
+      color: #647068;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .stat strong {
+      font-size: 18px;
+    }
+
+    .result-title {
+      margin-top: 20px;
+      font-weight: 800;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #166534;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    canvas {
+      width: 100%;
+      max-height: 300px;
+      margin-top: 10px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #dcfce7;
+      color: #166534;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 430px) {
+      main {
+        padding: 12px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🐔 مدیریت گله طیور</h1>
+  <p>محاسبه وزن، یکنواختی و شاخص‌های گله</p>
+</header>
+
+<main>
+
+  <section class="card">
+    <h2>اطلاعات گله</h2>
+
+    <label>نام فارم</label>
+    <input id="farm" placeholder="مثلاً فارم شماره ۱">
+
+    <label>نام سالن</label>
+    <input id="house" placeholder="مثلاً سالن ۳">
+
+    <label>سن گله (روز)</label>
+    <input id="age" type="number" min="0" placeholder="مثلاً 35">
+
+    <div id="message"></div>
+  </section>
+
+  <section class="card">
+    <h2>ورود وزن‌ها</h2>
+
+    <p style="font-size:13px;color:#66736b">
+      وزن‌ها را با فاصله، کاما یا خط جدید وارد کنید.
+      <br>
+      مثال: 1850, 1920, 1780, 2010
+    </p>
+
+    <textarea id="weights" placeholder="وزن‌ها را وارد کنید..."></textarea>
+
+    <button onclick="calculate()">محاسبه گزارش</button>
+    <button class="secondary" onclick="clearAll()">پاک کردن</button>
+  </section>
+
+  <section id="report" class="card hidden">
+
+    <h2>گزارش گله</h2>
+
+    <div id="flockInfo"></div>
+
+    <div class="grid">
+
+      <div class="stat">
+        <span>تعداد</span>
+        <strong id="count">-</strong>
+      </div>
+
+      <div class="stat">
+        <span>میانگین وزن</span>
+        <strong id="mean">-</strong>
+      </div>
+
+      <div class="stat">
+        <span>SD</span>
+        <strong id="sd">-</strong>
+      </div>
+
+      <div class="stat">
+        <span>CV%</span>
+        <strong id="cv">-</strong>
+      </div>
+
+      <div class="stat">
+        <span>Uniformity ±10%</span>
+        <strong id="uniform10">-</strong>
+      </div>
+
+      <div class="stat">
+        <span>Uniformity ±15%</span>
+        <strong id="uniform15">-</strong>
+      </div>
+
+      <div class="stat">
+        <span>حداقل وزن</span>
+        <strong id="min">-</strong>
+      </div>
+
+      <div class="stat">
+        <span>حداکثر وزن</span>
+        <strong id="max">-</strong>
+      </div>
+
+    </div>
+
+    <div class="result-title">نمودار توزیع وزن</div>
+    <canvas id="chart" width="700" height="300"></canvas>
+
+  </section>
+
+</main>
+
+<script>
+
+function parseWeights(text) {
+
+  return text
+    .replace(/[،]/g, ",")
+    .split(/[\s,;]+/)
+    .map(x => parseFloat(x))
+    .filter(x => Number.isFinite(x) && x > 0);
+
+}
+
+function average(arr) {
+
+  return arr.reduce((a,b) => a+b, 0) / arr.length;
+
+}
+
+function standardDeviation(arr, mean) {
+
+  const variance =
+    arr.reduce((sum, x) => sum + Math.pow(x - mean, 2), 0)
+    / arr.length;
+
+  return Math.sqrt(variance);
+
+}
+
+function uniformity(arr, mean, percent) {
+
+  const low = mean * (1 - percent);
+  const high = mean * (1 + percent);
+
+  const inside = arr.filter(x => x >= low && x <= high).length;
+
+  return (inside / arr.length) * 100;
+
+}
+
+function formatNumber(value) {
+
+  return Math.round(value).toLocaleString("fa-IR");
+
+}
+
+function calculate() {
+
+  const weights = parseWeights(
+    document.getElementById("weights").value
+  );
+
+  if (weights.length < 2) {
+
+    alert("حداقل دو وزن وارد کنید.");
+
+    return;
+
+  }
+
+  const mean = average(weights);
+
+  const sd = standardDeviation(weights, mean);
+
+  const cv = (sd / mean) * 100;
+
+  const u10 = uniformity(weights, mean, 0.10);
+
+  const u15 = uniformity(weights, mean, 0.15);
+
+  const minimum = Math.min(...weights);
+
+  const maximum = Math.max(...weights);
+
+  document.getElementById("count").textContent =
+    weights.length.toLocaleString("fa-IR");
+
+  document.getElementById("mean").textContent =
+    formatNumber(mean);
+
+  document.getElementById("sd").textContent =
+    formatNumber(sd);
+
+  document.getElementById("cv").textContent =
+    cv.toFixed(2) + "%";
+
+  document.getElementById("uniform10").textContent =
+    u10.toFixed(1) + "%";
+
+  document.getElementById("uniform15").textContent =
+    u15.toFixed(1) + "%";
+
+  document.getElementById("min").textContent =
+    formatNumber(min);
+
+  document.getElementById("max").textContent =
+    formatNumber(max);
+
+  const farm =
+    document.getElementById("farm").value || "بدون نام";
+
+  const house =
+    document.getElementById("house").value || "بدون نام";
+
+  const age =
+    document.getElementById("age").value || "-";
+
+  document.getElementById("flockInfo").innerHTML =
+    `<span class="badge">${farm}</span>
+     <span class="badge">${house}</span>
+     <span class="badge">سن ${age} روز</span>`;
+
+  document.getElementById("report").classList.remove("hidden");
+
+  drawChart(weights);
+
+  saveData(weights);
+
+}
+
+function drawChart(weights) {
+
+  const canvas = document.getElementById("chart");
+
+  const ctx = canvas.getContext("2d");
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const min = Math.min(...weights);
+
+  const max = Math.max(...weights);
+
+  const range = max - min || 1;
+
+  const bins = 10;
+
+  const counts = new Array(bins).fill(0);
+
+  weights.forEach(w => {
+
+    let index =
+      Math.floor(((w - min) / range) * bins);
+
+    if (index >= bins) index = bins - 1;
+
+    counts[index]++;
+
+  });
+
+  const maxCount = Math.max(...counts);
+
+  const padding = 45;
+
+  const chartWidth =
+    canvas.width - padding * 2;
+
+  const chartHeight =
+    canvas.height - padding * 2;
+
+  const barWidth =
+    chartWidth / bins - 4;
+
+  ctx.font = "14px Arial";
+
+  ctx.textAlign = "center";
+
+  counts.forEach((count, i) => {
+
+    const height =
+      (count / maxCount) * chartHeight;
+
+    const x =
+      padding + i * (chartWidth / bins) + 2;
+
+    const y =
+      canvas.height - padding - height;
+
+    ctx.fillStyle = "#166534";
+
+    ctx.fillRect(
+      x,
+      y,
+      barWidth,
+      height
+    );
+
+    ctx.fillStyle = "#333";
+
+    ctx.fillText(
+      count,
+      x + barWidth / 2,
+      y - 6
+    );
+
+  });
+
+  ctx.strokeStyle = "#999";
+
+  ctx.beginPath();
+
+  ctx.moveTo(padding, padding);
+
+  ctx.lineTo(padding, canvas.height - padding);
+
+  ctx.lineTo(canvas.width - padding, canvas.height - padding);
+
+  ctx.stroke();
+
+}
+
+function saveData(weights) {
+
+  const data = {
+
+    farm: document.getElementById("farm").value,
+
+    house: document.getElementById("house").value,
+
+    age: document.getElementById("age").value,
+
+    weights: weights
+
+  };
+
+  localStorage.setItem(
+    "poultryData",
+    JSON.stringify(data)
+  );
+
+  document.getElementById("message").textContent =
+    "✓ اطلاعات روی این دستگاه ذخیره شد.";
+
+}
+
+function loadData() {
+
+  const saved =
+    localStorage.getItem("poultryData");
+
+  if (!saved) return;
+
+  try {
+
+    const data = JSON.parse(saved);
+
+    document.getElementById("farm").value =
+      data.farm || "";
+
+    document.getElementById("house").value =
+      data.house || "";
+
+    document.getElementById("age").value =
+      data.age || "";
+
+    document.getElementById("weights").value =
+      (data.weights || []).join(", ");
+
+  } catch(e) {
+
+    console.log(e);
+
+  }
+
+}
+
+function clearAll() {
+
+  document.getElementById("farm").value = "";
+
+  document.getElementById("house").value = "";
+
+  document.getElementById("age").value = "";
+
+  document.getElementById("weights").value = "";
+
+  document.getElementById("report").classList.add("hidden");
+
+  document.getElementById("message").textContent = "";
+
+  localStorage.removeItem("poultryData");
+
+}
+
+loadData();
+
+</script>
+
+</body>
+</html>
