@@ -4,18 +4,17 @@
 <head>
 
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>
-مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
+مرکز تخصصی سلامت طیور آدینه
 </title>
 
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="Style.css">
 
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 
 </head>
@@ -29,12 +28,65 @@
 
 <h1>
 🐔 مدیریت گله طیور
-
 <span>
-(مرکز تخصصی سلامت طیور آدینه)
+مرکز تخصصی سلامت طیور آدینه
 </span>
-
 </h1>
+
+
+
+<div class="card">
+
+<h2>
+اطلاعات گله
+</h2>
+
+
+<div class="form">
+
+
+<input id="farm" placeholder="نام فارم / مرغدار">
+
+
+<input id="hall" placeholder="نام سالن">
+
+
+<select id="type">
+
+<option>
+نوع گله
+</option>
+
+<option>
+گوشتی
+</option>
+
+<option>
+تخمگذار
+</option>
+
+<option>
+مادر
+</option>
+
+</select>
+
+
+<input id="age" placeholder="سن گله (روز)">
+
+
+<input id="date" type="date">
+
+
+<input id="number" placeholder="تعداد گله">
+
+
+</div>
+
+
+</div>
+
+
 
 
 
@@ -42,23 +94,21 @@
 
 
 <h2>
-ورود وزن‌ها
+وزن گیری گله
 </h2>
 
 
 <textarea id="weightsInput"
-placeholder="
+placeholder="وزن ها را وارد کنید
+
 مثال:
-1850,1900,1750,2000
-
-یا
-
-۱۸۵۰،۱۹۰۰،۱۷۵۰
+1850,1900,1950
 "></textarea>
 
 
+
 <button onclick="calculate()">
-محاسبه
+محاسبه و ثبت گزارش
 </button>
 
 
@@ -68,11 +118,11 @@ placeholder="
 
 
 
-<div class="results card">
+<div class="card">
 
 
 <h2>
-نتایج یکنواختی گله
+خلاصه وضعیت گله
 </h2>
 
 
@@ -81,74 +131,50 @@ placeholder="
 
 <div>
 تعداد نمونه
-<strong id="count">
--
-</strong>
+<strong id="count">-</strong>
 </div>
-
 
 
 <div>
 میانگین وزن
-<strong id="mean">
--
-</strong>
+<strong id="mean">-</strong>
 </div>
-
 
 
 <div>
 کمترین وزن
-<strong id="min">
--
-</strong>
+<strong id="min">-</strong>
 </div>
-
 
 
 <div>
 بیشترین وزن
-<strong id="max">
--
-</strong>
+<strong id="max">-</strong>
 </div>
-
 
 
 <div>
-انحراف معیار SD
-<strong id="sd">
--
-</strong>
+SD
+<strong id="sd">-</strong>
 </div>
-
 
 
 <div>
-ضریب تغییرات CV
-<strong id="cv">
--
-</strong>
+CV
+<strong id="cv">-</strong>
 </div>
-
 
 
 <div>
-یکنواختی ±10%
-<strong id="u10">
--
-</strong>
+یکنواختی ۱۰٪
+<strong id="u10">-</strong>
 </div>
-
 
 
 <div>
-یکنواختی ±15%
-<strong id="u15">
--
-</strong>
+یکنواختی ۱۵٪
+<strong id="u15">-</strong>
 </div>
-
 
 
 </div>
@@ -160,6 +186,7 @@ placeholder="
 
 
 <div class="card">
+
 
 <h2>
 نمودار توزیع وزن
@@ -178,7 +205,7 @@ placeholder="
 
 
 <h2>
-نمودار CV
+روند CV گله
 </h2>
 
 
@@ -189,12 +216,11 @@ placeholder="
 
 
 
+
 </div>
 
 
-
-
-<script src="script.js"></script>
+<script src="Script.js"></script>
 
 
 </body>
