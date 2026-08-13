@@ -42,13 +42,17 @@ return a.reduce((x,y)=>x+y,0)/a.length;
 
 
 
-function sd(a,m){
+function calculateSD(a,m){
 
-return Math.sqrt(
+let sum=0;
 
-a.reduce((s,x)=>s+Math.pow(x-m,2),0)/(a.length-1)
+for(let i=0;i<a.length;i++){
 
-);
+sum += Math.pow(a[i]-m,2);
+
+}
+
+return Math.sqrt(sum/(a.length-1));
 
 }
 
@@ -77,17 +81,16 @@ x=>x>=min&&x<=max
 function calculate(){
 
 
-let weights=parseWeights(
+let input=document.getElementById("weightsInput").value;
 
-document.getElementById("weightsInput").value
 
-);
+let weights=parseWeights(input);
 
 
 
 if(weights.length<2){
 
-alert("وزن وارد کنید");
+alert("حداقل دو وزن وارد کنید");
 
 return;
 
@@ -98,17 +101,16 @@ return;
 let mean=avg(weights);
 
 
-let deviation=sd(weights,mean);
+let deviation=calculateSD(weights,mean);
 
 
-let cv=deviation/mean*100;
+let cv=(deviation/mean)*100;
 
 
-let u10=uniformity(weights,mean,.10);
+let u10=uniformity(weights,mean,0.10);
 
 
-let u15=uniformity(weights,mean,.15);
-
+let u15=uniformity(weights,mean,0.15);
 
 
 
@@ -116,9 +118,9 @@ document.getElementById("count").innerHTML=weights.length;
 
 document.getElementById("mean").innerHTML=mean.toFixed(1);
 
-document.getElementById("min").innerHTML=Math.min(...weights);
+document.getElementById("min").innerHTML=Math.min.apply(null,weights);
 
-document.getElementById("max").innerHTML=Math.max(...weights);
+document.getElementById("max").innerHTML=Math.max.apply(null,weights);
 
 document.getElementById("sd").innerHTML=deviation.toFixed(1);
 
@@ -129,14 +131,12 @@ document.getElementById("u10").innerHTML=u10.toFixed(1)+"%";
 document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
 
 
-
 drawWeight(weights);
 
 drawCV(cv);
 
 
 }
-
 
 
 
