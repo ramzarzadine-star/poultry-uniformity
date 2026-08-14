@@ -1,5 +1,11 @@
 let weightChart;
 let cvChart;
+let weightTrendChart;
+
+
+let cvHistory=[];
+let weightHistory=[];
+let ageHistory=[];
 
 
 
@@ -153,28 +159,35 @@ document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
 drawWeight(weights);
 
 
-drawCV(cv);
+let age=document.getElementById("age").value || 
+(ageHistory.length+1)*7;
 
+
+cvHistory.push(Number(cv.toFixed(2)));
+
+weightHistory.push(Number(mean.toFixed(1)));
+
+ageHistory.push(age);
+
+
+
+drawCV();
+
+
+function drawCV(){
+
+
+if(cvChart){
+
+cvChart.destroy();
 
 }
 
 
 
+cvChart=new Chart(
 
-
-
-
-function drawWeight(data){
-
-
-if(weightChart)
-weightChart.destroy();
-
-
-
-weightChart=new Chart(
-
-document.getElementById("weightChart"),
+document.getElementById("cvChart"),
 
 {
 
@@ -182,13 +195,13 @@ type:"line",
 
 data:{
 
-labels:data.map((x,i)=>"جوجه "+(i+1)),
+labels:ageHistory.map(x=>x+" روز"),
 
 datasets:[{
 
-label:"وزن",
+label:"CV درصد",
 
-data:data,
+data:cvHistory,
 
 borderWidth:3,
 
@@ -198,6 +211,43 @@ tension:.3
 
 }]
 
+},
+
+
+options:{
+
+responsive:true,
+
+scales:{
+
+y:{
+
+beginAtZero:true,
+
+title:{
+
+display:true,
+
+text:"CV %"
+
+}
+
+},
+
+x:{
+
+title:{
+
+display:true,
+
+text:"سن گله"
+
+}
+
+}
+
+}
+
 }
 
 }
@@ -206,12 +256,6 @@ tension:.3
 
 
 }
-
-
-
-
-
-
 
 
 
