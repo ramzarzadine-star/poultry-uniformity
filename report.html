@@ -33,3 +33,92 @@
 </body>
 
 </html>
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="Style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+
+<h2>📊 گزارشات</h2>
+
+
+<div id="report"></div>
+
+
+</div>
+
+
+
+<script src="database.js"></script>
+
+
+
+<script>
+
+
+let modules=[
+
+"flock",
+
+"feed",
+
+"water",
+
+"vaccine",
+
+"medicine"
+
+];
+
+
+
+let text="";
+
+
+
+modules.forEach(function(m){
+
+
+let d=loadModule(m);
+
+
+
+if(d){
+
+
+text+=
+
+"<h3>"+m+"</h3>"+
+
+"<pre>"+JSON.stringify(d,null,2)+"</pre>";
+
+
+}
+
+
+});
+
+
+
+document.getElementById("report").innerHTML=text;
+
+
+</script>
+
+
+</body>
+
+</html>
