@@ -1,7 +1,11 @@
 *{
+
 box-sizing:border-box;
+
 font-family:tahoma;
+
 }
+
 
 
 body{
@@ -14,18 +18,15 @@ background:#eef5f1;
 
 
 
-
 .header{
 
-background:linear-gradient(135deg,#005c35,#00a86b);
+background:linear-gradient(135deg,#006b3c,#00a86b);
 
 color:white;
 
 text-align:center;
 
 padding:30px;
-
-box-shadow:0 5px 20px #aaa;
 
 }
 
@@ -35,27 +36,23 @@ box-shadow:0 5px 20px #aaa;
 
 margin:0;
 
-font-size:32px;
-
 }
 
 
 
-.header h3{
+#userBox{
 
 margin-top:10px;
 
-font-weight:normal;
+font-size:14px;
 
 }
-
-
 
 
 
 .container{
 
-max-width:950px;
+max-width:1000px;
 
 margin:auto;
 
@@ -65,22 +62,19 @@ padding:20px;
 
 
 
-
-
 .card{
 
 background:white;
 
-border-radius:20px;
-
 padding:25px;
+
+border-radius:20px;
 
 margin-bottom:20px;
 
-box-shadow:0 5px 18px #ccc;
+box-shadow:0 5px 20px #ccc;
 
 }
-
 
 
 
@@ -89,8 +83,6 @@ h2{
 color:#006b3c;
 
 }
-
-
 
 
 
@@ -106,18 +98,17 @@ gap:15px;
 
 
 
-
 input,select,textarea{
-
-width:100%;
 
 padding:15px;
 
 border-radius:12px;
 
-border:1px solid #bbb;
+border:1px solid #aaa;
 
 font-size:16px;
+
+width:100%;
 
 }
 
@@ -125,12 +116,9 @@ font-size:16px;
 
 textarea{
 
-height:130px;
-
-resize:none;
+height:120px;
 
 }
-
 
 
 
@@ -138,32 +126,29 @@ button{
 
 width:100%;
 
-padding:16px;
+padding:15px;
 
 margin-top:15px;
-
-background:#008c52;
-
-color:white;
 
 border:0;
 
 border-radius:15px;
 
+background:#008c52;
+
+color:white;
+
 font-size:18px;
 
-cursor:pointer;
-
 }
 
 
 
-button:hover{
+.guest{
 
-background:#006b3c;
+background:#777;
 
 }
-
 
 
 
@@ -171,7 +156,7 @@ background:#006b3c;
 
 display:grid;
 
-grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
 
 gap:15px;
 
@@ -179,12 +164,11 @@ gap:15px;
 
 
 
-
 .results div{
 
 background:#f0faf5;
 
-padding:20px;
+padding:15px;
 
 border-radius:15px;
 
@@ -194,24 +178,50 @@ text-align:center;
 
 
 
-
 .results strong{
 
 display:block;
 
 font-size:25px;
 
-margin-top:10px;
-
 color:#006b3c;
+
+margin-top:10px;
 
 }
 
 
 
+.login-box{
+
+max-width:400px;
+
+margin:80px auto;
+
+background:white;
+
+padding:30px;
+
+border-radius:20px;
+
+text-align:center;
+
+box-shadow:0 5px 20px #bbb;
+
+}
+
+
+
+.login-box input{
+
+margin:10px 0;
+
+}
+
+
 
 canvas{
 
-max-height:380px;
+max-height:400px;
 
 }
