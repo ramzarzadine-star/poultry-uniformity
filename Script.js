@@ -1,30 +1,28 @@
-let message=document.getElementById("message");
 let weightChart;
 let cvChart;
 let weightTrendChart;
 
 
-let currentUser="";
-let guest=false;
+let currentUser = localStorage.getItem("activeUser") || "guest";
 
 
-let cvHistory=[];
-let weightHistory=[];
-let ageHistory=[];
+let cvHistory = [];
+let weightHistory = [];
+let ageHistory = [];
 
 
 
-const rossAge=[
+const rossAge = [
 7,14,21,28,35,42,49,56
 ];
 
 
-const rossWeight=[
+const rossWeight = [
 190,490,900,1400,1950,2500,3050,3600
 ];
 
 
-const rossCV=[
+const rossCV = [
 13,12,11,10,9,8,7,6
 ];
 
@@ -32,195 +30,89 @@ const rossCV=[
 
 
 
-function register(){
-
-let user=document.getElementById("username").value.trim();
-
-let pass=document.getElementById("password").value.trim();
+function showUser(){
 
 
-if(user==="" || pass===""){
+let box=document.getElementById("userBox");
 
-message.innerHTML="نام کاربری و رمز را وارد کنید";
+
+if(box){
+
+box.innerHTML="👤 کاربر فعال: "+currentUser;
+
+}
+
+
+}
+
+
+
+
+
+
+function logout(){
+
+
+localStorage.removeItem("activeUser");
+
+
+window.location.href="login.html";
+
+
+}
+
+
+
+
+
+
+function saveData(){
+
+
+if(currentUser==="guest"){
 
 return;
 
 }
 
-
-if(localStorage.getItem("user_"+user)){
-
-message.innerHTML="این کاربر قبلا ثبت شده";
-
-return;
-
-}
-
-
-localStorage.setItem(
-
-"user_"+user,
-
-JSON.stringify({
-
-password:pass
-
-})
-
-);
-
-
-message.innerHTML="ثبت نام موفق بود";
-
-
-}
-
-localStorage.setItem(
-
-"user_"+user,
-
-JSON.stringify({
-
-password:pass
-
-})
-
-);
-
-
-message.innerHTML="ثبت نام انجام شد";
-
-
-}
-
-
-
-
-
-
-function login(){
-
-let user=document.getElementById("username").value.trim();
-
-let pass=document.getElementById("password").value.trim();
-
-
-let data=localStorage.getItem("user_"+user);
-
-
-
-if(!data){
-
-message.innerHTML="کاربر پیدا نشد";
-
-return;
-
-}
-
-
-
-let obj=JSON.parse(data);
-
-
-
-if(obj.password!==pass){
-
-message.innerHTML="رمز اشتباه است";
-
-return;
-
-}
-
-
-
-localStorage.setItem("activeUser",user);
-
-
-window.location="index.html";
-
-
-}
-
-
-
-
-}
-
-
-
-
-
-
-
-function guestLogin(){
-
-localStorage.setItem(
-
-"activeUser",
-
-"guest"
-
-);
-
-
-window.location.href="index.html";
-
-
-}
-
-
-
-
-
-
-
-function getUser(){
-
-
-let u=localStorage.getItem("activeUser");
-
-
-if(!u){
-
-return "guest";
-
-}
-
-
-return u;
-
-
-}
-
-
-
-
-
-
-
-
-
-function saveFarmData(){
-
-
-if(guest){
-
-return;
-
-}
 
 
 let farm=document.getElementById("farm").value.trim();
 
 
+
 let data={
 
 
-cvHistory,
+farm:farm,
 
-weightHistory,
 
-ageHistory
+hall:document.getElementById("hall").value,
+
+
+type:document.getElementById("type").value,
+
+
+age:document.getElementById("age").value,
+
+
+countBird:document.getElementById("countBird").value,
+
+
+date:document.getElementById("date").value,
+
+
+weights:document.getElementById("weightsInput").value,
+
+
+cvHistory:cvHistory,
+
+
+weightHistory:weightHistory,
+
+
+ageHistory:ageHistory
+
 
 };
 
@@ -228,7 +120,7 @@ ageHistory
 
 localStorage.setItem(
 
-getUser()+"_"+farm,
+"adineh_"+currentUser,
 
 JSON.stringify(data)
 
@@ -243,11 +135,10 @@ JSON.stringify(data)
 
 
 
+function loadData(){
 
-function loadFarmData(){
 
-
-if(guest){
+if(currentUser==="guest"){
 
 return;
 
@@ -255,21 +146,40 @@ return;
 
 
 
-let farm=document.getElementById("farm").value.trim();
-
-
 let data=localStorage.getItem(
 
-getUser()+"_"+farm
+"adineh_"+currentUser
 
 );
 
 
 
-if(data){
+if(!data){
+
+return;
+
+}
+
 
 
 let obj=JSON.parse(data);
+
+
+
+document.getElementById("farm").value=obj.farm || "";
+
+document.getElementById("hall").value=obj.hall || "";
+
+document.getElementById("type").value=obj.type || "";
+
+document.getElementById("age").value=obj.age || "";
+
+document.getElementById("countBird").value=obj.countBird || "";
+
+document.getElementById("date").value=obj.date || "";
+
+document.getElementById("weightsInput").value=obj.weights || "";
+
 
 
 cvHistory=obj.cvHistory || [];
@@ -279,11 +189,8 @@ weightHistory=obj.weightHistory || [];
 ageHistory=obj.ageHistory || [];
 
 
-}
 
 }
-
-
 
 
 
@@ -300,8 +207,8 @@ return "۰۱۲۳۴۵۶۷۸۹".indexOf(x);
 
 });
 
-}
 
+}
 
 
 
@@ -335,11 +242,11 @@ return text
 
 
 
-
-
 function average(arr){
 
+
 return arr.reduce((a,b)=>a+b,0)/arr.length;
+
 
 }
 
@@ -374,20 +281,18 @@ return Math.sqrt(sum/(arr.length-1));
 
 
 
-
 function uniformity(arr,mean,p){
 
 
-let min=mean*(1-p);
+let low=mean*(1-p);
 
-let max=mean*(1+p);
+let high=mean*(1+p);
 
 
-return arr.filter(x=>x>=min&&x<=max).length/arr.length*100;
+return arr.filter(x=>x>=low && x<=high).length / arr.length *100;
 
 
 }
-
 
 
 
@@ -397,23 +302,6 @@ return arr.filter(x=>x>=min&&x<=max).length/arr.length*100;
 
 
 function calculate(){
-
-
-let farm=document.getElementById("farm").value.trim();
-
-
-if(farm===""){
-
-alert("نام فارم را وارد کنید");
-
-return;
-saveData();
-}
-
-
-
-loadFarmData();
-
 
 
 let weights=parseWeights(
@@ -435,6 +323,7 @@ return;
 
 
 
+
 let mean=average(weights);
 
 
@@ -445,29 +334,31 @@ let cv=(sd/mean)*100;
 
 
 
-let u10=uniformity(weights,mean,.1);
-
-let u15=uniformity(weights,mean,.15);
+let u10=uniformity(weights,mean,0.10);
 
 
+let u15=uniformity(weights,mean,0.15);
 
 
 
-sample.innerHTML=weights.length;
 
-mean.innerHTML=mean.toFixed(1);
 
-min.innerHTML=Math.min(...weights);
+document.getElementById("sample").innerHTML=weights.length;
 
-max.innerHTML=Math.max(...weights);
+document.getElementById("mean").innerHTML=mean.toFixed(1);
 
-sd.innerHTML=sd.toFixed(1);
+document.getElementById("min").innerHTML=Math.min(...weights);
 
-cv.innerHTML=cv.toFixed(2)+"%";
+document.getElementById("max").innerHTML=Math.max(...weights);
 
-u10.innerHTML=u10.toFixed(1)+"%";
+document.getElementById("sd").innerHTML=sd.toFixed(1);
 
-u15.innerHTML=u15.toFixed(1)+"%";
+document.getElementById("cv").innerHTML=cv.toFixed(2)+"%";
+
+document.getElementById("u10").innerHTML=u10.toFixed(1)+"%";
+
+document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
+
 
 
 
@@ -477,12 +368,12 @@ u15.innerHTML=u15.toFixed(1)+"%";
 let age=document.getElementById("age").value;
 
 
+
 if(age===""){
 
 age=(ageHistory.length+1)*7;
 
 }
-
 
 
 
@@ -495,9 +386,7 @@ ageHistory.push(Number(age));
 
 
 
-
-
-saveFarmData();
+saveData();
 
 
 
@@ -506,6 +395,7 @@ drawWeight(weights);
 drawCV();
 
 drawWeightTrend();
+
 
 
 }
@@ -520,7 +410,6 @@ drawWeightTrend();
 
 
 function drawWeight(data){
-
 
 
 if(weightChart){
@@ -545,7 +434,9 @@ data:{
 labels:data.map((x,i)=>"نمونه "+(i+1)),
 
 
-datasets:[{
+datasets:[
+
+{
 
 label:"وزن واقعی",
 
@@ -557,7 +448,9 @@ fill:false,
 
 tension:.3
 
-}]
+}
+
+]
 
 }
 
@@ -584,7 +477,6 @@ if(weightTrendChart){
 weightTrendChart.destroy();
 
 }
-
 
 
 
@@ -620,7 +512,6 @@ tension:.3
 },
 
 
-
 {
 
 label:"استاندارد Ross 308",
@@ -636,7 +527,6 @@ fill:false,
 tension:.3
 
 }
-
 
 
 ]
@@ -681,7 +571,6 @@ data:{
 
 
 labels:rossAge.map(x=>x+" روز"),
-
 
 
 datasets:[
@@ -736,283 +625,37 @@ tension:.3
 
 
 
-window.onload=function(){
 
+document.addEventListener(
 
-let user=getUser();
-
-
-if(document.getElementById("userBox")){
-
-
-if(user==="guest"){
-
-userBox.innerHTML="ورود مهمان (بدون ذخیره اطلاعات)";
-
-}
-
-else{
-
-userBox.innerHTML="کاربر: "+user;
-
-}
-
-
-}
-
-
-
-};
-;
-let activeUser = localStorage.getItem("activeUser");
-
-
-function logout(){
-
-localStorage.removeItem("activeUser");
-
-window.location.href="login.html";
-
-}
-
-
-
-
-
-function saveData(){
-
-
-if(activeUser==="guest"){
-
-return;
-
-}
-
-
-
-let data={
-
-
-farm:document.getElementById("farm").value,
-
-hall:document.getElementById("hall").value,
-
-type:document.getElementById("type").value,
-
-age:document.getElementById("age").value,
-
-countBird:document.getElementById("countBird").value,
-
-
-weights:document.getElementById("weightsInput").value,
-
-
-cvHistory:cvHistory,
-
-weightHistory:weightHistory,
-
-ageHistory:ageHistory
-
-
-};
-
-
-
-localStorage.setItem(
-
-"data_"+activeUser,
-
-JSON.stringify(data)
-
-);
-
-
-}
-
-
-
-
-
-
-
-function loadData(){
-
-
-
-if(activeUser==="guest"){
-
-userBox.innerHTML="ورود مهمان";
-
-return;
-
-}
-
-
-
-userBox.innerHTML="کاربر: "+activeUser;
-
-
-
-let data=localStorage.getItem(
-
-"data_"+activeUser
-
-);
-
-
-
-if(!data){
-
-return;
-
-}
-
-
-
-let obj=JSON.parse(data);
-
-
-
-farm.value=obj.farm || "";
-
-hall.value=obj.hall || "";
-
-type.value=obj.type || "";
-
-age.value=obj.age || "";
-
-countBird.value=obj.countBird || "";
-
-weightsInput.value=obj.weights || "";
-
-
-cvHistory=obj.cvHistory || [];
-
-weightHistory=obj.weightHistory || [];
-
-ageHistory=obj.ageHistory || [];
-
-
-}
-
-
-
-
-
-
-
-window.addEventListener(
-
-"load",
+"DOMContentLoaded",
 
 function(){
 
 
-function logout(){
-
-localStorage.removeItem("activeUser");
-
-window.location.href="login.html";
-
-}
+showUser();
 
 
-
-window.addEventListener("load",function(){
-
-
-let user=localStorage.getItem("activeUser");
-
-
-let box=document.getElementById("userBox");
-
-
-if(box){
-
-
-if(user){
-
-box.innerHTML="کاربر فعال: "+user;
-
-}
-
-else{
-
-box.innerHTML="ورود مهمان";
-
-}
+loadData();
 
 
 }
 
-
-});
-  
-document.addEventListener("DOMContentLoaded", function(){
-
-
-let userBox=document.getElementById("userBox");
-
-
-let user=localStorage.getItem("activeUser");
+);
 
 
 
-if(userBox){
+
+document.addEventListener(
+
+"input",
+
+function(){
 
 
-if(user && user!=="guest"){
-
-userBox.innerHTML="👤 کاربر فعال: "+user;
-
-}
-
-else{
-
-userBox.innerHTML="👤 ورود مهمان";
-
-}
+saveData();
 
 
 }
 
-
-
-});
-
-
-
-
-
-function logout(){
-
-localStorage.removeItem("activeUser");
-
-window.location.href="login.html";
-
-
-}
-window.addEventListener("load", function(){
-
-let user = localStorage.getItem("activeUser");
-
-let box = document.getElementById("userBox");
-
-
-if(box){
-
-if(user){
-
-box.innerHTML = "👤 کاربر: " + user;
-
-}
-
-else{
-
-box.innerHTML = "👤 مهمان";
-
-}
-
-}
-
-});
+);
