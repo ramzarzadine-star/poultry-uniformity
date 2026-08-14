@@ -57,3 +57,122 @@
 </body>
 
 </html>
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="Style.css">
+
+<title>مدیریت گله</title>
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+<h1>🐔 مدیریت گله</h1>
+
+<div id="userBox"></div>
+
+</header>
+
+
+
+<div class="container">
+
+<div class="card">
+
+
+<input id="farm" placeholder="نام فارم">
+
+<input id="hall" placeholder="نام سالن">
+
+<input id="age" placeholder="سن گله">
+
+<input id="count" placeholder="تعداد پرنده">
+
+
+<button onclick="saveFlock()">
+
+ذخیره
+
+</button>
+
+
+</div>
+
+</div>
+
+
+
+<script src="database.js"></script>
+
+
+<script>
+
+
+function saveFlock(){
+
+
+let data={
+
+
+farm:farm.value,
+
+hall:hall.value,
+
+age:age.value,
+
+count:count.value
+
+
+};
+
+
+saveModule("flock",data);
+
+
+alert("ذخیره شد");
+
+
+}
+
+
+
+
+window.onload=function(){
+
+
+let d=loadModule("flock");
+
+
+if(d){
+
+
+farm.value=d.farm;
+
+hall.value=d.hall;
+
+age.value=d.age;
+
+count.value=d.count;
+
+
+}
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
