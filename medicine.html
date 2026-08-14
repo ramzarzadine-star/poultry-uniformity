@@ -38,3 +38,78 @@
 </body>
 
 </html>
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="Style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+
+<h2>💊 دارو</h2>
+
+
+<input id="medicineName" placeholder="نام دارو">
+
+
+<input id="dose" placeholder="دوز مصرف">
+
+
+<button onclick="saveMedicine()">
+
+ثبت
+
+</button>
+
+
+</div>
+
+
+
+<script src="database.js"></script>
+
+
+<script>
+
+
+function saveMedicine(){
+
+
+saveModule(
+
+"medicine",
+
+{
+
+name:medicineName.value,
+
+dose:dose.value
+
+}
+
+);
+
+
+alert("ثبت شد");
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
