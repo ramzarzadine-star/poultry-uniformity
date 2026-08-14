@@ -8,6 +8,20 @@ let weightHistory = [];
 let ageHistory = [];
 
 
+// استاندارد Ross 308 تا 8 هفتگی
+const rossAge = [
+7,14,21,28,35,42,49,56
+];
+
+const rossWeight = [
+190,490,900,1400,1950,2500,3050,3600
+];
+
+const rossCV = [
+13,12,11,10,9,8,7,6
+];
+
+
 
 
 
@@ -39,8 +53,7 @@ return text
 
 .map(Number)
 
-.filter(x => Number.isFinite(x) && x > 0);
-
+.filter(x=>Number.isFinite(x)&&x>0);
 
 }
 
@@ -48,9 +61,11 @@ return text
 
 
 
+
+
 function average(arr){
 
-return arr.reduce((a,b)=>a+b,0) / arr.length;
+return arr.reduce((a,b)=>a+b,0)/arr.length;
 
 }
 
@@ -78,11 +93,13 @@ return Math.sqrt(sum/(arr.length-1));
 
 
 
+
+
 function uniformity(arr,mean,p){
 
-let low = mean*(1-p);
+let low=mean*(1-p);
 
-let high = mean*(1+p);
+let high=mean*(1+p);
 
 
 return arr.filter(x=>x>=low && x<=high).length / arr.length *100;
@@ -96,10 +113,11 @@ return arr.filter(x=>x>=low && x<=high).length / arr.length *100;
 
 
 
+
 function calculate(){
 
 
-let weights = parseWeights(
+let weights=parseWeights(
 
 document.getElementById("weightsInput").value
 
@@ -107,7 +125,7 @@ document.getElementById("weightsInput").value
 
 
 
-if(weights.length < 2){
+if(weights.length<2){
 
 alert("حداقل دو وزن وارد کنید");
 
@@ -117,46 +135,47 @@ return;
 
 
 
-let mean = average(weights);
+
+let mean=average(weights);
 
 
-let sd = standard(weights,mean);
+let sd=standard(weights,mean);
 
 
-let cv = (sd/mean)*100;
+let cv=(sd/mean)*100;
 
 
-let u10 = uniformity(weights,mean,0.10);
+let u10=uniformity(weights,mean,0.10);
 
 
-let u15 = uniformity(weights,mean,0.15);
+let u15=uniformity(weights,mean,0.15);
 
 
 
 
 
-document.getElementById("sample").innerHTML = weights.length;
+document.getElementById("sample").innerHTML=weights.length;
 
 
-document.getElementById("mean").innerHTML = mean.toFixed(1);
+document.getElementById("mean").innerHTML=mean.toFixed(1);
 
 
-document.getElementById("min").innerHTML = Math.min(...weights);
+document.getElementById("min").innerHTML=Math.min(...weights);
 
 
-document.getElementById("max").innerHTML = Math.max(...weights);
+document.getElementById("max").innerHTML=Math.max(...weights);
 
 
-document.getElementById("sd").innerHTML = sd.toFixed(1);
+document.getElementById("sd").innerHTML=sd.toFixed(1);
 
 
-document.getElementById("cv").innerHTML = cv.toFixed(2)+"%";
+document.getElementById("cv").innerHTML=cv.toFixed(2)+"%";
 
 
-document.getElementById("u10").innerHTML = u10.toFixed(1)+"%";
+document.getElementById("u10").innerHTML=u10.toFixed(1)+"%";
 
 
-document.getElementById("u15").innerHTML = u15.toFixed(1)+"%";
+document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
 
 
 
@@ -166,7 +185,7 @@ drawWeight(weights);
 
 
 
-let age = document.getElementById("age").value;
+let age=document.getElementById("age").value;
 
 
 if(age===""){
@@ -181,7 +200,9 @@ cvHistory.push(Number(cv.toFixed(2)));
 
 weightHistory.push(Number(mean.toFixed(1)));
 
-ageHistory.push(age);
+ageHistory.push(Number(age));
+
+
 
 
 
@@ -211,7 +232,7 @@ weightChart.destroy();
 
 
 
-weightChart = new Chart(
+weightChart=new Chart(
 
 document.getElementById("weightChart"),
 
@@ -223,9 +244,11 @@ data:{
 
 labels:data.map((x,i)=>"نمونه "+(i+1)),
 
-datasets:[{
+datasets:[
 
-label:"وزن",
+{
+
+label:"توزیع وزن واقعی",
 
 data:data,
 
@@ -233,9 +256,11 @@ borderWidth:3,
 
 fill:false,
 
-tension:0.3
+tension:.3
 
-}]
+}
+
+]
 
 }
 
@@ -245,7 +270,6 @@ tension:0.3
 
 
 }
-
 
 
 
@@ -266,7 +290,7 @@ cvChart.destroy();
 
 
 
-cvChart = new Chart(
+cvChart=new Chart(
 
 document.getElementById("cvChart"),
 
@@ -276,11 +300,16 @@ type:"line",
 
 data:{
 
-labels:ageHistory.map(x=>x+" روز"),
 
-datasets:[{
+labels:rossAge.map(x=>x+" روز"),
 
-label:"CV (%)",
+
+datasets:[
+
+
+{
+
+label:"CV واقعی گله",
 
 data:cvHistory,
 
@@ -288,9 +317,29 @@ borderWidth:3,
 
 fill:false,
 
-tension:0.3
+tension:.3
 
-}]
+},
+
+
+{
+
+label:"استاندارد Ross 308",
+
+data:rossCV,
+
+borderWidth:3,
+
+borderDash:[10,5],
+
+fill:false,
+
+tension:.3
+
+}
+
+
+]
 
 },
 
@@ -309,7 +358,7 @@ title:{
 
 display:true,
 
-text:"درصد CV"
+text:"CV درصد"
 
 }
 
@@ -345,7 +394,7 @@ weightTrendChart.destroy();
 
 
 
-weightTrendChart = new Chart(
+weightTrendChart=new Chart(
 
 document.getElementById("weightTrendChart"),
 
@@ -355,11 +404,16 @@ type:"line",
 
 data:{
 
-labels:ageHistory.map(x=>x+" روز"),
 
-datasets:[{
+labels:rossAge.map(x=>x+" روز"),
 
-label:"میانگین وزن",
+
+datasets:[
+
+
+{
+
+label:"وزن واقعی گله",
 
 data:weightHistory,
 
@@ -367,9 +421,29 @@ borderWidth:3,
 
 fill:false,
 
-tension:0.3
+tension:.3
 
-}]
+},
+
+
+{
+
+label:"استاندارد Ross 308",
+
+data:rossWeight,
+
+borderWidth:3,
+
+borderDash:[10,5],
+
+fill:false,
+
+tension:.3
+
+}
+
+
+]
 
 },
 
@@ -386,7 +460,7 @@ title:{
 
 display:true,
 
-text:"وزن"
+text:"وزن گرم"
 
 }
 
@@ -402,5 +476,4 @@ text:"وزن"
 
 
 }
-
 alert("مرکز تخصصی طیور دکتر آدینه");
