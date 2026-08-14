@@ -4,18 +4,15 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>
-مرکز تخصصی سلامت طیور آدینه
+فرم مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
 </title>
-
 
 <link rel="stylesheet" href="Style.css">
 
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
 
 </head>
 
@@ -23,26 +20,30 @@
 <body>
 
 
-<div class="container">
-
+<header class="header">
 
 <h1>
-🐔 مدیریت گله طیور
-<span>
-مرکز تخصصی سلامت طیور آدینه
-</span>
+🐔 فرم مدیریت گله طیور
 </h1>
+
+<h3>
+مرکز تخصصی سلامت طیور آدینه
+</h3>
+
+</header>
+
+
+
+<div class="container">
 
 
 
 <div class="card">
 
-<h2>
-اطلاعات گله
-</h2>
+<h2>اطلاعات گله</h2>
 
 
-<div class="form">
+<div class="form-grid">
 
 
 <input id="farm" placeholder="نام فارم / مرغدار">
@@ -53,21 +54,10 @@
 
 <select id="type">
 
-<option>
-نوع گله
-</option>
-
-<option>
-گوشتی
-</option>
-
-<option>
-تخمگذار
-</option>
-
-<option>
-مادر
-</option>
+<option>نوع گله</option>
+<option>گوشتی</option>
+<option>تخمگذار</option>
+<option>مادر</option>
 
 </select>
 
@@ -75,14 +65,13 @@
 <input id="age" placeholder="سن گله (روز)">
 
 
+<input id="countBird" placeholder="تعداد گله">
+
+
 <input id="date" type="date">
 
 
-<input id="number" placeholder="تعداد گله">
-
-
 </div>
-
 
 </div>
 
@@ -94,21 +83,20 @@
 
 
 <h2>
-وزن گیری گله
+ورود وزن جوجه
 </h2>
 
 
 <textarea id="weightsInput"
 placeholder="وزن ها را وارد کنید
-
 مثال:
-1850,1900,1950
-"></textarea>
-
+1850,1900,1950,2000
+یا
+۱۸۵۰،۱۹۰۰،۱۹۵۰"></textarea>
 
 
 <button onclick="calculate()">
-محاسبه و ثبت گزارش
+محاسبه
 </button>
 
 
@@ -118,20 +106,21 @@ placeholder="وزن ها را وارد کنید
 
 
 
+
 <div class="card">
 
 
 <h2>
-خلاصه وضعیت گله
+نتایج
 </h2>
 
 
-<div class="grid">
+<div class="results">
 
 
 <div>
 تعداد نمونه
-<strong id="count">-</strong>
+<strong id="sample">-</strong>
 </div>
 
 
@@ -166,54 +155,51 @@ CV
 
 
 <div>
-یکنواختی ۱۰٪
+یکنواختی ±10%
 <strong id="u10">-</strong>
 </div>
 
-<div class="card">
 
-<h2>
-نمودار CV گله
-</h2>
-
-<canvas id="cvChart"></canvas>
-
-</div>
 <div>
-یکنواختی ۱۵٪
+یکنواختی ±15%
 <strong id="u15">-</strong>
 </div>
 
 
 </div>
 
+
 </div>
 
 
 
 
 
+
 <div class="card">
 
-
 <h2>
-نمودار یکنواختی گله ±10%
+نمودار توزیع وزن جوجه
 </h2>
 
+<canvas id="weightChart"></canvas>
+
+</div>
+
+
+
+
+
+
 <div class="card">
 
 <h2>
-نمودار CV گله
+نمودار خطی CV
 </h2>
 
 <canvas id="cvChart"></canvas>
 
 </div>
-<canvas id="weightChart"></canvas>
-
-
-</div>
-
 
 
 
@@ -221,6 +207,8 @@ CV
 
 
 </div>
+
+
 
 
 <script src="Script.js"></script>
