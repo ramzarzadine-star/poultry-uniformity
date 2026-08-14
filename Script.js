@@ -273,3 +273,4 @@ beginAtZero:true
 
 
 }
+alert("آدینه فعال شد");
