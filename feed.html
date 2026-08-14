@@ -34,3 +34,80 @@
 </body>
 
 </html>
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="Style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+
+<h2>🌽 مصرف دان</h2>
+
+
+<input id="feedAmount" placeholder="مقدار دان">
+
+
+<input id="feedDate" type="date">
+
+
+
+<button onclick="saveFeed()">
+
+ثبت
+
+</button>
+
+
+</div>
+
+
+
+<script src="database.js"></script>
+
+
+<script>
+
+
+function saveFeed(){
+
+
+saveModule(
+
+"feed",
+
+{
+
+amount:feedAmount.value,
+
+date:feedDate.value
+
+}
+
+);
+
+
+alert("ثبت شد");
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
