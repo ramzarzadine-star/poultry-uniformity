@@ -992,3 +992,27 @@ window.location.href="login.html";
 
 
 }
+window.addEventListener("load", function(){
+
+let user = localStorage.getItem("activeUser");
+
+let box = document.getElementById("userBox");
+
+
+if(box){
+
+if(user){
+
+box.innerHTML = "👤 کاربر: " + user;
+
+}
+
+else{
+
+box.innerHTML = "👤 مهمان";
+
+}
+
+}
+
+});
