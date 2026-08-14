@@ -403,3 +403,17 @@ text-decoration:none;
 background:#009879;
 
 }
+<style>
+.login-logo {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 20px;
+    text-align: center;
+}
+
+.login-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+</style>
