@@ -2,970 +2,190 @@
 <html lang="fa" dir="rtl">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0,
+                   maximum-scale=1.0, user-scalable=no">
 
-<meta charset="UTF-8">
+    <title>مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="Style.css">
 
-<title>
-مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
-</title>
-
-<link rel="stylesheet" href="Style.css">
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
-
-<style>
-
-/* =====================================================
-   صفحه اصلی
-===================================================== */
-
-body {
-    margin: 0;
-    background: #f1f5f6;
-    font-family: Tahoma, Arial, sans-serif;
-}
-
-
-/* =====================================================
-   HEADER
-===================================================== */
-
-.header {
-
-    position: relative;
-
-    overflow: hidden;
-
-    min-height: 475px;
-
-    padding: 30px 20px 45px;
-
-    text-align: center;
-
-    color: white;
-
-    border-radius: 0 0 55px 55px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #007a45 0%,
-            #008c61 50%,
-            #009b78 100%
-        );
-
-    box-shadow:
-        0 8px 25px rgba(0,0,0,0.15);
-
-}
-
-
-/* منظره محو مرغداری در پایین هدر */
-
-.header::before {
-
-    content: "";
-
-    position: absolute;
-
-    left: -5%;
-    right: -5%;
-
-    bottom: -45px;
-
-    height: 155px;
-
-    background:
-
-        linear-gradient(
-            155deg,
-            transparent 0 35%,
-            rgba(255,255,255,0.10) 36% 38%,
-            transparent 39%
-        ),
-
-        linear-gradient(
-            25deg,
-            rgba(0,70,40,0.25),
-            rgba(255,255,255,0.04)
-        );
-
-    transform: skewY(-3deg);
-
-    z-index: 0;
-
-}
-
-
-/* مرغ های محو */
-
-.header::after {
-
-    content:
-        "🐔       🐔          🐓       🐔";
-
-    position: absolute;
-
-    left: 0;
-    right: 0;
-
-    bottom: 48px;
-
-    font-size: 34px;
-
-    opacity: 0.16;
-
-    letter-spacing: 5px;
-
-    z-index: 1;
-
-}
-
-
-/* =====================================================
-   لوگو
-===================================================== */
-
-.brand-logo {
-
-    position: relative;
-
-    z-index: 5;
-
-    display: block;
-
-    width: 135px;
-
-    height: 135px;
-
-    object-fit: contain;
-
-    margin: 0 auto 15px;
-
-    /*
-       تصویر با پس زمینه سفید ترکیب می شود
-       و حالت جدا و کارت مانند ندارد
-    */
-
-    mix-blend-mode: multiply;
-
-    filter:
-        drop-shadow(
-            0 5px 10px rgba(0,0,0,0.18)
-        );
-
-}
-
-
-/* =====================================================
-   محتوای هدر
-===================================================== */
-
-.header h1 {
-
-    position: relative;
-
-    z-index: 5;
-
-    margin:
-
-        5px
-        0
-        12px;
-
-    color: white;
-
-    font-size: 34px;
-
-    font-weight: 800;
-
-    text-shadow:
-        0 3px 8px rgba(0,0,0,0.25);
-
-}
-
-
-.header h3 {
-
-    position: relative;
-
-    z-index: 5;
-
-    margin:
-
-        0
-        0
-        25px;
-
-    color: white;
-
-    font-size: 20px;
-
-    font-weight: 500;
-
-    text-shadow:
-        0 2px 5px rgba(0,0,0,0.20);
-
-}
-
-
-/* =====================================================
-   کاربر
-===================================================== */
-
-#userBox {
-
-    position: relative;
-
-    z-index: 5;
-
-    display: inline-block;
-
-    padding:
-
-        13px
-        28px;
-
-    border-radius: 22px;
-
-    background:
-        rgba(255,255,255,0.22);
-
-    color: white;
-
-    font-size: 19px;
-
-    backdrop-filter:
-        blur(8px);
-
-    -webkit-backdrop-filter:
-        blur(8px);
-
-}
-
-
-/* =====================================================
-   دکمه خروج
-===================================================== */
-
-.logout {
-
-    position: absolute;
-
-    z-index: 6;
-
-    left: 13%;
-
-    bottom: 55px;
-
-    width: 275px;
-
-    height: 95px;
-
-    border: none;
-
-    border-radius: 25px;
-
-    background: #c9002b;
-
-    color: white;
-
-    font-family: inherit;
-
-    font-size: 27px;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 5px 15px
-        rgba(0,0,0,0.14);
-
-    transition:
-        0.2s ease;
-
-}
-
-
-.logout:active {
-
-    transform: scale(0.97);
-
-}
-
-
-.logout:hover {
-
-    background: #b60027;
-
-}
-
-
-/* =====================================================
-   منوی اصلی
-===================================================== */
-
-.menu {
-
-    position: relative;
-
-    z-index: 10;
-
-    width: 88%;
-
-    max-width: 900px;
-
-    margin:
-
-        30px
-        auto;
-
-    padding: 30px;
-
-    display: grid;
-
-    grid-template-columns:
-        1fr
-        1fr;
-
-    gap: 18px;
-
-    background: white;
-
-    border-radius: 30px;
-
-    box-shadow:
-        0 7px 30px
-        rgba(0,0,0,0.10);
-
-}
-
-
-/* =====================================================
-   دکمه های منو
-===================================================== */
-
-.menu a {
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    min-height: 82px;
-
-    padding:
-
-        10px
-        15px;
-
-    border-radius: 20px;
-
-    background: #007a45;
-
-    color: white;
-
-    text-decoration: none;
-
-    font-family: inherit;
-
-    font-size: 25px;
-
-    font-weight: 600;
-
-    box-shadow:
-        0 3px 8px
-        rgba(0,0,0,0.08);
-
-    transition:
-        transform 0.2s ease,
-        background 0.2s ease;
-
-}
-
-
-.menu a:hover {
-
-    background: #00683b;
-
-    transform:
-        translateY(-2px);
-
-}
-
-
-.menu a:active {
-
-    transform:
-        scale(0.97);
-
-}
-
-
-/* =====================================================
-   محتوای اصلی
-===================================================== */
-
-.container {
-
-    width: 92%;
-
-    max-width: 1000px;
-
-    margin:
-        0 auto
-        40px;
-
-}
-
-
-/* =====================================================
-   کارت ها
-===================================================== */
-
-.card {
-
-    background: white;
-
-    border-radius: 28px;
-
-    padding: 28px;
-
-    margin-bottom: 25px;
-
-    box-shadow:
-        0 7px 25px
-        rgba(0,0,0,0.07);
-
-}
-
-
-.card h2 {
-
-    color: #007a45;
-
-    margin-top: 0;
-
-    margin-bottom: 25px;
-
-    font-size: 26px;
-
-}
-
-
-/* =====================================================
-   فرم
-===================================================== */
-
-.form-grid {
-
-    display: grid;
-
-    grid-template-columns:
-        1fr
-        1fr;
-
-    gap: 15px;
-
-}
-
-
-.form-grid input,
-.form-grid select {
-
-    width: 100%;
-
-    box-sizing: border-box;
-
-    padding: 18px;
-
-    border:
-
-        2px solid
-        #ddd;
-
-    border-radius: 18px;
-
-    font-family: inherit;
-
-    font-size: 17px;
-
-    background: white;
-
-}
-
-
-.form-grid input:focus,
-.form-grid select:focus {
-
-    outline: none;
-
-    border-color: #007a45;
-
-}
-
-
-/* =====================================================
-   ورود وزن
-===================================================== */
-
-#weightsInput {
-
-    width: 100%;
-
-    min-height: 150px;
-
-    box-sizing: border-box;
-
-    padding: 18px;
-
-    border:
-
-        2px solid
-        #ddd;
-
-    border-radius: 18px;
-
-    resize: vertical;
-
-    font-family: inherit;
-
-    font-size: 17px;
-
-}
-
-
-.card button:not(.logout) {
-
-    border: none;
-
-    border-radius: 18px;
-
-    background: #007a45;
-
-    color: white;
-
-    padding:
-
-        16px
-        35px;
-
-    margin-top: 15px;
-
-    font-family: inherit;
-
-    font-size: 19px;
-
-    cursor: pointer;
-
-}
-
-
-/* =====================================================
-   نتایج
-===================================================== */
-
-.results {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    gap: 15px;
-
-}
-
-
-.results > div {
-
-    background: #f5f8f7;
-
-    border-radius: 18px;
-
-    padding: 20px;
-
-    text-align: center;
-
-    color: #555;
-
-}
-
-
-.results strong {
-
-    display: block;
-
-    margin-top: 10px;
-
-    color: #007a45;
-
-    font-size: 25px;
-
-}
-
-
-/* =====================================================
-   نمودارها
-===================================================== */
-
-canvas {
-
-    max-width: 100%;
-
-}
-
-
-/* =====================================================
-   موبایل / آیفون
-===================================================== */
-
-@media (max-width: 600px) {
-
-
-    .header {
-
-        min-height: 475px;
-
-        padding:
-
-            30px
-            20px
-            45px;
-
-    }
-
-
-    .brand-logo {
-
-        width: 135px;
-
-        height: 135px;
-
-        margin-bottom: 15px;
-
-    }
-
-
-    .header h1 {
-
-        font-size: 31px;
-
-        margin-top: 5px;
-
-    }
-
-
-    .header h3 {
-
-        font-size: 19px;
-
-    }
-
-
-    #userBox {
-
-        font-size: 17px;
-
-        padding:
-
-            12px
-            22px;
-
-    }
-
-
-    .logout {
-
-        left: 13%;
-
-        bottom: 55px;
-
-        width: 74%;
-
-        height: 90px;
-
-        font-size: 25px;
-
-    }
-
-
-    /* منوی دو ستونه مثل عکس */
-
-    .menu {
-
-        width: 82%;
-
-        padding:
-
-            30px
-            20px;
-
-        gap: 16px;
-
-        grid-template-columns:
-            1fr
-            1fr;
-
-    }
-
-
-    .menu a {
-
-        min-height: 80px;
-
-        padding:
-
-            8px
-            5px;
-
-        font-size: 21px;
-
-        border-radius: 18px;
-
-        text-align: center;
-
-    }
-
-
-    .container {
-
-        width: 92%;
-
-    }
-
-
-    .card {
-
-        padding: 22px;
-
-    }
-
-
-    .form-grid {
-
-        grid-template-columns:
-            1fr;
-
-    }
-
-
-    .results {
-
-        grid-template-columns:
-            1fr 1fr;
-
-    }
-
-
-    .results > div {
-
-        padding: 15px 8px;
-
-    }
-
-
-}
-
-
-/* =====================================================
-   صفحه خیلی کوچک
-===================================================== */
-
-@media (max-width: 380px) {
-
-
-    .header h1 {
-
-        font-size: 27px;
-
-    }
-
-
-    .header h3 {
-
-        font-size: 17px;
-
-    }
-
-
-    .brand-logo {
-
-        width: 115px;
-
-        height: 115px;
-
-    }
-
-
-    .menu a {
-
-        font-size: 18px;
-
-    }
-
-
-    .logout {
-
-        font-size: 22px;
-
-    }
-
-}
-
-</style>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
-
 
 <body>
 
+<!-- ================= HEADER ================= -->
 
-<!-- =====================================================
-     HEADER
-===================================================== -->
+<header class="main-header">
 
-<header class="header">
+    <!-- لوگو -->
+    <div class="header-logo">
+        <img src="IMG_4309.png"
+             alt="مرکز تخصصی سلامت طیور آدینه">
+    </div>
 
+    <div class="header-content">
 
-    <!-- لوگوی مرکز -->
+        <h1>
+            🐔 مدیریت گله طیور
+        </h1>
 
-    <img
-        src="IMG_4309.png"
-        class="brand-logo"
-        alt="مرکز تخصصی سلامت طیور آدینه"
-    >
+        <h3>
+            مرکز تخصصی سلامت طیور آدینه
+        </h3>
 
-
-    <!-- عنوان -->
-
-    <h1>
-        🐔 مدیریت گله طیور
-    </h1>
-
-
-    <!-- نام مرکز -->
-
-    <h3>
-        مرکز تخصصی سلامت طیور آدینه
-    </h3>
+    </div>
 
 
-    <!-- کاربر -->
+    <!-- وضعیت کاربر -->
 
-    <div id="userBox"></div>
+    <div class="header-actions">
+
+        <div class="user-status">
+
+            <span class="user-icon">👤</span>
+
+            <div>
+                <small>کاربر فعال:</small>
+                <strong id="userBox">guest</strong>
+            </div>
+
+        </div>
 
 
-    <!-- خروج -->
+        <button
+            type="button"
+            onclick="logout()"
+            class="logout-button">
 
-    <button
-        onclick="logout()"
-        class="logout"
-    >
-        خروج از حساب
-    </button>
+            خروج از حساب
 
+        </button>
+
+    </div>
 
 </header>
 
 
 
-<!-- =====================================================
-     MENU
-===================================================== -->
+<!-- ================= MENU ================= -->
 
-<nav class="menu">
+<section class="dashboard-menu">
 
+    <a href="panel.html" class="menu-card">
 
-    <a href="panel.html">
-        🏠 داشبورد
+        <span class="menu-icon">🏠</span>
+
+        <span>داشبورد</span>
+
     </a>
 
 
-    <a href="flock.html">
-        🐔 مدیریت گله
+    <a href="flock.html" class="menu-card">
+
+        <span class="menu-icon">🐔</span>
+
+        <span>مدیریت گله</span>
+
     </a>
 
 
-    <a href="feed.html">
-        🌽 مصرف دان
+    <a href="feed.html" class="menu-card">
+
+        <span class="menu-icon">🌽</span>
+
+        <span>مصرف دان</span>
+
     </a>
 
 
-    <a href="water.html">
-        💧 مصرف آب
+    <a href="water.html" class="menu-card">
+
+        <span class="menu-icon">💧</span>
+
+        <span>مصرف آب</span>
+
     </a>
 
 
-    <a href="vaccine.html">
-        💉 واکسیناسیون
+    <a href="vaccine.html" class="menu-card">
+
+        <span class="menu-icon">💉</span>
+
+        <span>واکسیناسیون</span>
+
     </a>
 
 
-    <a href="medicine.html">
-        💊 دارو
+    <a href="medicine.html" class="menu-card">
+
+        <span class="menu-icon">💊</span>
+
+        <span>دارو</span>
+
     </a>
 
 
-    <a href="report.html">
-        📊 گزارشات
+    <a href="report.html" class="menu-card report-card">
+
+        <span class="menu-icon">📊</span>
+
+        <span>گزارشات</span>
+
     </a>
 
-
-</nav>
-
-
-
-<!-- =====================================================
-     CONTENT
-===================================================== -->
-
-<div class="container">
+</section>
 
 
 
-    <!-- اطلاعات گله -->
+<!-- ================= FLOCK INFORMATION ================= -->
 
-    <div class="card">
+<main class="container">
 
-        <h2>
-            اطلاعات گله
-        </h2>
+    <section class="card">
+
+        <div class="section-title">
+
+            <span>ℹ️</span>
+
+            <h2>
+                اطلاعات گله
+            </h2>
+
+        </div>
 
 
         <div class="form-grid">
 
-
             <input
                 id="farm"
-                placeholder="نام فارم / مرغدار"
-            >
+                type="text"
+                placeholder="نام فارم / مرغدار">
 
 
             <input
                 id="hall"
-                placeholder="نام سالن"
-            >
+                type="text"
+                placeholder="نام سالن">
 
 
             <select id="type">
 
-                <option>
+                <option value="">
                     نوع گله
                 </option>
 
-                <option>
+                <option value="گوشتی">
                     گوشتی
                 </option>
 
-                <option>
+                <option value="تخمگذار">
                     تخمگذار
                 </option>
 
-                <option>
+                <option value="مادر">
                     مادر
                 </option>
 
@@ -974,214 +194,235 @@ canvas {
 
             <input
                 id="age"
-                placeholder="سن گله (روز)"
-            >
+                type="number"
+                inputmode="numeric"
+                placeholder="سن گله (روز)">
 
 
             <input
                 id="countBird"
-                placeholder="تعداد پرنده"
-            >
+                type="number"
+                inputmode="numeric"
+                placeholder="تعداد پرنده">
 
 
             <input
                 id="date"
-                type="date"
-            >
-
+                type="date">
 
         </div>
 
-    </div>
+    </section>
 
 
 
-    <!-- ورود وزن -->
+    <!-- ================= WEIGHT ================= -->
 
-    <div class="card">
+    <section class="card">
 
-        <h2>
-            ورود وزن
-        </h2>
+        <div class="section-title">
+
+            <span>⚖️</span>
+
+            <h2>
+                ورود وزن
+            </h2>
+
+        </div>
 
 
         <textarea
             id="weightsInput"
-            placeholder="وزن ها را وارد کنید"
-        ></textarea>
+            placeholder="وزن‌ها را وارد کنید؛ مثال:
+1800
+1850
+1900
+1750
+1820"></textarea>
 
 
         <button
             type="button"
-            onclick="calculate()"
-        >
-            محاسبه
+            class="primary-button"
+            onclick="calculate()">
+
+            محاسبه یکنواختی
+
         </button>
 
-
-    </div>
-
+    </section>
 
 
-    <!-- نتایج -->
 
-    <div class="card">
+    <!-- ================= RESULTS ================= -->
 
-        <h2>
-            نتایج
-        </h2>
+    <section class="card">
+
+        <div class="section-title">
+
+            <span>📋</span>
+
+            <h2>
+                نتایج
+            </h2>
+
+        </div>
 
 
         <div class="results">
 
+            <div class="result-box">
 
-            <div>
+                <span>تعداد نمونه</span>
 
-                تعداد نمونه
-
-                <strong id="sample">
-                    -
-                </strong>
+                <strong id="sample">-</strong>
 
             </div>
 
 
-            <div>
+            <div class="result-box">
 
-                میانگین وزن
+                <span>میانگین وزن</span>
 
-                <strong id="mean">
-                    -
-                </strong>
+                <strong id="mean">-</strong>
 
             </div>
 
 
-            <div>
+            <div class="result-box">
 
-                کمترین وزن
+                <span>کمترین وزن</span>
 
-                <strong id="min">
-                    -
-                </strong>
+                <strong id="min">-</strong>
 
             </div>
 
 
-            <div>
+            <div class="result-box">
 
-                بیشترین وزن
+                <span>بیشترین وزن</span>
 
-                <strong id="max">
-                    -
-                </strong>
+                <strong id="max">-</strong>
 
             </div>
 
 
-            <div>
+            <div class="result-box">
 
-                SD
+                <span>SD</span>
 
-                <strong id="sd">
-                    -
-                </strong>
+                <strong id="sd">-</strong>
 
             </div>
 
 
-            <div>
+            <div class="result-box">
 
-                CV
+                <span>CV</span>
 
-                <strong id="cv">
-                    -
-                </strong>
+                <strong id="cv">-</strong>
 
             </div>
 
 
-            <div>
+            <div class="result-box">
 
-                یکنواختی ۱۰٪
+                <span>یکنواختی ±۱۰٪</span>
 
-                <strong id="u10">
-                    -
-                </strong>
+                <strong id="u10">-</strong>
 
             </div>
 
 
-            <div>
+            <div class="result-box">
 
-                یکنواختی ۱۵٪
+                <span>یکنواختی ±۱۵٪</span>
 
-                <strong id="u15">
-                    -
-                </strong>
+                <strong id="u15">-</strong>
 
             </div>
-
 
         </div>
 
-    </div>
+    </section>
 
 
 
-    <!-- نمودار وزن -->
+    <!-- ================= CHART 1 ================= -->
 
-    <div class="card">
+    <section class="card chart-card">
 
-        <h2>
-            نمودار وزن
-        </h2>
+        <div class="section-title">
 
-        <canvas id="weightChart"></canvas>
+            <span>📈</span>
 
-    </div>
+            <h2>
+                نمودار وزن
+            </h2>
 
+        </div>
 
+        <div class="chart-container">
 
-    <!-- رشد وزن -->
+            <canvas id="weightChart"></canvas>
 
-    <div class="card">
+        </div>
 
-        <h2>
-            رشد وزن Ross 308
-        </h2>
-
-        <canvas id="weightTrendChart"></canvas>
-
-    </div>
+    </section>
 
 
 
-    <!-- CV -->
+    <!-- ================= CHART 2 ================= -->
 
-    <div class="card">
+    <section class="card chart-card">
 
-        <h2>
-            CV Ross 308
-        </h2>
+        <div class="section-title">
 
-        <canvas id="cvChart"></canvas>
+            <span>📈</span>
 
-    </div>
+            <h2>
+                رشد وزن Ross 308
+            </h2>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas id="weightTrendChart"></canvas>
+
+        </div>
+
+    </section>
 
 
 
-</div>
+    <!-- ================= CHART 3 ================= -->
+
+    <section class="card chart-card">
+
+        <div class="section-title">
+
+            <span>📊</span>
+
+            <h2>
+                CV Ross 308
+            </h2>
+
+        </div>
+
+        <div class="chart-container">
+
+            <canvas id="cvChart"></canvas>
+
+        </div>
+
+    </section>
+
+</main>
 
 
-
-<!-- =====================================================
-     JAVASCRIPT
-===================================================== -->
 
 <script src="Script.js"></script>
 
-
 </body>
-
 </html>
