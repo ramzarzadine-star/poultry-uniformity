@@ -402,3 +402,4 @@ text:"وزن"
 
 
 }
+alert("Script OK");
