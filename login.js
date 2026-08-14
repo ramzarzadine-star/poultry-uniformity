@@ -110,3 +110,24 @@ window.location.href="panel.html";
 
 
 }
+function register(){
+
+alert("ثبت نام فعال شد");
+
+}
+
+
+
+function login(){
+
+alert("ورود فعال شد");
+
+}
+
+
+
+function guestLogin(){
+
+alert("مهمان فعال شد");
+
+}
