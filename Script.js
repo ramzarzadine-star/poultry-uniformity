@@ -764,3 +764,153 @@ userBox.innerHTML="کاربر: "+user;
 
 };
 ;
+let activeUser = localStorage.getItem("activeUser");
+
+
+function logout(){
+
+localStorage.removeItem("activeUser");
+
+window.location.href="login.html";
+
+}
+
+
+
+
+
+function saveData(){
+
+
+if(activeUser==="guest"){
+
+return;
+
+}
+
+
+
+let data={
+
+
+farm:document.getElementById("farm").value,
+
+hall:document.getElementById("hall").value,
+
+type:document.getElementById("type").value,
+
+age:document.getElementById("age").value,
+
+countBird:document.getElementById("countBird").value,
+
+
+weights:document.getElementById("weightsInput").value,
+
+
+cvHistory:cvHistory,
+
+weightHistory:weightHistory,
+
+ageHistory:ageHistory
+
+
+};
+
+
+
+localStorage.setItem(
+
+"data_"+activeUser,
+
+JSON.stringify(data)
+
+);
+
+
+}
+
+
+
+
+
+
+
+function loadData(){
+
+
+
+if(activeUser==="guest"){
+
+userBox.innerHTML="ورود مهمان";
+
+return;
+
+}
+
+
+
+userBox.innerHTML="کاربر: "+activeUser;
+
+
+
+let data=localStorage.getItem(
+
+"data_"+activeUser
+
+);
+
+
+
+if(!data){
+
+return;
+
+}
+
+
+
+let obj=JSON.parse(data);
+
+
+
+farm.value=obj.farm || "";
+
+hall.value=obj.hall || "";
+
+type.value=obj.type || "";
+
+age.value=obj.age || "";
+
+countBird.value=obj.countBird || "";
+
+weightsInput.value=obj.weights || "";
+
+
+cvHistory=obj.cvHistory || [];
+
+weightHistory=obj.weightHistory || [];
+
+ageHistory=obj.ageHistory || [];
+
+
+}
+
+
+
+
+
+
+
+window.addEventListener(
+
+"load",
+
+function(){
+
+
+loadData();
+
+
+}
+
+);
