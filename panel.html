@@ -1,5 +1,7 @@
 <!DOCTYPE html>
+
 <html lang="fa" dir="rtl">
+
 
 <head>
 
@@ -9,8 +11,9 @@
 
 
 <title>
-فرم مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
+مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
 </title>
+
 
 
 <link rel="stylesheet" href="Style.css">
@@ -22,43 +25,36 @@
 </head>
 
 
+
 <body>
 
-<div style="background:#eee;padding:10px;text-align:center;font-size:20px">
-<span id="userBox">در حال بررسی...</span>
-</div>
 
-<script>
-let u=localStorage.getItem("activeUser");
-
-document.getElementById("userBox").innerHTML =
-u ? "👤 کاربر فعال: "+u : "👤 بدون ورود";
-</script>
 
 <header class="header">
 
+
 <h1>
-🐔 فرم مدیریت گله طیور
+🐔 مدیریت گله طیور
 </h1>
+
 
 <h3>
 مرکز تخصصی سلامت طیور آدینه
 </h3>
 
 
-<div id="userBox">
-</div>
+<div id="userBox"></div>
 
 
 <button onclick="logout()" class="logout">
+
 خروج از حساب
+
 </button>
 
 
 </header>
 
-
-</header>
 
 
 
@@ -88,6 +84,7 @@ u ? "👤 کاربر فعال: "+u : "👤 بدون ورود";
 
 <select id="type">
 
+
 <option>نوع گله</option>
 
 <option>گوشتی</option>
@@ -95,6 +92,7 @@ u ? "👤 کاربر فعال: "+u : "👤 بدون ورود";
 <option>تخمگذار</option>
 
 <option>مادر</option>
+
 
 </select>
 
@@ -128,26 +126,18 @@ u ? "👤 کاربر فعال: "+u : "👤 بدون ورود";
 
 
 <h2>
-ثبت وزن گیری
+ورود وزن
 </h2>
 
 
 
 <textarea id="weightsInput"
-
-placeholder="وزن ها را وارد کنید
-
-مثال:
-
-1900,1950,2000">
-
-</textarea>
-
+placeholder="وزن ها را وارد کنید"></textarea>
 
 
 <button onclick="calculate()">
 
-محاسبه و ذخیره
+محاسبه
 
 </button>
 
@@ -162,14 +152,13 @@ placeholder="وزن ها را وارد کنید
 
 
 
-
 <div class="card">
 
 
 <h2>
 نتایج
-</h2>
 
+</h2>
 
 
 <div class="results">
@@ -183,14 +172,12 @@ placeholder="وزن ها را وارد کنید
 </div>
 
 
-
 <div>
 میانگین وزن
 
 <strong id="mean">-</strong>
 
 </div>
-
 
 
 <div>
@@ -201,14 +188,12 @@ placeholder="وزن ها را وارد کنید
 </div>
 
 
-
 <div>
 بیشترین وزن
 
 <strong id="max">-</strong>
 
 </div>
-
 
 
 <div>
@@ -219,14 +204,12 @@ SD
 </div>
 
 
-
 <div>
 CV
 
 <strong id="cv">-</strong>
 
 </div>
-
 
 
 <div>
@@ -237,7 +220,6 @@ CV
 </div>
 
 
-
 <div>
 یکنواختی ۱۵٪
 
@@ -246,14 +228,10 @@ CV
 </div>
 
 
-
 </div>
 
 
 </div>
-
-
-
 
 
 
@@ -263,9 +241,9 @@ CV
 <div class="card">
 
 <h2>
-توزیع وزن گله
-</h2>
+نمودار وزن
 
+</h2>
 
 <canvas id="weightChart"></canvas>
 
@@ -276,14 +254,11 @@ CV
 
 
 
-
-
-
-
 <div class="card">
 
 <h2>
-مقایسه رشد وزن با Ross 308
+رشد وزن Ross 308
+
 </h2>
 
 
@@ -296,14 +271,11 @@ CV
 
 
 
-
-
-
-
 <div class="card">
 
 <h2>
-مقایسه CV با Ross 308
+CV Ross 308
+
 </h2>
 
 
@@ -317,10 +289,7 @@ CV
 
 
 
-
 </div>
-
-
 
 
 
