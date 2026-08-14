@@ -4,7 +4,9 @@
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 
 <title>
 فرم مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
@@ -16,10 +18,12 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
+
 </head>
 
 
 <body>
+
 
 
 <header class="header">
@@ -36,19 +40,23 @@
 
 
 
+
+
 <div class="container">
 
 
 
 <div class="card">
 
-<h2>اطلاعات گله</h2>
+<h2>
+اطلاعات گله
+</h2>
 
 
 <div class="form-grid">
 
 
-<input id="farm" placeholder="نام فارم / مرغدار">
+<input id="farm" placeholder="نام مرغدار / فارم">
 
 
 <input id="hall" placeholder="نام سالن">
@@ -57,8 +65,11 @@
 <select id="type">
 
 <option>نوع گله</option>
+
 <option>گوشتی</option>
+
 <option>تخمگذار</option>
+
 <option>مادر</option>
 
 </select>
@@ -67,7 +78,7 @@
 <input id="age" placeholder="سن گله (روز)">
 
 
-<input id="countBird" placeholder="تعداد گله">
+<input id="countBird" placeholder="تعداد پرنده">
 
 
 <input id="date" type="date">
@@ -81,25 +92,32 @@
 
 
 
+
+
 <div class="card">
 
 
 <h2>
-ورود وزن جوجه
+ثبت وزن‌گیری
 </h2>
 
 
 <textarea id="weightsInput"
-placeholder="مثال:
+placeholder="وزن‌ها را وارد کنید
+مثال:
 1850,1900,1950,2000"></textarea>
 
 
+
 <button onclick="calculate()">
-محاسبه
+
+محاسبه و ذخیره
+
 </button>
 
 
 </div>
+
 
 
 
@@ -114,30 +132,80 @@ placeholder="مثال:
 </h2>
 
 
+
 <div class="results">
 
 
-<div>نمونه<strong id="sample">-</strong></div>
+<div>
+تعداد نمونه
 
-<div>میانگین وزن<strong id="mean">-</strong></div>
+<strong id="sample">-</strong>
 
-<div>کمترین وزن<strong id="min">-</strong></div>
+</div>
 
-<div>بیشترین وزن<strong id="max">-</strong></div>
 
-<div>SD<strong id="sd">-</strong></div>
+<div>
+میانگین وزن
 
-<div>CV<strong id="cv">-</strong></div>
+<strong id="mean">-</strong>
 
-<div>یکنواختی ۱۰٪<strong id="u10">-</strong></div>
+</div>
 
-<div>یکنواختی ۱۵٪<strong id="u15">-</strong></div>
 
+<div>
+کمترین وزن
+
+<strong id="min">-</strong>
+
+</div>
+
+
+<div>
+بیشترین وزن
+
+<strong id="max">-</strong>
+
+</div>
+
+
+<div>
+SD
+
+<strong id="sd">-</strong>
+
+</div>
+
+
+<div>
+CV
+
+<strong id="cv">-</strong>
+
+</div>
+
+
+<div>
+یکنواختی ۱۰٪
+
+<strong id="u10">-</strong>
+
+</div>
+
+
+<div>
+یکنواختی ۱۵٪
+
+<strong id="u15">-</strong>
 
 </div>
 
 
 </div>
+
+
+</div>
+
+
 
 
 
@@ -146,7 +214,7 @@ placeholder="مثال:
 <div class="card">
 
 <h2>
-توزیع وزن گله
+توزیع وزن نمونه‌ها
 </h2>
 
 <canvas id="weightChart"></canvas>
@@ -158,15 +226,19 @@ placeholder="مثال:
 
 
 
+
 <div class="card">
 
 <h2>
-رشد وزن گله در مقایسه با Ross 308
+رشد وزن واقعی در مقابل Ross 308
 </h2>
+
 
 <canvas id="weightTrendChart"></canvas>
 
+
 </div>
+
 
 
 
@@ -176,17 +248,22 @@ placeholder="مثال:
 <div class="card">
 
 <h2>
-CV گله در مقایسه با Ross 308
+روند CV واقعی در مقابل Ross 308
 </h2>
+
 
 <canvas id="cvChart"></canvas>
 
-</div>
-
-
-
 
 </div>
+
+
+
+
+
+
+</div>
+
 
 
 
@@ -195,5 +272,6 @@ CV گله در مقایسه با Ross 308
 
 
 </body>
+
 
 </html>
