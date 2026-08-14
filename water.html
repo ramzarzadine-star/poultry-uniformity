@@ -1,42 +1,4 @@
 <!DOCTYPE html>
-
-<html lang="fa" dir="rtl">
-
-<head>
-
-<meta charset="UTF-8">
-
-<link rel="stylesheet" href="../Style.css">
-
-</head>
-
-
-<body>
-
-
-<div class="card">
-
-<h2>💧 مصرف آب</h2>
-
-
-<input placeholder="لیتر مصرفی">
-
-<input placeholder="نسبت آب به دان">
-
-
-<button>
-ثبت
-</button>
-
-
-</div>
-
-
-</body>
-
-</html>
-<!DOCTYPE html>
-
 <html lang="fa" dir="rtl">
 
 <head>
@@ -45,33 +7,78 @@
 
 <link rel="stylesheet" href="Style.css">
 
+<title>
+مصرف آب
+</title>
+
 </head>
 
 
 <body>
 
 
+<header class="header">
+
+<h1>
+💧 مصرف آب
+</h1>
+
+<div id="userBox"></div>
+
+</header>
+
+
+
+<div class="container">
+
+
 <div class="card">
 
 
-<h2>💧 مصرف آب</h2>
-
-
-<input id="waterAmount" placeholder="مصرف آب">
+<h2>
+ثبت مصرف آب
+</h2>
 
 
 <input id="waterDate" type="date">
 
 
+<input id="waterAmount" placeholder="مقدار آب (لیتر)">
+
+
+<input id="waterBird" placeholder="تعداد پرنده">
+
+
 
 <button onclick="saveWater()">
 
-ثبت
+ثبت مصرف
 
 </button>
 
 
 </div>
+
+
+
+
+
+<div class="card">
+
+
+<h2>
+سوابق آب
+</h2>
+
+
+<div id="waterList"></div>
+
+
+</div>
+
+
+</div>
+
 
 
 
@@ -84,28 +91,111 @@
 function saveWater(){
 
 
-saveModule(
+let data={
+
+
+date:waterDate.value,
+
+
+amount:Number(waterAmount.value),
+
+
+birds:Number(waterBird.value),
+
+
+perBird:
+
+(Number(waterAmount.value)*1000)
+
+/
+
+Number(waterBird.value)
+
+
+};
+
+
+
+saveRecord(
 
 "water",
 
-{
-
-amount:waterAmount.value,
-
-date:waterDate.value
-
-}
+data
 
 );
 
 
-alert("ثبت شد");
+
+showWater();
 
 
 }
 
 
+
+
+
+
+
+function showWater(){
+
+
+let data=loadRecords("water");
+
+
+let html="";
+
+
+
+data.forEach(function(x){
+
+
+html+=`
+
+<div class="card">
+
+📅 ${x.date}
+
+<br>
+
+آب: ${x.amount} لیتر
+
+<br>
+
+مصرف سرانه:
+
+${x.perBird.toFixed(1)}
+
+میلی لیتر
+
+</div>
+
+`;
+
+
+
+});
+
+
+
+document.getElementById("waterList").innerHTML=html;
+
+
+}
+
+
+
+
+
+window.onload=function(){
+
+showWater();
+
+};
+
+
 </script>
+
 
 
 </body>
