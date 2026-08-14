@@ -1,3 +1,4 @@
+let message=document.getElementById("message");
 let weightChart;
 let cvChart;
 let weightTrendChart;
@@ -33,22 +34,46 @@ const rossCV=[
 
 function register(){
 
-
 let user=document.getElementById("username").value.trim();
 
 let pass=document.getElementById("password").value.trim();
 
 
-
 if(user==="" || pass===""){
 
-message.innerHTML="اطلاعات کامل نیست";
+message.innerHTML="نام کاربری و رمز را وارد کنید";
 
 return;
 
 }
 
 
+if(localStorage.getItem("user_"+user)){
+
+message.innerHTML="این کاربر قبلا ثبت شده";
+
+return;
+
+}
+
+
+localStorage.setItem(
+
+"user_"+user,
+
+JSON.stringify({
+
+password:pass
+
+})
+
+);
+
+
+message.innerHTML="ثبت نام موفق بود";
+
+
+}
 
 localStorage.setItem(
 
@@ -75,24 +100,18 @@ message.innerHTML="ثبت نام انجام شد";
 
 function login(){
 
-
 let user=document.getElementById("username").value.trim();
 
 let pass=document.getElementById("password").value.trim();
 
 
-
-let data=localStorage.getItem(
-
-"user_"+user
-
-);
+let data=localStorage.getItem("user_"+user);
 
 
 
 if(!data){
 
-message.innerHTML="کاربر وجود ندارد";
+message.innerHTML="کاربر پیدا نشد";
 
 return;
 
@@ -114,16 +133,15 @@ return;
 
 
 
-localStorage.setItem(
-
-"activeUser",
-
-user
-
-);
+localStorage.setItem("activeUser",user);
 
 
-window.location.href="index.html";
+window.location="index.html";
+
+
+}
+
+
 
 
 }
