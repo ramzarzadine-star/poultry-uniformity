@@ -273,4 +273,87 @@ beginAtZero:true
 
 
 }
-alert("آدینه فعال شد");
+function drawCV(value){
+
+
+if(cvChart){
+
+cvChart.destroy();
+
+}
+
+
+
+let ctx=document.getElementById("cvChart");
+
+
+if(!ctx){
+
+return;
+
+}
+
+
+
+cvChart=new Chart(ctx,{
+
+type:"line",
+
+data:{
+
+labels:["نتیجه فعلی"],
+
+
+datasets:[{
+
+label:"CV (%)",
+
+data:[Number(value.toFixed(2))],
+
+borderColor:"#006b3c",
+
+backgroundColor:"#006b3c",
+
+borderWidth:3,
+
+pointRadius:6,
+
+fill:false,
+
+tension:0.3
+
+}]
+
+},
+
+
+options:{
+
+responsive:true,
+
+
+scales:{
+
+y:{
+
+beginAtZero:true,
+
+title:{
+
+display:true,
+
+text:"درصد CV"
+
+}
+
+}
+
+}
+
+}
+
+
+});
+
+
+}
