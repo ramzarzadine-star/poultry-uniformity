@@ -1,92 +1,102 @@
-let message = document.getElementById("message");
+let message=document.getElementById("message");
 
 
 function register(){
 
-    let username = document.getElementById("username").value.trim();
-    let password = document.getElementById("password").value.trim();
+let username=document.getElementById("username").value.trim();
+let password=document.getElementById("password").value.trim();
 
 
-    if(username==="" || password===""){
+if(username==="" || password===""){
 
-        message.innerHTML="نام کاربری و رمز را وارد کنید";
-        return;
-
-    }
-
-
-    let user = {
-
-        username: username,
-        password: password
-
-    };
-
-
-    localStorage.setItem(
-
-        "user_"+username,
-
-        JSON.stringify(user)
-
-    );
-
-
-    message.innerHTML="ثبت نام موفق شد";
+message.innerHTML="نام کاربری و رمز را وارد کنید";
+return;
 
 }
+
+
+
+if(localStorage.getItem("user_"+username)){
+
+message.innerHTML="این کاربر قبلا ثبت شده";
+return;
+
+}
+
+
+
+localStorage.setItem(
+
+"user_"+username,
+
+JSON.stringify({
+
+password:password
+
+})
+
+);
+
+
+
+message.innerHTML="ثبت نام موفق شد";
+
+}
+
 
 
 
 
 function login(){
 
-    let username = document.getElementById("username").value.trim();
-    let password = document.getElementById("password").value.trim();
+
+let username=document.getElementById("username").value.trim();
+
+let password=document.getElementById("password").value.trim();
 
 
 
-    let data = localStorage.getItem(
+let data=localStorage.getItem(
 
-        "user_"+username
+"user_"+username
 
-    );
-
-
-
-    if(!data){
-
-        message.innerHTML="کاربر وجود ندارد";
-        return;
-
-    }
+);
 
 
 
-    let user = JSON.parse(data);
+if(!data){
+
+message.innerHTML="کاربر وجود ندارد";
+return;
+
+}
 
 
 
-    if(user.password !== password){
-
-        message.innerHTML="رمز اشتباه است";
-        return;
-
-    }
+let user=JSON.parse(data);
 
 
 
-    localStorage.setItem(
+if(user.password!==password){
 
-        "activeUser",
+message.innerHTML="رمز اشتباه است";
+return;
 
-        username
-
-    );
-
+}
 
 
-    window.location.href="panel.html";
+
+localStorage.setItem(
+
+"activeUser",
+
+username
+
+);
+
+
+
+window.location.href="panel.html";
 
 
 }
@@ -95,7 +105,9 @@ function login(){
 
 
 
+
 function guestLogin(){
+
 
 localStorage.setItem(
 
@@ -108,26 +120,5 @@ localStorage.setItem(
 
 window.location.href="panel.html";
 
-
-}
-function register(){
-
-alert("ثبت نام فعال شد");
-
-}
-
-
-
-function login(){
-
-alert("ورود فعال شد");
-
-}
-
-
-
-function guestLogin(){
-
-alert("مهمان فعال شد");
 
 }
