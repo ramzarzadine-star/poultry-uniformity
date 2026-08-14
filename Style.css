@@ -336,3 +336,50 @@ padding:15px;
 
 
 }
+.menu{
+
+display:flex;
+
+flex-wrap:wrap;
+
+gap:10px;
+
+justify-content:center;
+
+background:white;
+
+padding:15px;
+
+margin:15px;
+
+border-radius:15px;
+
+box-shadow:0 3px 10px #ddd;
+
+}
+
+
+
+.menu a{
+
+text-decoration:none;
+
+background:#006b3c;
+
+color:white;
+
+padding:12px 18px;
+
+border-radius:12px;
+
+font-size:15px;
+
+}
+
+
+
+.menu a:hover{
+
+background:#009879;
+
+}
