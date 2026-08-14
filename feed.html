@@ -1,41 +1,4 @@
 <!DOCTYPE html>
-
-<html lang="fa" dir="rtl">
-
-<head>
-
-<meta charset="UTF-8">
-
-<link rel="stylesheet" href="../Style.css">
-
-</head>
-
-
-<body>
-
-
-<div class="card">
-
-<h2>🌽 مصرف دان</h2>
-
-
-<input placeholder="مقدار دان روزانه">
-
-<input placeholder="مصرف سرانه">
-
-<button>
-ثبت
-</button>
-
-
-</div>
-
-
-</body>
-
-</html>
-<!DOCTYPE html>
-
 <html lang="fa" dir="rtl">
 
 <head>
@@ -44,30 +7,66 @@
 
 <link rel="stylesheet" href="Style.css">
 
+<title>
+مصرف دان
+</title>
+
 </head>
 
 
 <body>
 
 
+<header class="header">
+
+<h1>
+🌽 مصرف دان
+</h1>
+
+<div id="userBox"></div>
+
+</header>
+
+
+
+<div class="container">
+
+
 <div class="card">
-
-
-<h2>🌽 مصرف دان</h2>
-
-
-<input id="feedAmount" placeholder="مقدار دان">
 
 
 <input id="feedDate" type="date">
 
 
+<input id="feedAmount" placeholder="مقدار دان (کیلوگرم)">
+
+
+<input id="birdCount" placeholder="تعداد پرنده">
+
 
 <button onclick="saveFeed()">
 
-ثبت
+ثبت مصرف
 
 </button>
+
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>
+سوابق مصرف دان
+</h2>
+
+<div id="feedList"></div>
+
+
+</div>
+
 
 
 </div>
@@ -83,29 +82,100 @@
 function saveFeed(){
 
 
-saveModule(
+
+let data={
+
+
+date:feedDate.value,
+
+
+amount:Number(feedAmount.value),
+
+
+birds:Number(birdCount.value),
+
+
+perBird:(Number(feedAmount.value)*1000)/Number(birdCount.value)
+
+
+};
+
+
+
+saveRecord(
 
 "feed",
 
-{
-
-amount:feedAmount.value,
-
-date:feedDate.value
-
-}
+data
 
 );
 
 
-alert("ثبت شد");
+
+showFeed();
 
 
 }
 
 
 
+
+function showFeed(){
+
+
+let data=loadRecords("feed");
+
+
+let html="";
+
+
+
+data.forEach((x,i)=>{
+
+
+html+=`
+
+<p>
+
+📅 ${x.date}
+
+<br>
+
+دان: ${x.amount} کیلو
+
+<br>
+
+مصرف سرانه: ${x.perBird.toFixed(1)} گرم
+
+</p>
+
+<hr>
+
+
+`;
+
+
+});
+
+
+
+document.getElementById("feedList").innerHTML=html;
+
+
+}
+
+
+
+
+window.onload=function(){
+
+showFeed();
+
+};
+
+
 </script>
+
 
 
 </body>
