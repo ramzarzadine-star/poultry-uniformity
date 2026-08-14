@@ -122,3 +122,7 @@ window.location.href="panel.html";
 
 
 }
+localStorage.setItem(
+"activeUser",
+username
+);
