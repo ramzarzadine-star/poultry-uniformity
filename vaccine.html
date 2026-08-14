@@ -1,45 +1,4 @@
 <!DOCTYPE html>
-
-<html lang="fa" dir="rtl">
-
-<head>
-
-<meta charset="UTF-8">
-
-<link rel="stylesheet" href="../Style.css">
-
-</head>
-
-
-<body>
-
-
-<div class="card">
-
-
-<h2>💉 واکسیناسیون</h2>
-
-
-<input placeholder="نام واکسن">
-
-<input placeholder="تاریخ">
-
-<input placeholder="روش مصرف">
-
-
-<button>
-ثبت واکسن
-</button>
-
-
-</div>
-
-
-</body>
-
-</html>
-<!DOCTYPE html>
-
 <html lang="fa" dir="rtl">
 
 <head>
@@ -48,32 +7,77 @@
 
 <link rel="stylesheet" href="Style.css">
 
+<title>
+واکسیناسیون
+</title>
+
 </head>
 
 
 <body>
 
 
+<header class="header">
+
+<h1>
+💉 برنامه واکسیناسیون
+</h1>
+
+<div id="userBox"></div>
+
+</header>
+
+
+
+
+<div class="container">
+
+
 <div class="card">
-
-
-<h2>💉 واکسیناسیون</h2>
 
 
 <input id="vaccineName" placeholder="نام واکسن">
 
 
+<input id="vaccineAge" placeholder="سن مصرف">
+
+
 <input id="vaccineDate" type="date">
+
+
+<input id="vaccineMethod" placeholder="روش مصرف">
 
 
 <button onclick="saveVaccine()">
 
-ثبت
+ثبت واکسن
 
 </button>
 
 
 </div>
+
+
+
+
+
+<div class="card">
+
+
+<h2>
+سوابق واکسن
+</h2>
+
+
+<div id="vaccineList"></div>
+
+
+</div>
+
+
+</div>
+
+
 
 
 <script src="database.js"></script>
@@ -85,28 +89,108 @@
 function saveVaccine(){
 
 
-saveModule(
+let data={
 
-"vaccine",
-
-{
 
 name:vaccineName.value,
 
-date:vaccineDate.value
 
-}
+age:vaccineAge.value,
+
+
+date:vaccineDate.value,
+
+
+method:vaccineMethod.value
+
+
+};
+
+
+
+saveRecord(
+
+"vaccine",
+
+data
 
 );
 
 
-alert("ثبت شد");
+
+showVaccine();
 
 
 }
 
 
+
+
+
+
+function showVaccine(){
+
+
+let data=loadRecords("vaccine");
+
+
+let html="";
+
+
+
+data.forEach(function(x){
+
+
+html+=`
+
+<div class="card">
+
+
+💉 ${x.name}
+
+<br>
+
+سن: ${x.age}
+
+<br>
+
+تاریخ: ${x.date}
+
+<br>
+
+روش: ${x.method}
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+document.getElementById("vaccineList").innerHTML=html;
+
+
+}
+
+
+
+
+
+
+window.onload=function(){
+
+showVaccine();
+
+};
+
+
 </script>
+
 
 
 </body>
