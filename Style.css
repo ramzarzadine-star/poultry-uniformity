@@ -3,7 +3,24 @@
 box-sizing:border-box;
 
 font-family:tahoma;
+#userBox{
 
+margin-top:15px;
+
+font-size:18px;
+
+}
+
+
+.logout{
+
+background:#b30000;
+
+width:150px;
+
+margin-top:15px;
+
+}
 }
 
 
