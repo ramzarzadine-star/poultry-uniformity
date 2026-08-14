@@ -1,72 +1,17 @@
-
-<!DOCTYPE html>
-
-<html lang="fa" dir="rtl">
-
-<head>
-
-<meta charset="UTF-8">
-
-<link rel="stylesheet" href="../Style.css">
-
-<title>مدیریت گله</title>
-
-</head>
-
-
-<body>
-
-
-<header class="header">
-
-<h1>
-🐔 مدیریت گله طیور
-</h1>
-
-<h3>
-مرکز تخصصی سلامت طیور آدینه
-</h3>
-
-</header>
-
-
-
-<div class="container">
-
-
-<div class="card">
-
-<h2>
-اطلاعات گله
-</h2>
-
-
-<input placeholder="نام فارم">
-
-<input placeholder="نام سالن">
-
-<input placeholder="سن گله">
-
-
-</div>
-
-
-</div>
-
-
-</body>
-
-</html>
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 
 <head>
 
 <meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>
+مدیریت گله
+</title>
 
 <link rel="stylesheet" href="Style.css">
-
-<title>مدیریت گله</title>
 
 </head>
 
@@ -84,30 +29,79 @@
 
 
 
+
 <div class="container">
+
 
 <div class="card">
 
 
+<h2>
+ثبت اطلاعات گله
+</h2>
+
+
 <input id="farm" placeholder="نام فارم">
+
 
 <input id="hall" placeholder="نام سالن">
 
-<input id="age" placeholder="سن گله">
 
-<input id="count" placeholder="تعداد پرنده">
+<select id="type">
+
+<option>نوع گله</option>
+
+<option>گوشتی</option>
+
+<option>تخمگذار</option>
+
+<option>مادر</option>
+
+</select>
+
+
+
+<input id="age" placeholder="سن گله (روز)">
+
+
+<input id="count" placeholder="تعداد اولیه">
+
+
+<input id="startDate" type="date">
+
 
 
 <button onclick="saveFlock()">
 
-ذخیره
+ذخیره گله
 
 </button>
 
 
 </div>
 
+
+
+
+
+<div class="card">
+
+
+<h2>
+لیست گله ها
+</h2>
+
+
+<div id="list"></div>
+
+
 </div>
+
+
+
+</div>
+
+
 
 
 
@@ -120,25 +114,132 @@
 function saveFlock(){
 
 
+
 let data={
 
 
-farm:farm.value,
+farm:document.getElementById("farm").value,
 
-hall:hall.value,
 
-age:age.value,
+hall:document.getElementById("hall").value,
 
-count:count.value
+
+type:document.getElementById("type").value,
+
+
+age:document.getElementById("age").value,
+
+
+count:document.getElementById("count").value,
+
+
+date:document.getElementById("startDate").value
 
 
 };
 
 
-saveModule("flock",data);
 
 
-alert("ذخیره شد");
+saveRecord(
+
+"flock",
+
+data
+
+);
+
+
+
+showFlock();
+
+
+}
+
+
+
+
+function showFlock(){
+
+
+
+let data=loadRecords("flock");
+
+
+let html="";
+
+
+
+data.forEach(function(x,i){
+
+
+html+=`
+
+<div class="card">
+
+<strong>
+${x.farm}
+</strong>
+
+<br>
+
+سالن: ${x.hall}
+
+<br>
+
+نوع: ${x.type}
+
+<br>
+
+سن: ${x.age}
+
+روز
+
+<br>
+
+تعداد: ${x.count}
+
+<br>
+
+<button onclick="removeFlock(${i})">
+
+حذف
+
+</button>
+
+
+</div>
+
+`;
+
+
+
+});
+
+
+
+document.getElementById("list").innerHTML=html;
+
+
+}
+
+
+
+
+
+function removeFlock(i){
+
+
+deleteRecord(
+
+"flock",
+
+i
+
+);
+
+
+showFlock();
 
 
 }
@@ -148,29 +249,13 @@ alert("ذخیره شد");
 
 window.onload=function(){
 
+showFlock();
 
-let d=loadModule("flock");
-
-
-if(d){
-
-
-farm.value=d.farm;
-
-hall.value=d.hall;
-
-age.value=d.age;
-
-count.value=d.count;
-
-
-}
-
-
-}
+};
 
 
 </script>
+
 
 
 </body>
