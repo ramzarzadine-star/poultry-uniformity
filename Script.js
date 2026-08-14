@@ -133,11 +133,80 @@ document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
 
 drawUniformity(weights,mean);
 
+drawCV(cv);
+}
+
+
+function drawCV(value){
+
+
+if(cvChart){
+
+cvChart.destroy();
 
 }
 
 
 
+cvChart = new Chart(
+
+document.getElementById("cvChart"),
+
+{
+
+type:"line",
+
+data:{
+
+labels:["گله"],
+
+datasets:[{
+
+label:"CV (%)",
+
+data:[value],
+
+borderWidth:3,
+
+fill:false,
+
+tension:0.3
+
+}]
+
+},
+
+
+options:{
+
+responsive:true,
+
+scales:{
+
+y:{
+
+beginAtZero:true,
+
+title:{
+
+display:true,
+
+text:"درصد CV"
+
+}
+
+}
+
+}
+
+}
+
+}
+
+);
+
+
+}
 
 function drawUniformity(data,mean){
 
