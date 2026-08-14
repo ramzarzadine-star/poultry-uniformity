@@ -947,3 +947,48 @@ box.innerHTML="ورود مهمان";
 
 
 });
+  
+document.addEventListener("DOMContentLoaded", function(){
+
+
+let userBox=document.getElementById("userBox");
+
+
+let user=localStorage.getItem("activeUser");
+
+
+
+if(userBox){
+
+
+if(user && user!=="guest"){
+
+userBox.innerHTML="👤 کاربر فعال: "+user;
+
+}
+
+else{
+
+userBox.innerHTML="👤 ورود مهمان";
+
+}
+
+
+}
+
+
+
+});
+
+
+
+
+
+function logout(){
+
+localStorage.removeItem("activeUser");
+
+window.location.href="login.html";
+
+
+}
