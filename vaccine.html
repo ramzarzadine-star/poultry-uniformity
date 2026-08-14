@@ -38,3 +38,77 @@
 </body>
 
 </html>
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="Style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+
+<h2>💉 واکسیناسیون</h2>
+
+
+<input id="vaccineName" placeholder="نام واکسن">
+
+
+<input id="vaccineDate" type="date">
+
+
+<button onclick="saveVaccine()">
+
+ثبت
+
+</button>
+
+
+</div>
+
+
+<script src="database.js"></script>
+
+
+<script>
+
+
+function saveVaccine(){
+
+
+saveModule(
+
+"vaccine",
+
+{
+
+name:vaccineName.value,
+
+date:vaccineDate.value
+
+}
+
+);
+
+
+alert("ثبت شد");
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
