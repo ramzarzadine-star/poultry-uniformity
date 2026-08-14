@@ -84,7 +84,10 @@ return;
 
 }
 
+localStorage.setItem("activeUser", username);
 
+
+window.location.href="panel.html";
 
 localStorage.setItem(
 
@@ -122,7 +125,4 @@ window.location.href="panel.html";
 
 
 }
-localStorage.setItem(
-"activeUser",
-username
-);
+
