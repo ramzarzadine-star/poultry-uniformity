@@ -13,6 +13,26 @@
 
 <link rel="stylesheet" href="Style.css">
 
+<style>
+
+.login-logo {
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+</style>
+
 </head>
 
 
@@ -22,40 +42,59 @@
 <div class="login-box">
 
 
-<h1>
- آدینه
-</h1>
+<!-- لوگوی مرکز -->
+<div class="login-logo">
+    <img
+        src="IMG_4309.png"
+        alt="مرکز تخصصی سلامت طیور آدینه"
+    >
+</div>
 
 
 <h3>
 مرکز تخصصی سلامت طیور
 </h3>
 
+
 <div id="userBox"></div>
 
-<input id="username" placeholder="نام کاربری">
+
+<input
+    id="username"
+    placeholder="نام کاربری"
+>
 
 
-<input id="password" type="password" placeholder="رمز عبور">
+<input
+    id="password"
+    type="password"
+    placeholder="رمز عبور"
+>
 
 
-
-<button type="button" onclick="register()">
+<button
+    type="button"
+    onclick="register()"
+>
 ثبت نام
 </button>
 
 
-
-<button type="button" onclick="login()">
+<button
+    type="button"
+    onclick="login()"
+>
 ورود
 </button>
 
 
-
-<button type="button" class="guest" onclick="guestLogin()">
+<button
+    type="button"
+    class="guest"
+    onclick="guestLogin()"
+>
 ورود مهمان
 </button>
-
 
 
 <p id="message"></p>
@@ -64,15 +103,14 @@
 </div>
 
 
-
 <script src="login.js"></script>
 
-<script src="login.js"></script>
 
 <script>
 console.log("LOGIN JS LOAD");
 </script>
+
+
 </body>
 
 </html>
-
