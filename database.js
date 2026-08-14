@@ -1,10 +1,10 @@
-
 let activeUser = localStorage.getItem("activeUser") || "guest";
+
 
 
 function canSave(){
 
-return activeUser !== "guest";
+    return activeUser !== "guest";
 
 }
 
@@ -12,28 +12,9 @@ return activeUser !== "guest";
 
 
 
-function saveModule(module,data){
+function getKey(module){
 
-
-if(!canSave()){
-
-return;
-
-}
-
-
-
-let key="adineh_"+activeUser+"_"+module;
-
-
-localStorage.setItem(
-
-key,
-
-JSON.stringify(data)
-
-);
-
+    return "adineh_" + activeUser + "_" + module;
 
 }
 
@@ -41,33 +22,34 @@ JSON.stringify(data)
 
 
 
-function loadModule(module){
+function saveRecord(module,record){
 
 
-if(!canSave()){
+    if(!canSave()){
 
-return null;
+        alert("ورود مهمان امکان ذخیره ندارد");
 
-}
+        return;
 
-
-
-let key="adineh_"+activeUser+"_"+module;
-
-
-let data=localStorage.getItem(key);
+    }
 
 
 
-if(data){
-
-return JSON.parse(data);
-
-}
+    let oldData = loadRecords(module);
 
 
 
-return null;
+    oldData.push(record);
+
+
+
+    localStorage.setItem(
+
+        getKey(module),
+
+        JSON.stringify(oldData)
+
+    );
 
 
 }
@@ -76,20 +58,102 @@ return null;
 
 
 
-function showCurrentUser(){
 
 
-let box=document.getElementById("userBox");
+function loadRecords(module){
 
 
-if(box){
+    if(!canSave()){
 
-box.innerHTML="👤 کاربر: "+activeUser;
+        return [];
+
+    }
+
+
+
+    let data = localStorage.getItem(
+
+        getKey(module)
+
+    );
+
+
+
+    if(data){
+
+        return JSON.parse(data);
+
+    }
+
+
+
+    return [];
 
 }
 
 
+
+
+
+
+
+function deleteRecord(module,index){
+
+
+    let data=loadRecords(module);
+
+
+    data.splice(index,1);
+
+
+    localStorage.setItem(
+
+        getKey(module),
+
+        JSON.stringify(data)
+
+    );
+
+
 }
+
+
+
+
+
+
+
+
+function showUser(){
+
+
+    let box=document.getElementById("userBox");
+
+
+
+    if(box){
+
+
+        if(activeUser==="guest"){
+
+            box.innerHTML="👤 ورود مهمان";
+
+        }
+
+        else{
+
+            box.innerHTML="👤 کاربر: "+activeUser;
+
+        }
+
+
+    }
+
+
+}
+
+
+
 
 
 
@@ -97,6 +161,10 @@ document.addEventListener(
 
 "DOMContentLoaded",
 
-showCurrentUser
+function(){
+
+showUser();
+
+}
 
 );
