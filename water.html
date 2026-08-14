@@ -35,3 +35,79 @@
 </body>
 
 </html>
+<!DOCTYPE html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="Style.css">
+
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+
+<h2>💧 مصرف آب</h2>
+
+
+<input id="waterAmount" placeholder="مصرف آب">
+
+
+<input id="waterDate" type="date">
+
+
+
+<button onclick="saveWater()">
+
+ثبت
+
+</button>
+
+
+</div>
+
+
+
+<script src="database.js"></script>
+
+
+<script>
+
+
+function saveWater(){
+
+
+saveModule(
+
+"water",
+
+{
+
+amount:waterAmount.value,
+
+date:waterDate.value
+
+}
+
+);
+
+
+alert("ثبت شد");
+
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
