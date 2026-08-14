@@ -2,190 +2,434 @@
 <html lang="fa" dir="rtl">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0,
-                   maximum-scale=1.0, user-scalable=no">
 
-    <title>مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه</title>
+<meta charset="UTF-8">
 
-    <link rel="stylesheet" href="Style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>
+مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
+</title>
+
+<link rel="stylesheet" href="Style.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+
+<style>
+
+/* =========================================
+   هدر اصلی
+========================================= */
+
+.header {
+
+    position: relative;
+
+    text-align: center;
+
+    padding: 30px 20px 38px;
+
+    overflow: hidden;
+
+    background:
+        linear-gradient(
+            135deg,
+            #007a4b,
+            #008f68
+        );
+
+    border-radius: 0 0 45px 45px;
+
+}
+
+
+/* =========================================
+   تصویر محو IMG_4317
+========================================= */
+
+.header::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background-image:
+
+        linear-gradient(
+            rgba(0, 110, 70, 0.70),
+            rgba(0, 145, 105, 0.70)
+        ),
+
+        url("IMG_4317.jpeg");
+
+    background-size: cover;
+
+    background-position: center;
+
+    background-repeat: no-repeat;
+
+    opacity: 0.32;
+
+    z-index: 0;
+
+    transform: scale(1.04);
+
+}
+
+
+/* =========================================
+   محتوای هدر بالای تصویر
+========================================= */
+
+.header > * {
+
+    position: relative;
+
+    z-index: 2;
+
+}
+
+
+/* =========================================
+   لوگوی مرکز
+========================================= */
+
+.header-logo {
+
+    position: absolute;
+
+    top: 14px;
+
+    right: 16px;
+
+    width: 52px;
+
+    height: 52px;
+
+    object-fit: contain;
+
+    border-radius: 50%;
+
+    background: transparent;
+
+    mix-blend-mode: multiply;
+
+    opacity: 0.95;
+
+    z-index: 5;
+
+}
+
+
+/* =========================================
+   عنوان اصلی
+========================================= */
+
+.header h1 {
+
+    margin-top: 24px;
+
+    margin-bottom: 8px;
+
+    font-size: 30px;
+
+    font-weight: 800;
+
+}
+
+
+/* =========================================
+   نام مرکز
+========================================= */
+
+.header h3 {
+
+    margin-top: 5px;
+
+    font-size: 18px;
+
+    font-weight: 500;
+
+}
+
+
+/* =========================================
+   کاربر
+========================================= */
+
+#userBox {
+
+    margin-top: 14px;
+
+}
+
+
+/* =========================================
+   دکمه خروج
+========================================= */
+
+.logout {
+
+    margin-top: 15px;
+
+}
+
+
+/* =========================================
+   منوی برنامه
+========================================= */
+
+.menu {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 15px;
+
+}
+
+
+/* =========================================
+   کارت‌ها
+========================================= */
+
+.card {
+
+    margin-bottom: 20px;
+
+}
+
+
+/* =========================================
+   موبایل
+========================================= */
+
+@media (max-width: 600px) {
+
+    .header {
+
+        padding: 25px 15px 32px;
+
+        border-radius: 0 0 40px 40px;
+
+    }
+
+
+    .header-logo {
+
+        width: 45px;
+
+        height: 45px;
+
+        top: 12px;
+
+        right: 12px;
+
+    }
+
+
+    .header h1 {
+
+        font-size: 25px;
+
+        margin-top: 22px;
+
+    }
+
+
+    .header h3 {
+
+        font-size: 16px;
+
+    }
+
+}
+
+
+/* =========================================
+   آیفون کوچک
+========================================= */
+
+@media (max-width: 430px) {
+
+    .header-logo {
+
+        width: 42px;
+
+        height: 42px;
+
+        top: 11px;
+
+        right: 11px;
+
+    }
+
+
+    .header h1 {
+
+        font-size: 24px;
+
+    }
+
+
+    .header h3 {
+
+        font-size: 15px;
+
+    }
+
+}
+
+</style>
+
 </head>
+
 
 <body>
 
-<!-- ================= HEADER ================= -->
 
-<header class="main-header">
+<!-- =========================================
+     HEADER
+========================================= -->
 
-    <!-- لوگو -->
-    <div class="header-logo">
-        <img src="IMG_4309.png"
-             alt="مرکز تخصصی سلامت طیور آدینه">
-    </div>
-
-    <div class="header-content">
-
-        <h1>
-            🐔 مدیریت گله طیور
-        </h1>
-
-        <h3>
-            مرکز تخصصی سلامت طیور آدینه
-        </h3>
-
-    </div>
+<header class="header">
 
 
-    <!-- وضعیت کاربر -->
+    <!-- لوگوی مرکز -->
 
-    <div class="header-actions">
-
-        <div class="user-status">
-
-            <span class="user-icon">👤</span>
-
-            <div>
-                <small>کاربر فعال:</small>
-                <strong id="userBox">guest</strong>
-            </div>
-
-        </div>
+    <img
+        src="IMG_4309.png"
+        class="header-logo"
+        alt="مرکز تخصصی سلامت طیور آدینه"
+    >
 
 
-        <button
-            type="button"
-            onclick="logout()"
-            class="logout-button">
+    <h1>
+        🐔 مدیریت گله طیور
+    </h1>
 
-            خروج از حساب
 
-        </button>
+    <h3>
+        مرکز تخصصی سلامت طیور آدینه
+    </h3>
 
-    </div>
+
+    <div id="userBox"></div>
+
+
+    <button
+        onclick="logout()"
+        class="logout"
+    >
+        خروج از حساب
+    </button>
+
 
 </header>
 
 
 
-<!-- ================= MENU ================= -->
+<!-- =========================================
+     MENU
+========================================= -->
 
-<section class="dashboard-menu">
+<nav class="menu">
 
-    <a href="panel.html" class="menu-card">
 
-        <span class="menu-icon">🏠</span>
-
-        <span>داشبورد</span>
-
+    <a href="panel.html">
+        🏠 داشبورد
     </a>
 
 
-    <a href="flock.html" class="menu-card">
-
-        <span class="menu-icon">🐔</span>
-
-        <span>مدیریت گله</span>
-
+    <a href="flock.html">
+        🐔 مدیریت گله
     </a>
 
 
-    <a href="feed.html" class="menu-card">
-
-        <span class="menu-icon">🌽</span>
-
-        <span>مصرف دان</span>
-
+    <a href="feed.html">
+        🌽 مصرف دان
     </a>
 
 
-    <a href="water.html" class="menu-card">
-
-        <span class="menu-icon">💧</span>
-
-        <span>مصرف آب</span>
-
+    <a href="water.html">
+        💧 مصرف آب
     </a>
 
 
-    <a href="vaccine.html" class="menu-card">
-
-        <span class="menu-icon">💉</span>
-
-        <span>واکسیناسیون</span>
-
+    <a href="vaccine.html">
+        💉 واکسیناسیون
     </a>
 
 
-    <a href="medicine.html" class="menu-card">
-
-        <span class="menu-icon">💊</span>
-
-        <span>دارو</span>
-
+    <a href="medicine.html">
+        💊 دارو
     </a>
 
 
-    <a href="report.html" class="menu-card report-card">
-
-        <span class="menu-icon">📊</span>
-
-        <span>گزارشات</span>
-
+    <a href="report.html">
+        📊 گزارشات
     </a>
 
-</section>
+
+</nav>
 
 
 
-<!-- ================= FLOCK INFORMATION ================= -->
+<!-- =========================================
+     محتوای اصلی
+========================================= -->
 
-<main class="container">
+<div class="container">
 
-    <section class="card">
 
-        <div class="section-title">
 
-            <span>ℹ️</span>
+    <!-- اطلاعات گله -->
 
-            <h2>
-                اطلاعات گله
-            </h2>
+    <div class="card">
 
-        </div>
+        <h2>
+            اطلاعات گله
+        </h2>
 
 
         <div class="form-grid">
 
+
             <input
                 id="farm"
-                type="text"
-                placeholder="نام فارم / مرغدار">
+                placeholder="نام فارم / مرغدار"
+            >
 
 
             <input
                 id="hall"
-                type="text"
-                placeholder="نام سالن">
+                placeholder="نام سالن"
+            >
 
 
             <select id="type">
 
-                <option value="">
+                <option>
                     نوع گله
                 </option>
 
-                <option value="گوشتی">
+                <option>
                     گوشتی
                 </option>
 
-                <option value="تخمگذار">
+                <option>
                     تخمگذار
                 </option>
 
-                <option value="مادر">
+                <option>
                     مادر
                 </option>
 
@@ -194,235 +438,222 @@
 
             <input
                 id="age"
-                type="number"
-                inputmode="numeric"
-                placeholder="سن گله (روز)">
+                placeholder="سن گله (روز)"
+            >
 
 
             <input
                 id="countBird"
-                type="number"
-                inputmode="numeric"
-                placeholder="تعداد پرنده">
+                placeholder="تعداد پرنده"
+            >
 
 
             <input
                 id="date"
-                type="date">
+                type="date"
+            >
+
 
         </div>
 
-    </section>
+    </div>
 
 
 
-    <!-- ================= WEIGHT ================= -->
+    <!-- ورود وزن -->
 
-    <section class="card">
+    <div class="card">
 
-        <div class="section-title">
 
-            <span>⚖️</span>
-
-            <h2>
-                ورود وزن
-            </h2>
-
-        </div>
+        <h2>
+            ورود وزن
+        </h2>
 
 
         <textarea
             id="weightsInput"
-            placeholder="وزن‌ها را وارد کنید؛ مثال:
-1800
-1850
-1900
-1750
-1820"></textarea>
+            placeholder="وزن ها را وارد کنید"
+        ></textarea>
 
 
-        <button
-            type="button"
-            class="primary-button"
-            onclick="calculate()">
-
-            محاسبه یکنواختی
-
+        <button onclick="calculate()">
+            محاسبه
         </button>
 
-    </section>
+
+    </div>
 
 
 
-    <!-- ================= RESULTS ================= -->
+    <!-- نتایج -->
 
-    <section class="card">
+    <div class="card">
 
-        <div class="section-title">
 
-            <span>📋</span>
-
-            <h2>
-                نتایج
-            </h2>
-
-        </div>
+        <h2>
+            نتایج
+        </h2>
 
 
         <div class="results">
 
-            <div class="result-box">
 
-                <span>تعداد نمونه</span>
+            <div>
 
-                <strong id="sample">-</strong>
+                تعداد نمونه
 
-            </div>
-
-
-            <div class="result-box">
-
-                <span>میانگین وزن</span>
-
-                <strong id="mean">-</strong>
+                <strong id="sample">
+                    -
+                </strong>
 
             </div>
 
 
-            <div class="result-box">
+            <div>
 
-                <span>کمترین وزن</span>
+                میانگین وزن
 
-                <strong id="min">-</strong>
-
-            </div>
-
-
-            <div class="result-box">
-
-                <span>بیشترین وزن</span>
-
-                <strong id="max">-</strong>
+                <strong id="mean">
+                    -
+                </strong>
 
             </div>
 
 
-            <div class="result-box">
+            <div>
 
-                <span>SD</span>
+                کمترین وزن
 
-                <strong id="sd">-</strong>
-
-            </div>
-
-
-            <div class="result-box">
-
-                <span>CV</span>
-
-                <strong id="cv">-</strong>
+                <strong id="min">
+                    -
+                </strong>
 
             </div>
 
 
-            <div class="result-box">
+            <div>
 
-                <span>یکنواختی ±۱۰٪</span>
+                بیشترین وزن
 
-                <strong id="u10">-</strong>
+                <strong id="max">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                SD
+
+                <strong id="sd">
+                    -
+                </strong>
 
             </div>
 
 
-            <div class="result-box">
+            <div>
 
-                <span>یکنواختی ±۱۵٪</span>
+                CV
 
-                <strong id="u15">-</strong>
+                <strong id="cv">
+                    -
+                </strong>
 
             </div>
+
+
+            <div>
+
+                یکنواختی ۱۰٪
+
+                <strong id="u10">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                یکنواختی ۱۵٪
+
+                <strong id="u15">
+                    -
+                </strong>
+
+            </div>
+
 
         </div>
 
-    </section>
+
+    </div>
 
 
 
-    <!-- ================= CHART 1 ================= -->
+    <!-- نمودار وزن -->
 
-    <section class="card chart-card">
+    <div class="card">
 
-        <div class="section-title">
 
-            <span>📈</span>
+        <h2>
+            نمودار وزن
+        </h2>
 
-            <h2>
-                نمودار وزن
-            </h2>
 
-        </div>
+        <canvas id="weightChart"></canvas>
 
-        <div class="chart-container">
 
-            <canvas id="weightChart"></canvas>
-
-        </div>
-
-    </section>
+    </div>
 
 
 
-    <!-- ================= CHART 2 ================= -->
+    <!-- نمودار رشد -->
 
-    <section class="card chart-card">
+    <div class="card">
 
-        <div class="section-title">
 
-            <span>📈</span>
+        <h2>
+            رشد وزن Ross 308
+        </h2>
 
-            <h2>
-                رشد وزن Ross 308
-            </h2>
 
-        </div>
+        <canvas id="weightTrendChart"></canvas>
 
-        <div class="chart-container">
 
-            <canvas id="weightTrendChart"></canvas>
-
-        </div>
-
-    </section>
+    </div>
 
 
 
-    <!-- ================= CHART 3 ================= -->
+    <!-- نمودار CV -->
 
-    <section class="card chart-card">
-
-        <div class="section-title">
-
-            <span>📊</span>
-
-            <h2>
-                CV Ross 308
-            </h2>
-
-        </div>
-
-        <div class="chart-container">
-
-            <canvas id="cvChart"></canvas>
-
-        </div>
-
-    </section>
-
-</main>
+    <div class="card">
 
 
+        <h2>
+            CV Ross 308
+        </h2>
+
+
+        <canvas id="cvChart"></canvas>
+
+
+    </div>
+
+
+</div>
+
+
+
+<!-- =========================================
+     JavaScript
+========================================= -->
 
 <script src="Script.js"></script>
 
+
 </body>
+
 </html>
