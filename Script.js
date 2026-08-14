@@ -8,13 +8,96 @@ let weightHistory=[];
 let ageHistory=[];
 
 
+let currentFarm="";
+
+
 
 const rossAge=[7,14,21,28,35,42,49,56];
 
-const rossWeight=[190,490,900,1400,1950,2500,3050,3600];
+const rossWeight=[
+190,
+490,
+900,
+1400,
+1950,
+2500,
+3050,
+3600
+];
 
-const rossCV=[13,12,11,10,9,8,7,6];
 
+const rossCV=[
+13,
+12,
+11,
+10,
+9,
+8,
+7,
+6
+];
+
+
+
+
+
+
+function saveData(){
+
+
+let data={
+
+cvHistory,
+
+weightHistory,
+
+ageHistory
+
+};
+
+
+localStorage.setItem(
+
+"adineh_"+currentFarm,
+
+JSON.stringify(data)
+
+);
+
+
+}
+
+
+
+
+
+function loadData(){
+
+
+let data=localStorage.getItem(
+
+"adineh_"+currentFarm
+
+);
+
+
+
+if(data){
+
+
+let obj=JSON.parse(data);
+
+
+cvHistory=obj.cvHistory || [];
+
+weightHistory=obj.weightHistory || [];
+
+ageHistory=obj.ageHistory || [];
+
+
+}
+
+}
 
 
 
@@ -35,16 +118,25 @@ return "۰۱۲۳۴۵۶۷۸۹".indexOf(x);
 
 function parseWeights(text){
 
+
 text=persianNumber(text);
 
 
+
 return text
+
 .replace(/،/g,",")
+
 .split(/[\s,]+/)
+
 .map(Number)
+
 .filter(x=>Number.isFinite(x)&&x>0);
 
+
 }
+
+
 
 
 
@@ -59,7 +151,9 @@ return arr.reduce((a,b)=>a+b,0)/arr.length;
 
 
 
+
 function standard(arr,mean){
+
 
 let sum=0;
 
@@ -79,14 +173,16 @@ return Math.sqrt(sum/(arr.length-1));
 
 
 
+
 function uniformity(arr,mean,p){
 
-let min=mean*(1-p);
 
-let max=mean*(1+p);
+let low=mean*(1-p);
+
+let high=mean*(1+p);
 
 
-return arr.filter(x=>x>=min&&x<=max).length/arr.length*100;
+return arr.filter(x=>x>=low&&x<=high).length/arr.length*100;
 
 }
 
@@ -99,6 +195,24 @@ return arr.filter(x=>x>=min&&x<=max).length/arr.length*100;
 function calculate(){
 
 
+currentFarm=document.getElementById("farm").value.trim();
+
+
+
+if(currentFarm===""){
+
+alert("نام فارم را وارد کنید");
+
+return;
+
+}
+
+
+
+loadData();
+
+
+
 let weights=parseWeights(
 
 document.getElementById("weightsInput").value
@@ -109,7 +223,7 @@ document.getElementById("weightsInput").value
 
 if(weights.length<2){
 
-alert("وزن وارد کنید");
+alert("حداقل دو وزن وارد کنید");
 
 return;
 
@@ -117,16 +231,23 @@ return;
 
 
 
+
+
 let mean=average(weights);
 
+
 let sd=standard(weights,mean);
+
 
 let cv=(sd/mean)*100;
 
 
-let u10=uniformity(weights,mean,0.10);
+let u10=uniformity(weights,mean,.1);
 
-let u15=uniformity(weights,mean,0.15);
+
+let u15=uniformity(weights,mean,.15);
+
+
 
 
 
@@ -149,11 +270,16 @@ document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
 
 
 
+
+
 drawWeight(weights);
 
 
 
+
+
 let age=document.getElementById("age").value;
+
 
 
 if(age===""){
@@ -161,6 +287,9 @@ if(age===""){
 age=(ageHistory.length+1)*7;
 
 }
+
+
+
 
 
 cvHistory.push(Number(cv.toFixed(2)));
@@ -171,12 +300,19 @@ ageHistory.push(Number(age));
 
 
 
+
+
+saveData();
+
+
+
 drawCV();
 
 drawWeightTrend();
 
 
 }
+
 
 
 
@@ -276,6 +412,7 @@ tension:.3
 
 },
 
+
 {
 
 label:"استاندارد Ross 308",
@@ -292,6 +429,7 @@ tension:.3
 
 }
 
+
 ]
 
 }
@@ -302,6 +440,7 @@ tension:.3
 
 
 }
+
 
 
 
@@ -347,6 +486,7 @@ fill:false,
 tension:.3
 
 },
+
 
 {
 
