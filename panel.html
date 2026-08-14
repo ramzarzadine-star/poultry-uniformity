@@ -24,7 +24,16 @@
 
 <body>
 
+<div style="background:#eee;padding:10px;text-align:center;font-size:20px">
+<span id="userBox">در حال بررسی...</span>
+</div>
 
+<script>
+let u=localStorage.getItem("activeUser");
+
+document.getElementById("userBox").innerHTML =
+u ? "👤 کاربر فعال: "+u : "👤 بدون ورود";
+</script>
 
 <header class="header">
 
