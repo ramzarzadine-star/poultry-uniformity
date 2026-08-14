@@ -401,3 +401,71 @@ text:"درصد CV"
 
 
 }
+function drawWeightTrend(){
+
+
+if(weightTrendChart){
+
+weightTrendChart.destroy();
+
+}
+
+
+
+weightTrendChart=new Chart(
+
+document.getElementById("weightTrendChart"),
+
+{
+
+type:"line",
+
+data:{
+
+labels:ageHistory.map(x=>x+" روز"),
+
+datasets:[{
+
+label:"میانگین وزن",
+
+data:weightHistory,
+
+borderWidth:3,
+
+fill:false,
+
+tension:.3
+
+}]
+
+},
+
+
+options:{
+
+responsive:true,
+
+scales:{
+
+y:{
+
+title:{
+
+display:true,
+
+text:"وزن"
+
+}
+
+}
+
+}
+
+}
+
+}
+
+);
+
+
+}
