@@ -10,7 +10,9 @@
 فرم مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
 </title>
 
+
 <link rel="stylesheet" href="Style.css">
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
@@ -88,11 +90,8 @@
 
 
 <textarea id="weightsInput"
-placeholder="وزن ها را وارد کنید
-مثال:
-1850,1900,1950,2000
-یا
-۱۸۵۰،۱۹۰۰،۱۹۵۰"></textarea>
+placeholder="مثال:
+1850,1900,1950,2000"></textarea>
 
 
 <button onclick="calculate()">
@@ -118,59 +117,27 @@ placeholder="وزن ها را وارد کنید
 <div class="results">
 
 
-<div>
-تعداد نمونه
-<strong id="sample">-</strong>
-</div>
+<div>نمونه<strong id="sample">-</strong></div>
 
+<div>میانگین وزن<strong id="mean">-</strong></div>
 
-<div>
-میانگین وزن
-<strong id="mean">-</strong>
-</div>
+<div>کمترین وزن<strong id="min">-</strong></div>
 
+<div>بیشترین وزن<strong id="max">-</strong></div>
 
-<div>
-کمترین وزن
-<strong id="min">-</strong>
-</div>
+<div>SD<strong id="sd">-</strong></div>
 
+<div>CV<strong id="cv">-</strong></div>
 
-<div>
-بیشترین وزن
-<strong id="max">-</strong>
-</div>
+<div>یکنواختی ۱۰٪<strong id="u10">-</strong></div>
 
-
-<div>
-SD
-<strong id="sd">-</strong>
-</div>
-
-
-<div>
-CV
-<strong id="cv">-</strong>
-</div>
-
-
-<div>
-یکنواختی ±10%
-<strong id="u10">-</strong>
-</div>
-
-
-<div>
-یکنواختی ±15%
-<strong id="u15">-</strong>
-</div>
+<div>یکنواختی ۱۵٪<strong id="u15">-</strong></div>
 
 
 </div>
 
 
 </div>
-
 
 
 
@@ -179,7 +146,7 @@ CV
 <div class="card">
 
 <h2>
-نمودار توزیع وزن جوجه
+توزیع وزن گله
 </h2>
 
 <canvas id="weightChart"></canvas>
@@ -194,18 +161,7 @@ CV
 <div class="card">
 
 <h2>
-روند CV گله بر اساس سن
-</h2>
-
-<canvas id="cvChart"></canvas>
-
-</div>
-
-
-<div class="card">
-
-<h2>
-روند میانگین وزن گله
+رشد وزن گله در مقایسه با Ross 308
 </h2>
 
 <canvas id="weightTrendChart"></canvas>
@@ -217,12 +173,25 @@ CV
 
 
 
+<div class="card">
+
+<h2>
+CV گله در مقایسه با Ross 308
+</h2>
+
+<canvas id="cvChart"></canvas>
+
 </div>
 
 
 
 
-<script src="./Script.js"></script>
+</div>
+
+
+
+
+<script src="Script.js"></script>
 
 
 </body>
