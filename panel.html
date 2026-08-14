@@ -6,7 +6,8 @@
 <meta charset="UTF-8">
 
 <meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+      content="width=device-width, initial-scale=1.0,
+               maximum-scale=1.0, user-scalable=no">
 
 <title>
 مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
@@ -19,119 +20,907 @@
 
 <style>
 
-/* ==============================
-   هدر اصلی برنامه
-   ============================== */
+/* =====================================================
+   تنظیمات اصلی
+   ===================================================== */
 
-.header {
-    position: relative;
-    text-align: center;
-    padding: 15px 15px 18px;
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    background:
+        linear-gradient(180deg, #f1f6f4 0%, #f7f9f8 100%);
+
+    color: #123b2a;
+
+    font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    overflow-x: hidden;
 }
 
 
-/* لوگوی مرکز */
+/* =====================================================
+   هدر حرفه ای
+   ===================================================== */
+
+.header {
+
+    position: relative;
+
+    width: 100%;
+
+    min-height: 285px;
+
+    padding:
+        25px
+        20px
+        30px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #006b43 0%,
+            #00895b 48%,
+            #009b70 100%
+        );
+
+    border-radius:
+        0
+        0
+        42px
+        42px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.12);
+
+}
+
+
+/* افکت پس زمینه هدر */
+
+.header::before {
+
+    content: "";
+
+    position: absolute;
+
+    width: 280px;
+    height: 280px;
+
+    left: -100px;
+    top: -120px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,255,255,0.12),
+            transparent 70%
+        );
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   لوگو
+   ===================================================== */
 
 .app-logo {
-    width: 72px;
-    height: 72px;
+
+    position: absolute;
+
+    top: 22px;
+    left: 20px;
+
+    width: 82px;
+    height: 82px;
 
     object-fit: contain;
 
     display: block;
 
-    margin: 0 auto 8px;
+    /*
+       باعث می شود سفیدی تصویر لوگو
+       کمتر به شکل مربع دیده شود
+    */
+
+    mix-blend-mode: multiply;
+
+    filter:
+        contrast(1.05);
+
+    z-index: 3;
+
 }
 
 
-/* عنوان اصلی */
+/* =====================================================
+   عنوان هدر
+   ===================================================== */
+
+.header-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    max-width: 700px;
+
+    margin-right: 0;
+
+    padding-top: 18px;
+
+}
+
 
 .header h1 {
-    margin: 4px 0 5px;
 
-    font-size: 21px;
+    margin:
+        5px
+        0
+        8px;
+
+    font-size: 28px;
 
     line-height: 1.5;
+
+    font-weight: 800;
+
+    color: #ffffff;
+
 }
 
-
-/* نام مرکز */
 
 .header h3 {
-    margin: 0 0 10px;
 
-    font-size: 14px;
+    margin:
+        0
+        0
+        20px;
 
-    line-height: 1.6;
-}
+    font-size: 16px;
 
+    font-weight: 500;
 
-/* اطلاعات کاربر */
+    line-height: 1.8;
 
-#userBox {
-    margin: 5px 0;
-}
-
-
-/* دکمه خروج */
-
-.logout {
-    margin-top: 8px;
-}
-
-
-/* ==============================
-   موبایل
-   ============================== */
-
-@media (max-width: 600px) {
-
-    .app-logo {
-        width: 68px;
-        height: 68px;
-    }
-
-    .header h1 {
-        font-size: 19px;
-    }
-
-    .header h3 {
-        font-size: 13px;
-    }
+    color:
+        rgba(255,255,255,0.92);
 
 }
 
 
-/* ==============================
-   منوی برنامه
-   ============================== */
+/* =====================================================
+   اطلاعات کاربر و خروج
+   ===================================================== */
 
-.menu {
+.user-actions {
+
     display: flex;
-
-    flex-wrap: wrap;
-
-    justify-content: center;
 
     align-items: center;
 
-    gap: 8px;
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin-top: 18px;
+
 }
 
 
-/* لینک‌های منو */
+.user-info {
+
+    background:
+        rgba(255,255,255,0.15);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.15);
+
+    border-radius: 18px;
+
+    padding:
+        11px
+        18px;
+
+    color: white;
+
+    font-size: 14px;
+
+    backdrop-filter: blur(8px);
+
+}
+
+
+.logout {
+
+    border: none;
+
+    border-radius: 18px;
+
+    padding:
+        13px
+        20px;
+
+    background:
+        #c9002b;
+
+    color: white;
+
+    font-size: 14px;
+
+    font-family: inherit;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,0.12);
+
+}
+
+
+.logout:active {
+
+    transform: scale(0.97);
+
+}
+
+
+/* =====================================================
+   منوی اصلی
+   ===================================================== */
+
+.menu {
+
+    position: relative;
+
+    z-index: 5;
+
+    width:
+        calc(100% - 30px);
+
+    max-width: 850px;
+
+    margin:
+        -25px
+        auto
+        25px;
+
+    padding:
+        20px;
+
+    background:
+        rgba(255,255,255,0.97);
+
+    border-radius: 28px;
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,0.10);
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 12px;
+
+}
+
+
+/* لینک های منو */
 
 .menu a {
+
+    min-height: 78px;
+
+    padding:
+        14px
+        12px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
     text-decoration: none;
+
+    color:
+        #006b43;
+
+    background:
+        #ffffff;
+
+    border:
+        1px solid
+        #e7eeeb;
+
+    border-radius: 20px;
+
+    font-size: 17px;
+
+    font-weight: 700;
+
+    box-shadow:
+        0 4px 12px rgba(0,0,0,0.04);
+
+    transition:
+        0.2s ease;
+
 }
 
 
-/* ==============================
-   نمودارها
-   ============================== */
+.menu a:active {
 
-canvas {
-    max-width: 100%;
+    transform: scale(0.97);
+
+    background:
+        #eef8f3;
+
+}
+
+
+/* =====================================================
+   محتوای اصلی
+   ===================================================== */
+
+.container {
+
+    width:
+        calc(100% - 30px);
+
+    max-width:
+        900px;
+
+    margin:
+        0
+        auto
+        40px;
+
+}
+
+
+/* =====================================================
+   کارت
+   ===================================================== */
+
+.card {
+
+    background:
+        #ffffff;
+
+    border-radius:
+        28px;
+
+    padding:
+        24px;
+
+    margin-bottom:
+        22px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(0,0,0,0.07);
+
+}
+
+
+.card h2 {
+
+    margin:
+        0
+        0
+        20px;
+
+    color:
+        #007548;
+
+    font-size:
+        23px;
+
+    font-weight:
+        800;
+
+    border-bottom:
+        2px solid
+        #edf1ef;
+
+    padding-bottom:
+        14px;
+
+}
+
+
+/* =====================================================
+   فرم اطلاعات گله
+   ===================================================== */
+
+.form-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        14px;
+
+}
+
+
+.form-grid input,
+.form-grid select {
+
+    width:
+        100%;
+
+    height:
+        58px;
+
+    padding:
+        0
+        18px;
+
+    border:
+        1.5px solid
+        #d5d9d7;
+
+    border-radius:
+        17px;
+
+    background:
+        #ffffff;
+
+    color:
+        #333;
+
+    font-size:
+        15px;
+
+    font-family:
+        inherit;
+
+    outline:
+        none;
+
+}
+
+
+.form-grid input:focus,
+.form-grid select:focus {
+
+    border-color:
+        #008052;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(0,128,82,0.08);
+
+}
+
+
+/* =====================================================
+   ورود وزن
+   ===================================================== */
+
+#weightsInput {
+
+    width:
+        100%;
+
+    min-height:
+        150px;
+
+    padding:
+        18px;
+
+    resize:
+        vertical;
+
+    border:
+        1.5px solid
+        #d5d9d7;
+
+    border-radius:
+        18px;
+
+    font-family:
+        inherit;
+
+    font-size:
+        16px;
+
+    outline:
+        none;
+
+}
+
+
+#weightsInput:focus {
+
+    border-color:
+        #008052;
+
+}
+
+
+/* =====================================================
+   دکمه محاسبه
+   ===================================================== */
+
+.card button {
+
+    width:
+        100%;
+
+    min-height:
+        56px;
+
+    margin-top:
+        14px;
+
+    border:
+        none;
+
+    border-radius:
+        17px;
+
+    background:
+        #007a49;
+
+    color:
+        white;
+
+    font-size:
+        17px;
+
+    font-weight:
+        700;
+
+    font-family:
+        inherit;
+
+    cursor:
+        pointer;
+
+}
+
+
+.card button:active {
+
+    transform:
+        scale(0.98);
+
+}
+
+
+/* =====================================================
+   نتایج
+   ===================================================== */
+
+.results {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        12px;
+
+}
+
+
+.results > div {
+
+    min-height:
+        82px;
+
+    padding:
+        15px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
+
+    gap:
+        6px;
+
+    background:
+        #f5f9f7;
+
+    border-radius:
+        18px;
+
+    color:
+        #52645b;
+
+    font-size:
+        13px;
+
+}
+
+
+.results strong {
+
+    font-size:
+        21px;
+
+    color:
+        #007548;
+
+}
+
+
+/* =====================================================
+   نمودار
+   ===================================================== */
+
+.card canvas {
+
+    width:
+        100% !important;
+
+    max-width:
+        100%;
+
+}
+
+
+/* =====================================================
+   موبایل آیفون
+   ===================================================== */
+
+@media (max-width: 600px) {
+
+
+    .header {
+
+        min-height:
+            300px;
+
+        padding:
+            22px
+            18px
+            28px;
+
+        border-radius:
+            0
+            0
+            38px
+            38px;
+
+    }
+
+
+    .app-logo {
+
+        width:
+            70px;
+
+        height:
+            70px;
+
+        top:
+            18px;
+
+        left:
+            17px;
+
+    }
+
+
+    .header-content {
+
+        padding-top:
+            70px;
+
+        text-align:
+            center;
+
+    }
+
+
+    .header h1 {
+
+        font-size:
+            25px;
+
+        margin-bottom:
+            6px;
+
+    }
+
+
+    .header h3 {
+
+        font-size:
+            14px;
+
+        margin-bottom:
+            18px;
+
+    }
+
+
+    .user-actions {
+
+        flex-direction:
+            row;
+
+        align-items:
+            stretch;
+
+    }
+
+
+    .user-info {
+
+        flex:
+            1;
+
+        text-align:
+            center;
+
+        padding:
+            12px
+            8px;
+
+    }
+
+
+    .logout {
+
+        flex:
+            0 0 auto;
+
+        padding:
+            12px
+            15px;
+
+    }
+
+
+    .menu {
+
+        width:
+            calc(100% - 28px);
+
+        margin:
+            -18px
+            auto
+            22px;
+
+        padding:
+            15px;
+
+        border-radius:
+            25px;
+
+        gap:
+            10px;
+
+    }
+
+
+    .menu a {
+
+        min-height:
+            78px;
+
+        font-size:
+            16px;
+
+        border-radius:
+            18px;
+
+    }
+
+
+    .container {
+
+        width:
+            calc(100% - 28px);
+
+    }
+
+
+    .card {
+
+        padding:
+            20px;
+
+        border-radius:
+            24px;
+
+    }
+
+
+    .card h2 {
+
+        font-size:
+            21px;
+
+    }
+
+
+    .form-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .results {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+
+}
+
+
+/* =====================================================
+   موبایل خیلی کوچک
+   ===================================================== */
+
+@media (max-width: 380px) {
+
+
+    .header h1 {
+
+        font-size:
+            22px;
+
+    }
+
+
+    .menu a {
+
+        font-size:
+            14px;
+
+        min-height:
+            70px;
+
+    }
+
+
+    .results strong {
+
+        font-size:
+            18px;
+
+    }
+
 }
 
 </style>
@@ -142,14 +931,14 @@ canvas {
 <body>
 
 
-<!-- ==============================
-     هدر برنامه
-     ============================== -->
+<!-- =====================================================
+     هدر
+     ===================================================== -->
 
 <header class="header">
 
 
-    <!-- لوگوی مرکز -->
+    <!-- لوگو -->
 
     <img
         src="IMG_4309.png"
@@ -158,43 +947,56 @@ canvas {
     >
 
 
-    <!-- عنوان برنامه -->
-
-    <h1>
-        🐔 مدیریت گله طیور
-    </h1>
+    <div class="header-content">
 
 
-    <!-- نام مرکز -->
-
-    <h3>
-        مرکز تخصصی سلامت طیور آدینه
-    </h3>
+        <h1>
+            🐔 مدیریت گله طیور
+        </h1>
 
 
-    <!-- کاربر -->
+        <h3>
+            مرکز تخصصی سلامت طیور آدینه
+        </h3>
 
-    <div id="userBox"></div>
+
+        <div class="user-actions">
 
 
-    <!-- خروج -->
+            <div class="user-info">
 
-    <button
-        onclick="logout()"
-        class="logout"
-        type="button"
-    >
-        خروج از حساب
-    </button>
+                👤 کاربر فعال:
+                <strong id="userBox">
+                    مهمان
+                </strong>
+
+            </div>
+
+
+            <button
+                onclick="logout()"
+                class="logout"
+                type="button"
+            >
+
+                خروج از حساب
+
+            </button>
+
+
+        </div>
+
+
+    </div>
 
 
 </header>
 
 
 
-<!-- ==============================
+<!-- =====================================================
      منوی اصلی
-     ============================== -->
+     ===================================================== -->
 
 <nav class="menu">
 
@@ -238,20 +1040,18 @@ canvas {
 
 
 
-<!-- ==============================
-     محتوای اصلی
-     ============================== -->
+<!-- =====================================================
+     اطلاعات گله
+     ===================================================== -->
 
 <div class="container">
 
-
-    <!-- اطلاعات گله -->
 
     <div class="card">
 
 
         <h2>
-            اطلاعات گله
+            ℹ️ اطلاعات گله
         </h2>
 
 
@@ -260,12 +1060,14 @@ canvas {
 
             <input
                 id="farm"
+                type="text"
                 placeholder="نام فارم / مرغدار"
             >
 
 
             <input
                 id="hall"
+                type="text"
                 placeholder="نام سالن"
             >
 
@@ -293,12 +1095,14 @@ canvas {
 
             <input
                 id="age"
+                type="number"
                 placeholder="سن گله (روز)"
             >
 
 
             <input
                 id="countBird"
+                type="number"
                 placeholder="تعداد پرنده"
             >
 
@@ -311,23 +1115,26 @@ canvas {
 
         </div>
 
+
     </div>
 
 
 
-    <!-- ورود وزن -->
+    <!-- =================================================
+         ورود وزن
+         ================================================= -->
 
     <div class="card">
 
 
         <h2>
-            ورود وزن
+            ⚖️ ورود وزن
         </h2>
 
 
         <textarea
             id="weightsInput"
-            placeholder="وزن ها را وارد کنید"
+            placeholder="وزن‌ها را وارد کنید؛ مثال: 1850، 1920، 1780، 2010"
         ></textarea>
 
 
@@ -335,7 +1142,9 @@ canvas {
             type="button"
             onclick="calculate()"
         >
-            محاسبه
+
+            محاسبه یکنواختی و CV
+
         </button>
 
 
@@ -343,13 +1152,15 @@ canvas {
 
 
 
-    <!-- نتایج -->
+    <!-- =================================================
+         نتایج
+         ================================================= -->
 
     <div class="card">
 
 
         <h2>
-            نتایج
+            📊 نتایج
         </h2>
 
 
@@ -446,17 +1257,20 @@ canvas {
 
         </div>
 
+
     </div>
 
 
 
-    <!-- نمودار وزن -->
+    <!-- =================================================
+         نمودار وزن
+         ================================================= -->
 
     <div class="card">
 
 
         <h2>
-            نمودار وزن
+            📈 نمودار وزن
         </h2>
 
 
@@ -467,13 +1281,15 @@ canvas {
 
 
 
-    <!-- نمودار رشد -->
+    <!-- =================================================
+         رشد Ross 308
+         ================================================= -->
 
     <div class="card">
 
 
         <h2>
-            رشد وزن Ross 308
+            📈 رشد وزن Ross 308
         </h2>
 
 
@@ -484,13 +1300,15 @@ canvas {
 
 
 
-    <!-- نمودار CV -->
+    <!-- =================================================
+         CV Ross 308
+         ================================================= -->
 
     <div class="card">
 
 
         <h2>
-            CV Ross 308
+            📉 CV Ross 308
         </h2>
 
 
@@ -504,9 +1322,9 @@ canvas {
 
 
 
-<!-- ==============================
-     JavaScript اصلی برنامه
-     ============================== -->
+<!-- =====================================================
+     JavaScript
+     ===================================================== -->
 
 <script src="Script.js"></script>
 
