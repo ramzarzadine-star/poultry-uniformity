@@ -3,49 +3,200 @@ let cvChart;
 let weightTrendChart;
 
 
+let currentUser="";
+let guest=false;
+
+
 let cvHistory=[];
 let weightHistory=[];
 let ageHistory=[];
 
 
-let currentFarm="";
 
+const rossAge=[
+7,14,21,28,35,42,49,56
+];
 
-
-const rossAge=[7,14,21,28,35,42,49,56];
 
 const rossWeight=[
-190,
-490,
-900,
-1400,
-1950,
-2500,
-3050,
-3600
+190,490,900,1400,1950,2500,3050,3600
 ];
 
 
 const rossCV=[
-13,
-12,
-11,
-10,
-9,
-8,
-7,
-6
+13,12,11,10,9,8,7,6
 ];
 
 
 
 
 
+function register(){
 
-function saveData(){
+
+let user=document.getElementById("username").value.trim();
+
+let pass=document.getElementById("password").value.trim();
+
+
+
+if(user==="" || pass===""){
+
+message.innerHTML="اطلاعات کامل نیست";
+
+return;
+
+}
+
+
+
+localStorage.setItem(
+
+"user_"+user,
+
+JSON.stringify({
+
+password:pass
+
+})
+
+);
+
+
+message.innerHTML="ثبت نام انجام شد";
+
+
+}
+
+
+
+
+
+
+function login(){
+
+
+let user=document.getElementById("username").value.trim();
+
+let pass=document.getElementById("password").value.trim();
+
+
+
+let data=localStorage.getItem(
+
+"user_"+user
+
+);
+
+
+
+if(!data){
+
+message.innerHTML="کاربر وجود ندارد";
+
+return;
+
+}
+
+
+
+let obj=JSON.parse(data);
+
+
+
+if(obj.password!==pass){
+
+message.innerHTML="رمز اشتباه است";
+
+return;
+
+}
+
+
+
+localStorage.setItem(
+
+"activeUser",
+
+user
+
+);
+
+
+window.location.href="index.html";
+
+
+}
+
+
+
+
+
+
+
+function guestLogin(){
+
+localStorage.setItem(
+
+"activeUser",
+
+"guest"
+
+);
+
+
+window.location.href="index.html";
+
+
+}
+
+
+
+
+
+
+
+function getUser(){
+
+
+let u=localStorage.getItem("activeUser");
+
+
+if(!u){
+
+return "guest";
+
+}
+
+
+return u;
+
+
+}
+
+
+
+
+
+
+
+
+
+function saveFarmData(){
+
+
+if(guest){
+
+return;
+
+}
+
+
+let farm=document.getElementById("farm").value.trim();
 
 
 let data={
+
 
 cvHistory,
 
@@ -56,9 +207,10 @@ ageHistory
 };
 
 
+
 localStorage.setItem(
 
-"adineh_"+currentFarm,
+getUser()+"_"+farm,
 
 JSON.stringify(data)
 
@@ -71,12 +223,26 @@ JSON.stringify(data)
 
 
 
-function loadData(){
+
+
+
+function loadFarmData(){
+
+
+if(guest){
+
+return;
+
+}
+
+
+
+let farm=document.getElementById("farm").value.trim();
 
 
 let data=localStorage.getItem(
 
-"adineh_"+currentFarm
+getUser()+"_"+farm
 
 );
 
@@ -102,7 +268,13 @@ ageHistory=obj.ageHistory || [];
 
 
 
+
+
+
+
+
 function persianNumber(str){
+
 
 return str.replace(/[۰-۹]/g,function(x){
 
@@ -111,6 +283,9 @@ return "۰۱۲۳۴۵۶۷۸۹".indexOf(x);
 });
 
 }
+
+
+
 
 
 
@@ -142,11 +317,16 @@ return text
 
 
 
+
+
 function average(arr){
 
 return arr.reduce((a,b)=>a+b,0)/arr.length;
 
 }
+
+
+
 
 
 
@@ -167,7 +347,10 @@ sum+=Math.pow(x-mean,2);
 
 return Math.sqrt(sum/(arr.length-1));
 
+
 }
+
+
 
 
 
@@ -177,14 +360,17 @@ return Math.sqrt(sum/(arr.length-1));
 function uniformity(arr,mean,p){
 
 
-let low=mean*(1-p);
+let min=mean*(1-p);
 
-let high=mean*(1+p);
+let max=mean*(1+p);
 
 
-return arr.filter(x=>x>=low&&x<=high).length/arr.length*100;
+return arr.filter(x=>x>=min&&x<=max).length/arr.length*100;
+
 
 }
+
+
 
 
 
@@ -195,11 +381,10 @@ return arr.filter(x=>x>=low&&x<=high).length/arr.length*100;
 function calculate(){
 
 
-currentFarm=document.getElementById("farm").value.trim();
+let farm=document.getElementById("farm").value.trim();
 
 
-
-if(currentFarm===""){
+if(farm===""){
 
 alert("نام فارم را وارد کنید");
 
@@ -209,7 +394,7 @@ return;
 
 
 
-loadData();
+loadFarmData();
 
 
 
@@ -232,7 +417,6 @@ return;
 
 
 
-
 let mean=average(weights);
 
 
@@ -242,8 +426,8 @@ let sd=standard(weights,mean);
 let cv=(sd/mean)*100;
 
 
-let u10=uniformity(weights,mean,.1);
 
+let u10=uniformity(weights,mean,.1);
 
 let u15=uniformity(weights,mean,.15);
 
@@ -251,35 +435,28 @@ let u15=uniformity(weights,mean,.15);
 
 
 
+sample.innerHTML=weights.length;
 
-document.getElementById("sample").innerHTML=weights.length;
+mean.innerHTML=mean.toFixed(1);
 
-document.getElementById("mean").innerHTML=mean.toFixed(1);
+min.innerHTML=Math.min(...weights);
 
-document.getElementById("min").innerHTML=Math.min(...weights);
+max.innerHTML=Math.max(...weights);
 
-document.getElementById("max").innerHTML=Math.max(...weights);
+sd.innerHTML=sd.toFixed(1);
 
-document.getElementById("sd").innerHTML=sd.toFixed(1);
+cv.innerHTML=cv.toFixed(2)+"%";
 
-document.getElementById("cv").innerHTML=cv.toFixed(2)+"%";
+u10.innerHTML=u10.toFixed(1)+"%";
 
-document.getElementById("u10").innerHTML=u10.toFixed(1)+"%";
+u15.innerHTML=u15.toFixed(1)+"%";
 
-document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
-
-
-
-
-
-drawWeight(weights);
 
 
 
 
 
 let age=document.getElementById("age").value;
-
 
 
 if(age===""){
@@ -302,9 +479,11 @@ ageHistory.push(Number(age));
 
 
 
-saveData();
+saveFarmData();
 
 
+
+drawWeight(weights);
 
 drawCV();
 
@@ -320,7 +499,10 @@ drawWeightTrend();
 
 
 
+
+
 function drawWeight(data){
+
 
 
 if(weightChart){
@@ -341,7 +523,9 @@ type:"line",
 
 data:{
 
+
 labels:data.map((x,i)=>"نمونه "+(i+1)),
+
 
 datasets:[{
 
@@ -373,6 +557,7 @@ tension:.3
 
 
 
+
 function drawWeightTrend(){
 
 
@@ -381,6 +566,7 @@ if(weightTrendChart){
 weightTrendChart.destroy();
 
 }
+
 
 
 
@@ -394,9 +580,12 @@ type:"line",
 
 data:{
 
+
 labels:rossAge.map(x=>x+" روز"),
 
+
 datasets:[
+
 
 {
 
@@ -411,6 +600,7 @@ fill:false,
 tension:.3
 
 },
+
 
 
 {
@@ -430,6 +620,7 @@ tension:.3
 }
 
 
+
 ]
 
 }
@@ -440,6 +631,7 @@ tension:.3
 
 
 }
+
 
 
 
@@ -469,9 +661,13 @@ type:"line",
 
 data:{
 
+
 labels:rossAge.map(x=>x+" روز"),
 
+
+
 datasets:[
+
 
 {
 
@@ -504,6 +700,7 @@ tension:.3
 
 }
 
+
 ]
 
 }
@@ -514,4 +711,38 @@ tension:.3
 
 
 }
+
+
+
+
+
+
+
+window.onload=function(){
+
+
+let user=getUser();
+
+
+if(document.getElementById("userBox")){
+
+
+if(user==="guest"){
+
+userBox.innerHTML="ورود مهمان (بدون ذخیره اطلاعات)";
+
+}
+
+else{
+
+userBox.innerHTML="کاربر: "+user;
+
+}
+
+
+}
+
+
+
+};
 alert("مرکز تخصصی طیور دکتر آدینه");
