@@ -3,9 +3,11 @@ let cvChart;
 let weightTrendChart;
 
 
-let cvHistory=[];
-let weightHistory=[];
-let ageHistory=[];
+let cvHistory = [];
+let weightHistory = [];
+let ageHistory = [];
+
+
 
 
 
@@ -26,7 +28,7 @@ return "۰۱۲۳۴۵۶۷۸۹".indexOf(x);
 function parseWeights(text){
 
 
-text=persianNumber(text);
+text = persianNumber(text);
 
 
 return text
@@ -37,7 +39,7 @@ return text
 
 .map(Number)
 
-.filter(x=>Number.isFinite(x)&&x>0);
+.filter(x => Number.isFinite(x) && x > 0);
 
 
 }
@@ -48,7 +50,7 @@ return text
 
 function average(arr){
 
-return arr.reduce((a,b)=>a+b,0)/arr.length;
+return arr.reduce((a,b)=>a+b,0) / arr.length;
 
 }
 
@@ -63,7 +65,7 @@ let sum=0;
 
 arr.forEach(x=>{
 
-sum+=Math.pow(x-mean,2);
+sum += Math.pow(x-mean,2);
 
 });
 
@@ -78,14 +80,15 @@ return Math.sqrt(sum/(arr.length-1));
 
 function uniformity(arr,mean,p){
 
-let low=mean*(1-p);
+let low = mean*(1-p);
 
-let high=mean*(1+p);
+let high = mean*(1+p);
 
 
-return arr.filter(x=>x>=low&&x<=high).length/arr.length*100;
+return arr.filter(x=>x>=low && x<=high).length / arr.length *100;
 
 }
+
 
 
 
@@ -96,7 +99,7 @@ return arr.filter(x=>x>=low&&x<=high).length/arr.length*100;
 function calculate(){
 
 
-let weights=parseWeights(
+let weights = parseWeights(
 
 document.getElementById("weightsInput").value
 
@@ -104,9 +107,9 @@ document.getElementById("weightsInput").value
 
 
 
-if(weights.length<2){
+if(weights.length < 2){
 
-alert("وزن وارد کنید");
+alert("حداقل دو وزن وارد کنید");
 
 return;
 
@@ -114,53 +117,64 @@ return;
 
 
 
-let mean=average(weights);
+let mean = average(weights);
 
 
-let sd=standard(weights,mean);
+let sd = standard(weights,mean);
 
 
-let cv=(sd/mean)*100;
+let cv = (sd/mean)*100;
 
 
-let u10=uniformity(weights,mean,.1);
+let u10 = uniformity(weights,mean,0.10);
 
 
-let u15=uniformity(weights,mean,.15);
+let u15 = uniformity(weights,mean,0.15);
 
 
 
 
-document.getElementById("sample").innerHTML=weights.length;
+
+document.getElementById("sample").innerHTML = weights.length;
 
 
-document.getElementById("mean").innerHTML=mean.toFixed(1);
+document.getElementById("mean").innerHTML = mean.toFixed(1);
 
 
-document.getElementById("min").innerHTML=Math.min(...weights);
+document.getElementById("min").innerHTML = Math.min(...weights);
 
 
-document.getElementById("max").innerHTML=Math.max(...weights);
+document.getElementById("max").innerHTML = Math.max(...weights);
 
 
-document.getElementById("sd").innerHTML=sd.toFixed(1);
+document.getElementById("sd").innerHTML = sd.toFixed(1);
 
 
-document.getElementById("cv").innerHTML=cv.toFixed(2)+"%";
+document.getElementById("cv").innerHTML = cv.toFixed(2)+"%";
 
 
-document.getElementById("u10").innerHTML=u10.toFixed(1)+"%";
+document.getElementById("u10").innerHTML = u10.toFixed(1)+"%";
 
 
-document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
+document.getElementById("u15").innerHTML = u15.toFixed(1)+"%";
+
+
 
 
 
 drawWeight(weights);
 
 
-let age=document.getElementById("age").value || 
-(ageHistory.length+1)*7;
+
+let age = document.getElementById("age").value;
+
+
+if(age===""){
+
+age=(ageHistory.length+1)*7;
+
+}
+
 
 
 cvHistory.push(Number(cv.toFixed(2)));
@@ -172,6 +186,73 @@ ageHistory.push(age);
 
 
 drawCV();
+
+drawWeightTrend();
+
+
+}
+
+
+
+
+
+
+
+
+
+function drawWeight(data){
+
+
+if(weightChart){
+
+weightChart.destroy();
+
+}
+
+
+
+weightChart = new Chart(
+
+document.getElementById("weightChart"),
+
+{
+
+type:"line",
+
+data:{
+
+labels:data.map((x,i)=>"نمونه "+(i+1)),
+
+datasets:[{
+
+label:"وزن",
+
+data:data,
+
+borderWidth:3,
+
+fill:false,
+
+tension:0.3
+
+}]
+
+}
+
+}
+
+);
+
+
+}
+
+
+
+
+
+
+
+
 
 
 function drawCV(){
@@ -185,7 +266,7 @@ cvChart.destroy();
 
 
 
-cvChart=new Chart(
+cvChart = new Chart(
 
 document.getElementById("cvChart"),
 
@@ -199,168 +280,11 @@ labels:ageHistory.map(x=>x+" روز"),
 
 datasets:[{
 
-label:"CV درصد",
+label:"CV (%)",
 
 data:cvHistory,
 
 borderWidth:3,
-
-fill:false,
-
-tension:.3
-
-}]
-
-},
-
-
-options:{
-
-responsive:true,
-
-scales:{
-
-y:{
-
-beginAtZero:true,
-
-title:{
-
-display:true,
-
-text:"CV %"
-
-}
-
-},
-
-x:{
-
-title:{
-
-display:true,
-
-text:"سن گله"
-
-}
-
-}
-
-}
-
-}
-
-}
-
-);
-
-
-}
-
-
-
-function drawCV(value){
-
-
-if(cvChart)
-
-cvChart.destroy();
-
-
-
-cvChart=new Chart(
-
-document.getElementById("cvChart"),
-
-{
-
-type:"line",
-
-data:{
-
-labels:["CV"],
-
-datasets:[{
-
-label:"CV درصد",
-
-data:[value],
-
-borderWidth:3,
-
-fill:false,
-
-tension:.3
-
-}]
-
-},
-
-
-options:{
-
-scales:{
-
-y:{
-
-beginAtZero:true
-
-}
-
-}
-
-}
-
-}
-
-);
-
-
-}
-function drawCV(value){
-
-
-if(cvChart){
-
-cvChart.destroy();
-
-}
-
-
-
-let ctx=document.getElementById("cvChart");
-
-
-if(!ctx){
-
-return;
-
-}
-
-
-
-cvChart=new Chart(ctx,{
-
-type:"line",
-
-data:{
-
-labels:["نتیجه فعلی"],
-
-
-datasets:[{
-
-label:"CV (%)",
-
-data:[Number(value.toFixed(2))],
-
-borderColor:"#006b3c",
-
-backgroundColor:"#006b3c",
-
-borderWidth:3,
-
-pointRadius:6,
 
 fill:false,
 
@@ -374,7 +298,6 @@ tension:0.3
 options:{
 
 responsive:true,
-
 
 scales:{
 
@@ -396,11 +319,21 @@ text:"درصد CV"
 
 }
 
+}
 
-});
+);
 
 
 }
+
+
+
+
+
+
+
+
+
 function drawWeightTrend(){
 
 
@@ -412,7 +345,7 @@ weightTrendChart.destroy();
 
 
 
-weightTrendChart=new Chart(
+weightTrendChart = new Chart(
 
 document.getElementById("weightTrendChart"),
 
@@ -434,7 +367,7 @@ borderWidth:3,
 
 fill:false,
 
-tension:.3
+tension:0.3
 
 }]
 
