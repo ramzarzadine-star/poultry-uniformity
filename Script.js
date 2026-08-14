@@ -908,9 +908,42 @@ window.addEventListener(
 function(){
 
 
-loadData();
+function logout(){
+
+localStorage.removeItem("activeUser");
+
+window.location.href="login.html";
+
+}
+
+
+
+window.addEventListener("load",function(){
+
+
+let user=localStorage.getItem("activeUser");
+
+
+let box=document.getElementById("userBox");
+
+
+if(box){
+
+
+if(user){
+
+box.innerHTML="کاربر فعال: "+user;
+
+}
+
+else{
+
+box.innerHTML="ورود مهمان";
+
+}
 
 
 }
 
-);
+
+});
