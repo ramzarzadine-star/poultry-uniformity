@@ -407,7 +407,7 @@ if(farm===""){
 alert("نام فارم را وارد کنید");
 
 return;
-
+saveData();
 }
 
 
