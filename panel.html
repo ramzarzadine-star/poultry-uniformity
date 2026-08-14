@@ -5,9 +5,7 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0,
-               maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>
 مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
@@ -21,77 +19,51 @@
 <style>
 
 /* =====================================================
-   تنظیمات اصلی
-   ===================================================== */
-
-* {
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
+   صفحه اصلی
+===================================================== */
 
 body {
     margin: 0;
-    padding: 0;
-
-    background:
-        linear-gradient(180deg, #f1f6f4 0%, #f7f9f8 100%);
-
-    color: #123b2a;
-
-    font-family:
-        Tahoma,
-        Arial,
-        sans-serif;
-
-    overflow-x: hidden;
+    background: #f1f5f6;
+    font-family: Tahoma, Arial, sans-serif;
 }
 
 
 /* =====================================================
-   هدر حرفه ای
-   ===================================================== */
+   HEADER
+===================================================== */
 
 .header {
 
     position: relative;
 
-    width: 100%;
+    overflow: hidden;
 
-    min-height: 285px;
+    min-height: 475px;
 
-    padding:
-        25px
-        20px
-        30px;
+    padding: 30px 20px 45px;
+
+    text-align: center;
 
     color: white;
+
+    border-radius: 0 0 55px 55px;
 
     background:
         linear-gradient(
             135deg,
-            #006b43 0%,
-            #00895b 48%,
-            #009b70 100%
+            #007a45 0%,
+            #008c61 50%,
+            #009b78 100%
         );
 
-    border-radius:
-        0
-        0
-        42px
-        42px;
-
-    overflow: hidden;
-
     box-shadow:
-        0 10px 30px rgba(0,0,0,0.12);
+        0 8px 25px rgba(0,0,0,0.15);
 
 }
 
 
-/* افکت پس زمینه هدر */
+/* منظره محو مرغداری در پایین هدر */
 
 .header::before {
 
@@ -99,178 +71,220 @@ body {
 
     position: absolute;
 
-    width: 280px;
-    height: 280px;
+    left: -5%;
+    right: -5%;
 
-    left: -100px;
-    top: -120px;
+    bottom: -45px;
+
+    height: 155px;
 
     background:
-        radial-gradient(
-            circle,
-            rgba(255,255,255,0.12),
-            transparent 70%
+
+        linear-gradient(
+            155deg,
+            transparent 0 35%,
+            rgba(255,255,255,0.10) 36% 38%,
+            transparent 39%
+        ),
+
+        linear-gradient(
+            25deg,
+            rgba(0,70,40,0.25),
+            rgba(255,255,255,0.04)
         );
 
-    pointer-events: none;
+    transform: skewY(-3deg);
+
+    z-index: 0;
+
+}
+
+
+/* مرغ های محو */
+
+.header::after {
+
+    content:
+        "🐔       🐔          🐓       🐔";
+
+    position: absolute;
+
+    left: 0;
+    right: 0;
+
+    bottom: 48px;
+
+    font-size: 34px;
+
+    opacity: 0.16;
+
+    letter-spacing: 5px;
+
+    z-index: 1;
+
 }
 
 
 /* =====================================================
    لوگو
-   ===================================================== */
+===================================================== */
 
-.app-logo {
+.brand-logo {
 
-    position: absolute;
+    position: relative;
 
-    top: 22px;
-    left: 20px;
-
-    width: 82px;
-    height: 82px;
-
-    object-fit: contain;
+    z-index: 5;
 
     display: block;
 
+    width: 135px;
+
+    height: 135px;
+
+    object-fit: contain;
+
+    margin: 0 auto 15px;
+
     /*
-       باعث می شود سفیدی تصویر لوگو
-       کمتر به شکل مربع دیده شود
+       تصویر با پس زمینه سفید ترکیب می شود
+       و حالت جدا و کارت مانند ندارد
     */
 
     mix-blend-mode: multiply;
 
     filter:
-        contrast(1.05);
-
-    z-index: 3;
+        drop-shadow(
+            0 5px 10px rgba(0,0,0,0.18)
+        );
 
 }
 
 
 /* =====================================================
-   عنوان هدر
-   ===================================================== */
-
-.header-content {
-
-    position: relative;
-
-    z-index: 2;
-
-    max-width: 700px;
-
-    margin-right: 0;
-
-    padding-top: 18px;
-
-}
-
+   محتوای هدر
+===================================================== */
 
 .header h1 {
 
+    position: relative;
+
+    z-index: 5;
+
     margin:
+
         5px
         0
-        8px;
+        12px;
 
-    font-size: 28px;
+    color: white;
 
-    line-height: 1.5;
+    font-size: 34px;
 
     font-weight: 800;
 
-    color: #ffffff;
+    text-shadow:
+        0 3px 8px rgba(0,0,0,0.25);
 
 }
 
 
 .header h3 {
 
-    margin:
-        0
-        0
-        20px;
+    position: relative;
 
-    font-size: 16px;
+    z-index: 5;
+
+    margin:
+
+        0
+        0
+        25px;
+
+    color: white;
+
+    font-size: 20px;
 
     font-weight: 500;
 
-    line-height: 1.8;
-
-    color:
-        rgba(255,255,255,0.92);
+    text-shadow:
+        0 2px 5px rgba(0,0,0,0.20);
 
 }
 
 
 /* =====================================================
-   اطلاعات کاربر و خروج
-   ===================================================== */
+   کاربر
+===================================================== */
 
-.user-actions {
+#userBox {
 
-    display: flex;
+    position: relative;
 
-    align-items: center;
+    z-index: 5;
 
-    justify-content: space-between;
-
-    gap: 12px;
-
-    margin-top: 18px;
-
-}
-
-
-.user-info {
-
-    background:
-        rgba(255,255,255,0.15);
-
-    border:
-        1px solid
-        rgba(255,255,255,0.15);
-
-    border-radius: 18px;
+    display: inline-block;
 
     padding:
-        11px
-        18px;
+
+        13px
+        28px;
+
+    border-radius: 22px;
+
+    background:
+        rgba(255,255,255,0.22);
 
     color: white;
 
-    font-size: 14px;
+    font-size: 19px;
 
-    backdrop-filter: blur(8px);
+    backdrop-filter:
+        blur(8px);
+
+    -webkit-backdrop-filter:
+        blur(8px);
 
 }
 
+
+/* =====================================================
+   دکمه خروج
+===================================================== */
 
 .logout {
 
+    position: absolute;
+
+    z-index: 6;
+
+    left: 13%;
+
+    bottom: 55px;
+
+    width: 275px;
+
+    height: 95px;
+
     border: none;
 
-    border-radius: 18px;
+    border-radius: 25px;
 
-    padding:
-        13px
-        20px;
-
-    background:
-        #c9002b;
+    background: #c9002b;
 
     color: white;
 
-    font-size: 14px;
-
     font-family: inherit;
+
+    font-size: 27px;
 
     cursor: pointer;
 
     box-shadow:
-        0 5px 15px rgba(0,0,0,0.12);
+        0 5px 15px
+        rgba(0,0,0,0.14);
+
+    transition:
+        0.2s ease;
 
 }
 
@@ -282,56 +296,58 @@ body {
 }
 
 
+.logout:hover {
+
+    background: #b60027;
+
+}
+
+
 /* =====================================================
    منوی اصلی
-   ===================================================== */
+===================================================== */
 
 .menu {
 
     position: relative;
 
-    z-index: 5;
+    z-index: 10;
 
-    width:
-        calc(100% - 30px);
+    width: 88%;
 
-    max-width: 850px;
+    max-width: 900px;
 
     margin:
-        -25px
-        auto
-        25px;
 
-    padding:
-        20px;
+        30px
+        auto;
 
-    background:
-        rgba(255,255,255,0.97);
-
-    border-radius: 28px;
-
-    box-shadow:
-        0 12px 35px rgba(0,0,0,0.10);
+    padding: 30px;
 
     display: grid;
 
     grid-template-columns:
-        repeat(2, 1fr);
+        1fr
+        1fr;
 
-    gap: 12px;
+    gap: 18px;
+
+    background: white;
+
+    border-radius: 30px;
+
+    box-shadow:
+        0 7px 30px
+        rgba(0,0,0,0.10);
 
 }
 
 
-/* لینک های منو */
+/* =====================================================
+   دکمه های منو
+===================================================== */
 
 .menu a {
-
-    min-height: 78px;
-
-    padding:
-        14px
-        12px;
 
     display: flex;
 
@@ -339,85 +355,89 @@ body {
 
     justify-content: center;
 
-    text-align: center;
+    min-height: 82px;
 
-    text-decoration: none;
+    padding:
 
-    color:
-        #006b43;
-
-    background:
-        #ffffff;
-
-    border:
-        1px solid
-        #e7eeeb;
+        10px
+        15px;
 
     border-radius: 20px;
 
-    font-size: 17px;
+    background: #007a45;
 
-    font-weight: 700;
+    color: white;
+
+    text-decoration: none;
+
+    font-family: inherit;
+
+    font-size: 25px;
+
+    font-weight: 600;
 
     box-shadow:
-        0 4px 12px rgba(0,0,0,0.04);
+        0 3px 8px
+        rgba(0,0,0,0.08);
 
     transition:
-        0.2s ease;
+        transform 0.2s ease,
+        background 0.2s ease;
+
+}
+
+
+.menu a:hover {
+
+    background: #00683b;
+
+    transform:
+        translateY(-2px);
 
 }
 
 
 .menu a:active {
 
-    transform: scale(0.97);
-
-    background:
-        #eef8f3;
+    transform:
+        scale(0.97);
 
 }
 
 
 /* =====================================================
    محتوای اصلی
-   ===================================================== */
+===================================================== */
 
 .container {
 
-    width:
-        calc(100% - 30px);
+    width: 92%;
 
-    max-width:
-        900px;
+    max-width: 1000px;
 
     margin:
-        0
-        auto
+        0 auto
         40px;
 
 }
 
 
 /* =====================================================
-   کارت
-   ===================================================== */
+   کارت ها
+===================================================== */
 
 .card {
 
-    background:
-        #ffffff;
+    background: white;
 
-    border-radius:
-        28px;
+    border-radius: 28px;
 
-    padding:
-        24px;
+    padding: 28px;
 
-    margin-bottom:
-        22px;
+    margin-bottom: 25px;
 
     box-shadow:
-        0 8px 25px
+        0 7px 25px
         rgba(0,0,0,0.07);
 
 }
@@ -425,44 +445,30 @@ body {
 
 .card h2 {
 
-    margin:
-        0
-        0
-        20px;
+    color: #007a45;
 
-    color:
-        #007548;
+    margin-top: 0;
 
-    font-size:
-        23px;
+    margin-bottom: 25px;
 
-    font-weight:
-        800;
-
-    border-bottom:
-        2px solid
-        #edf1ef;
-
-    padding-bottom:
-        14px;
+    font-size: 26px;
 
 }
 
 
 /* =====================================================
-   فرم اطلاعات گله
-   ===================================================== */
+   فرم
+===================================================== */
 
 .form-grid {
 
-    display:
-        grid;
+    display: grid;
 
     grid-template-columns:
-        repeat(2, 1fr);
+        1fr
+        1fr;
 
-    gap:
-        14px;
+    gap: 15px;
 
 }
 
@@ -470,37 +476,24 @@ body {
 .form-grid input,
 .form-grid select {
 
-    width:
-        100%;
+    width: 100%;
 
-    height:
-        58px;
+    box-sizing: border-box;
 
-    padding:
-        0
-        18px;
+    padding: 18px;
 
     border:
-        1.5px solid
-        #d5d9d7;
 
-    border-radius:
-        17px;
+        2px solid
+        #ddd;
 
-    background:
-        #ffffff;
+    border-radius: 18px;
 
-    color:
-        #333;
+    font-family: inherit;
 
-    font-size:
-        15px;
+    font-size: 17px;
 
-    font-family:
-        inherit;
-
-    outline:
-        none;
+    background: white;
 
 }
 
@@ -508,363 +501,246 @@ body {
 .form-grid input:focus,
 .form-grid select:focus {
 
-    border-color:
-        #008052;
+    outline: none;
 
-    box-shadow:
-        0 0 0 3px
-        rgba(0,128,82,0.08);
+    border-color: #007a45;
 
 }
 
 
 /* =====================================================
    ورود وزن
-   ===================================================== */
+===================================================== */
 
 #weightsInput {
 
-    width:
-        100%;
+    width: 100%;
 
-    min-height:
-        150px;
+    min-height: 150px;
+
+    box-sizing: border-box;
+
+    padding: 18px;
+
+    border:
+
+        2px solid
+        #ddd;
+
+    border-radius: 18px;
+
+    resize: vertical;
+
+    font-family: inherit;
+
+    font-size: 17px;
+
+}
+
+
+.card button:not(.logout) {
+
+    border: none;
+
+    border-radius: 18px;
+
+    background: #007a45;
+
+    color: white;
 
     padding:
-        18px;
 
-    resize:
-        vertical;
+        16px
+        35px;
 
-    border:
-        1.5px solid
-        #d5d9d7;
+    margin-top: 15px;
 
-    border-radius:
-        18px;
+    font-family: inherit;
 
-    font-family:
-        inherit;
+    font-size: 19px;
 
-    font-size:
-        16px;
-
-    outline:
-        none;
-
-}
-
-
-#weightsInput:focus {
-
-    border-color:
-        #008052;
-
-}
-
-
-/* =====================================================
-   دکمه محاسبه
-   ===================================================== */
-
-.card button {
-
-    width:
-        100%;
-
-    min-height:
-        56px;
-
-    margin-top:
-        14px;
-
-    border:
-        none;
-
-    border-radius:
-        17px;
-
-    background:
-        #007a49;
-
-    color:
-        white;
-
-    font-size:
-        17px;
-
-    font-weight:
-        700;
-
-    font-family:
-        inherit;
-
-    cursor:
-        pointer;
-
-}
-
-
-.card button:active {
-
-    transform:
-        scale(0.98);
+    cursor: pointer;
 
 }
 
 
 /* =====================================================
    نتایج
-   ===================================================== */
+===================================================== */
 
 .results {
 
-    display:
-        grid;
+    display: grid;
 
     grid-template-columns:
-        repeat(2, 1fr);
+        repeat(4, 1fr);
 
-    gap:
-        12px;
+    gap: 15px;
 
 }
 
 
 .results > div {
 
-    min-height:
-        82px;
+    background: #f5f8f7;
 
-    padding:
-        15px;
+    border-radius: 18px;
 
-    display:
-        flex;
+    padding: 20px;
 
-    flex-direction:
-        column;
+    text-align: center;
 
-    justify-content:
-        center;
-
-    gap:
-        6px;
-
-    background:
-        #f5f9f7;
-
-    border-radius:
-        18px;
-
-    color:
-        #52645b;
-
-    font-size:
-        13px;
+    color: #555;
 
 }
 
 
 .results strong {
 
-    font-size:
-        21px;
+    display: block;
 
-    color:
-        #007548;
+    margin-top: 10px;
 
-}
+    color: #007a45;
 
-
-/* =====================================================
-   نمودار
-   ===================================================== */
-
-.card canvas {
-
-    width:
-        100% !important;
-
-    max-width:
-        100%;
+    font-size: 25px;
 
 }
 
 
 /* =====================================================
-   موبایل آیفون
-   ===================================================== */
+   نمودارها
+===================================================== */
+
+canvas {
+
+    max-width: 100%;
+
+}
+
+
+/* =====================================================
+   موبایل / آیفون
+===================================================== */
 
 @media (max-width: 600px) {
 
 
     .header {
 
-        min-height:
-            300px;
+        min-height: 475px;
 
         padding:
-            22px
-            18px
-            28px;
 
-        border-radius:
-            0
-            0
-            38px
-            38px;
+            30px
+            20px
+            45px;
 
     }
 
 
-    .app-logo {
+    .brand-logo {
 
-        width:
-            70px;
+        width: 135px;
 
-        height:
-            70px;
+        height: 135px;
 
-        top:
-            18px;
-
-        left:
-            17px;
-
-    }
-
-
-    .header-content {
-
-        padding-top:
-            70px;
-
-        text-align:
-            center;
+        margin-bottom: 15px;
 
     }
 
 
     .header h1 {
 
-        font-size:
-            25px;
+        font-size: 31px;
 
-        margin-bottom:
-            6px;
+        margin-top: 5px;
 
     }
 
 
     .header h3 {
 
-        font-size:
-            14px;
-
-        margin-bottom:
-            18px;
+        font-size: 19px;
 
     }
 
 
-    .user-actions {
+    #userBox {
 
-        flex-direction:
-            row;
-
-        align-items:
-            stretch;
-
-    }
-
-
-    .user-info {
-
-        flex:
-            1;
-
-        text-align:
-            center;
+        font-size: 17px;
 
         padding:
+
             12px
-            8px;
+            22px;
 
     }
 
 
     .logout {
 
-        flex:
-            0 0 auto;
+        left: 13%;
 
-        padding:
-            12px
-            15px;
+        bottom: 55px;
+
+        width: 74%;
+
+        height: 90px;
+
+        font-size: 25px;
 
     }
 
 
+    /* منوی دو ستونه مثل عکس */
+
     .menu {
 
-        width:
-            calc(100% - 28px);
-
-        margin:
-            -18px
-            auto
-            22px;
+        width: 82%;
 
         padding:
-            15px;
 
-        border-radius:
-            25px;
+            30px
+            20px;
 
-        gap:
-            10px;
+        gap: 16px;
+
+        grid-template-columns:
+            1fr
+            1fr;
 
     }
 
 
     .menu a {
 
-        min-height:
-            78px;
+        min-height: 80px;
 
-        font-size:
-            16px;
+        padding:
 
-        border-radius:
-            18px;
+            8px
+            5px;
+
+        font-size: 21px;
+
+        border-radius: 18px;
+
+        text-align: center;
 
     }
 
 
     .container {
 
-        width:
-            calc(100% - 28px);
+        width: 92%;
 
     }
 
 
     .card {
 
-        padding:
-            20px;
-
-        border-radius:
-            24px;
-
-    }
-
-
-    .card h2 {
-
-        font-size:
-            21px;
+        padding: 22px;
 
     }
 
@@ -880,7 +756,14 @@ body {
     .results {
 
         grid-template-columns:
-            repeat(2, 1fr);
+            1fr 1fr;
+
+    }
+
+
+    .results > div {
+
+        padding: 15px 8px;
 
     }
 
@@ -889,35 +772,45 @@ body {
 
 
 /* =====================================================
-   موبایل خیلی کوچک
-   ===================================================== */
+   صفحه خیلی کوچک
+===================================================== */
 
 @media (max-width: 380px) {
 
 
     .header h1 {
 
-        font-size:
-            22px;
+        font-size: 27px;
+
+    }
+
+
+    .header h3 {
+
+        font-size: 17px;
+
+    }
+
+
+    .brand-logo {
+
+        width: 115px;
+
+        height: 115px;
 
     }
 
 
     .menu a {
 
-        font-size:
-            14px;
-
-        min-height:
-            70px;
+        font-size: 18px;
 
     }
 
 
-    .results strong {
+    .logout {
 
-        font-size:
-            18px;
+        font-size: 22px;
 
     }
 
@@ -932,62 +825,48 @@ body {
 
 
 <!-- =====================================================
-     هدر
-     ===================================================== -->
+     HEADER
+===================================================== -->
 
 <header class="header">
 
 
-    <!-- لوگو -->
+    <!-- لوگوی مرکز -->
 
     <img
         src="IMG_4309.png"
+        class="brand-logo"
         alt="مرکز تخصصی سلامت طیور آدینه"
-        class="app-logo"
     >
 
 
-    <div class="header-content">
+    <!-- عنوان -->
+
+    <h1>
+        🐔 مدیریت گله طیور
+    </h1>
 
 
-        <h1>
-            🐔 مدیریت گله طیور
-        </h1>
+    <!-- نام مرکز -->
+
+    <h3>
+        مرکز تخصصی سلامت طیور آدینه
+    </h3>
 
 
-        <h3>
-            مرکز تخصصی سلامت طیور آدینه
-        </h3>
+    <!-- کاربر -->
+
+    <div id="userBox"></div>
 
 
-        <div class="user-actions">
+    <!-- خروج -->
 
-
-            <div class="user-info">
-
-                👤 کاربر فعال:
-                <strong id="userBox">
-                    مهمان
-                </strong>
-
-            </div>
-
-
-            <button
-                onclick="logout()"
-                class="logout"
-                type="button"
-            >
-
-                خروج از حساب
-
-            </button>
-
-
-        </div>
-
-
-    </div>
+    <button
+        onclick="logout()"
+        class="logout"
+    >
+        خروج از حساب
+    </button>
 
 
 </header>
@@ -995,8 +874,8 @@ body {
 
 
 <!-- =====================================================
-     منوی اصلی
-     ===================================================== -->
+     MENU
+===================================================== -->
 
 <nav class="menu">
 
@@ -1041,17 +920,19 @@ body {
 
 
 <!-- =====================================================
-     اطلاعات گله
-     ===================================================== -->
+     CONTENT
+===================================================== -->
 
 <div class="container">
 
 
+
+    <!-- اطلاعات گله -->
+
     <div class="card">
 
-
         <h2>
-            ℹ️ اطلاعات گله
+            اطلاعات گله
         </h2>
 
 
@@ -1060,14 +941,12 @@ body {
 
             <input
                 id="farm"
-                type="text"
                 placeholder="نام فارم / مرغدار"
             >
 
 
             <input
                 id="hall"
-                type="text"
                 placeholder="نام سالن"
             >
 
@@ -1095,14 +974,12 @@ body {
 
             <input
                 id="age"
-                type="number"
                 placeholder="سن گله (روز)"
             >
 
 
             <input
                 id="countBird"
-                type="number"
                 placeholder="تعداد پرنده"
             >
 
@@ -1115,26 +992,22 @@ body {
 
         </div>
 
-
     </div>
 
 
 
-    <!-- =================================================
-         ورود وزن
-         ================================================= -->
+    <!-- ورود وزن -->
 
     <div class="card">
 
-
         <h2>
-            ⚖️ ورود وزن
+            ورود وزن
         </h2>
 
 
         <textarea
             id="weightsInput"
-            placeholder="وزن‌ها را وارد کنید؛ مثال: 1850، 1920، 1780، 2010"
+            placeholder="وزن ها را وارد کنید"
         ></textarea>
 
 
@@ -1142,9 +1015,7 @@ body {
             type="button"
             onclick="calculate()"
         >
-
-            محاسبه یکنواختی و CV
-
+            محاسبه
         </button>
 
 
@@ -1152,15 +1023,12 @@ body {
 
 
 
-    <!-- =================================================
-         نتایج
-         ================================================= -->
+    <!-- نتایج -->
 
     <div class="card">
 
-
         <h2>
-            📊 نتایج
+            نتایج
         </h2>
 
 
@@ -1257,65 +1125,50 @@ body {
 
         </div>
 
-
     </div>
 
 
 
-    <!-- =================================================
-         نمودار وزن
-         ================================================= -->
+    <!-- نمودار وزن -->
 
     <div class="card">
 
-
         <h2>
-            📈 نمودار وزن
+            نمودار وزن
         </h2>
-
 
         <canvas id="weightChart"></canvas>
 
-
     </div>
 
 
 
-    <!-- =================================================
-         رشد Ross 308
-         ================================================= -->
+    <!-- رشد وزن -->
 
     <div class="card">
 
-
         <h2>
-            📈 رشد وزن Ross 308
+            رشد وزن Ross 308
         </h2>
-
 
         <canvas id="weightTrendChart"></canvas>
 
-
     </div>
 
 
 
-    <!-- =================================================
-         CV Ross 308
-         ================================================= -->
+    <!-- CV -->
 
     <div class="card">
 
-
         <h2>
-            📉 CV Ross 308
+            CV Ross 308
         </h2>
-
 
         <canvas id="cvChart"></canvas>
 
-
     </div>
+
 
 
 </div>
@@ -1323,8 +1176,8 @@ body {
 
 
 <!-- =====================================================
-     JavaScript
-     ===================================================== -->
+     JAVASCRIPT
+===================================================== -->
 
 <script src="Script.js"></script>
 
