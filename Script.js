@@ -3,23 +3,17 @@ let cvChart;
 let weightTrendChart;
 
 
-let cvHistory = [];
-let weightHistory = [];
-let ageHistory = [];
+let cvHistory=[];
+let weightHistory=[];
+let ageHistory=[];
 
 
-// استاندارد Ross 308 تا 8 هفتگی
-const rossAge = [
-7,14,21,28,35,42,49,56
-];
 
-const rossWeight = [
-190,490,900,1400,1950,2500,3050,3600
-];
+const rossAge=[7,14,21,28,35,42,49,56];
 
-const rossCV = [
-13,12,11,10,9,8,7,6
-];
+const rossWeight=[190,490,900,1400,1950,2500,3050,3600];
+
+const rossCV=[13,12,11,10,9,8,7,6];
 
 
 
@@ -41,23 +35,16 @@ return "۰۱۲۳۴۵۶۷۸۹".indexOf(x);
 
 function parseWeights(text){
 
-
-text = persianNumber(text);
+text=persianNumber(text);
 
 
 return text
-
 .replace(/،/g,",")
-
 .split(/[\s,]+/)
-
 .map(Number)
-
 .filter(x=>Number.isFinite(x)&&x>0);
 
 }
-
-
 
 
 
@@ -72,7 +59,6 @@ return arr.reduce((a,b)=>a+b,0)/arr.length;
 
 
 
-
 function standard(arr,mean){
 
 let sum=0;
@@ -80,7 +66,7 @@ let sum=0;
 
 arr.forEach(x=>{
 
-sum += Math.pow(x-mean,2);
+sum+=Math.pow(x-mean,2);
 
 });
 
@@ -93,20 +79,16 @@ return Math.sqrt(sum/(arr.length-1));
 
 
 
-
-
 function uniformity(arr,mean,p){
 
-let low=mean*(1-p);
+let min=mean*(1-p);
 
-let high=mean*(1+p);
+let max=mean*(1+p);
 
 
-return arr.filter(x=>x>=low && x<=high).length / arr.length *100;
+return arr.filter(x=>x>=min&&x<=max).length/arr.length*100;
 
 }
-
-
 
 
 
@@ -127,7 +109,7 @@ document.getElementById("weightsInput").value
 
 if(weights.length<2){
 
-alert("حداقل دو وزن وارد کنید");
+alert("وزن وارد کنید");
 
 return;
 
@@ -135,49 +117,35 @@ return;
 
 
 
-
 let mean=average(weights);
 
-
 let sd=standard(weights,mean);
-
 
 let cv=(sd/mean)*100;
 
 
 let u10=uniformity(weights,mean,0.10);
 
-
 let u15=uniformity(weights,mean,0.15);
-
 
 
 
 
 document.getElementById("sample").innerHTML=weights.length;
 
-
 document.getElementById("mean").innerHTML=mean.toFixed(1);
-
 
 document.getElementById("min").innerHTML=Math.min(...weights);
 
-
 document.getElementById("max").innerHTML=Math.max(...weights);
-
 
 document.getElementById("sd").innerHTML=sd.toFixed(1);
 
-
 document.getElementById("cv").innerHTML=cv.toFixed(2)+"%";
-
 
 document.getElementById("u10").innerHTML=u10.toFixed(1)+"%";
 
-
 document.getElementById("u15").innerHTML=u15.toFixed(1)+"%";
-
-
 
 
 
@@ -195,14 +163,11 @@ age=(ageHistory.length+1)*7;
 }
 
 
-
 cvHistory.push(Number(cv.toFixed(2)));
 
 weightHistory.push(Number(mean.toFixed(1)));
 
 ageHistory.push(Number(age));
-
-
 
 
 
@@ -212,8 +177,6 @@ drawWeightTrend();
 
 
 }
-
-
 
 
 
@@ -244,11 +207,9 @@ data:{
 
 labels:data.map((x,i)=>"نمونه "+(i+1)),
 
-datasets:[
+datasets:[{
 
-{
-
-label:"توزیع وزن واقعی",
+label:"وزن واقعی",
 
 data:data,
 
@@ -258,9 +219,7 @@ fill:false,
 
 tension:.3
 
-}
-
-]
+}]
 
 }
 
@@ -270,111 +229,6 @@ tension:.3
 
 
 }
-
-
-
-
-
-
-
-
-
-function drawCV(){
-
-
-if(cvChart){
-
-cvChart.destroy();
-
-}
-
-
-
-cvChart=new Chart(
-
-document.getElementById("cvChart"),
-
-{
-
-type:"line",
-
-data:{
-
-
-labels:rossAge.map(x=>x+" روز"),
-
-
-datasets:[
-
-
-{
-
-label:"CV واقعی گله",
-
-data:cvHistory,
-
-borderWidth:3,
-
-fill:false,
-
-tension:.3
-
-},
-
-
-{
-
-label:"استاندارد Ross 308",
-
-data:rossCV,
-
-borderWidth:3,
-
-borderDash:[10,5],
-
-fill:false,
-
-tension:.3
-
-}
-
-
-]
-
-},
-
-
-options:{
-
-responsive:true,
-
-scales:{
-
-y:{
-
-beginAtZero:true,
-
-title:{
-
-display:true,
-
-text:"CV درصد"
-
-}
-
-}
-
-}
-
-}
-
-}
-
-);
-
-
-}
-
 
 
 
@@ -404,12 +258,9 @@ type:"line",
 
 data:{
 
-
 labels:rossAge.map(x=>x+" روز"),
 
-
 datasets:[
-
 
 {
 
@@ -424,7 +275,6 @@ fill:false,
 tension:.3
 
 },
-
 
 {
 
@@ -442,31 +292,79 @@ tension:.3
 
 }
 
-
 ]
+
+}
+
+}
+
+);
+
+
+}
+
+
+
+
+
+
+
+function drawCV(){
+
+
+if(cvChart){
+
+cvChart.destroy();
+
+}
+
+
+
+cvChart=new Chart(
+
+document.getElementById("cvChart"),
+
+{
+
+type:"line",
+
+data:{
+
+labels:rossAge.map(x=>x+" روز"),
+
+datasets:[
+
+{
+
+label:"CV واقعی گله",
+
+data:cvHistory,
+
+borderWidth:3,
+
+fill:false,
+
+tension:.3
 
 },
 
+{
 
-options:{
+label:"استاندارد Ross 308",
 
-responsive:true,
+data:rossCV,
 
-scales:{
+borderWidth:3,
 
-y:{
+borderDash:[10,5],
 
-title:{
+fill:false,
 
-display:true,
-
-text:"وزن گرم"
-
-}
+tension:.3
 
 }
 
-}
+]
 
 }
 
