@@ -1,338 +1,516 @@
 <!DOCTYPE html>
-
 <html lang="fa" dir="rtl">
-
 
 <head>
 
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
 
 <title>
 مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه
 </title>
 
-
-
 <link rel="stylesheet" href="Style.css">
-
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 
-</head>
+<style>
 
+/* ==============================
+   هدر اصلی برنامه
+   ============================== */
+
+.header {
+    position: relative;
+    text-align: center;
+    padding: 15px 15px 18px;
+}
+
+
+/* لوگوی مرکز */
+
+.app-logo {
+    width: 72px;
+    height: 72px;
+
+    object-fit: contain;
+
+    display: block;
+
+    margin: 0 auto 8px;
+}
+
+
+/* عنوان اصلی */
+
+.header h1 {
+    margin: 4px 0 5px;
+
+    font-size: 21px;
+
+    line-height: 1.5;
+}
+
+
+/* نام مرکز */
+
+.header h3 {
+    margin: 0 0 10px;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* اطلاعات کاربر */
+
+#userBox {
+    margin: 5px 0;
+}
+
+
+/* دکمه خروج */
+
+.logout {
+    margin-top: 8px;
+}
+
+
+/* ==============================
+   موبایل
+   ============================== */
+
+@media (max-width: 600px) {
+
+    .app-logo {
+        width: 68px;
+        height: 68px;
+    }
+
+    .header h1 {
+        font-size: 19px;
+    }
+
+    .header h3 {
+        font-size: 13px;
+    }
+
+}
+
+
+/* ==============================
+   منوی برنامه
+   ============================== */
+
+.menu {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+/* لینک‌های منو */
+
+.menu a {
+    text-decoration: none;
+}
+
+
+/* ==============================
+   نمودارها
+   ============================== */
+
+canvas {
+    max-width: 100%;
+}
+
+</style>
+
+</head>
 
 
 <body>
 
 
+<!-- ==============================
+     هدر برنامه
+     ============================== -->
 
 <header class="header">
 
 
-<h1>
-🐔 مدیریت گله طیور
-</h1>
+    <!-- لوگوی مرکز -->
+
+    <img
+        src="IMG_4309.png"
+        alt="مرکز تخصصی سلامت طیور آدینه"
+        class="app-logo"
+    >
 
 
-<h3>
-مرکز تخصصی سلامت طیور آدینه
-</h3>
+    <!-- عنوان برنامه -->
+
+    <h1>
+        🐔 مدیریت گله طیور
+    </h1>
 
 
-<div id="userBox"></div>
+    <!-- نام مرکز -->
+
+    <h3>
+        مرکز تخصصی سلامت طیور آدینه
+    </h3>
 
 
-<button onclick="logout()" class="logout">
+    <!-- کاربر -->
 
-خروج از حساب
+    <div id="userBox"></div>
 
-</button>
+
+    <!-- خروج -->
+
+    <button
+        onclick="logout()"
+        class="logout"
+        type="button"
+    >
+        خروج از حساب
+    </button>
 
 
 </header>
 
-<<nav class="menu">
 
 
-<a href="panel.html">
-🏠 داشبورد
-</a>
+<!-- ==============================
+     منوی اصلی
+     ============================== -->
+
+<nav class="menu">
 
 
-<a href="flock.html">
-🐔 مدیریت گله
-</a>
+    <a href="panel.html">
+        🏠 داشبورد
+    </a>
 
 
-<a href="feed.html">
-🌽 مصرف دان
-</a>
+    <a href="flock.html">
+        🐔 مدیریت گله
+    </a>
 
 
-<a href="water.html">
-💧 مصرف آب
-</a>
+    <a href="feed.html">
+        🌽 مصرف دان
+    </a>
 
 
-<a href="vaccine.html">
-💉 واکسیناسیون
-</a>
+    <a href="water.html">
+        💧 مصرف آب
+    </a>
 
 
-<a href="medicine.html">
-💊 دارو
-</a>
+    <a href="vaccine.html">
+        💉 واکسیناسیون
+    </a>
 
 
-<a href="report.html">
-📊 گزارشات
-</a>
+    <a href="medicine.html">
+        💊 دارو
+    </a>
+
+
+    <a href="report.html">
+        📊 گزارشات
+    </a>
 
 
 </nav>
 
 
+
+<!-- ==============================
+     محتوای اصلی
+     ============================== -->
+
 <div class="container">
 
 
+    <!-- اطلاعات گله -->
 
-<div class="card">
-
-
-<h2>
-اطلاعات گله
-</h2>
+    <div class="card">
 
 
-
-<div class="form-grid">
-
-
-<input id="farm" placeholder="نام فارم / مرغدار">
+        <h2>
+            اطلاعات گله
+        </h2>
 
 
-<input id="hall" placeholder="نام سالن">
+        <div class="form-grid">
 
 
-<select id="type">
+            <input
+                id="farm"
+                placeholder="نام فارم / مرغدار"
+            >
 
 
-<option>نوع گله</option>
-
-<option>گوشتی</option>
-
-<option>تخمگذار</option>
-
-<option>مادر</option>
+            <input
+                id="hall"
+                placeholder="نام سالن"
+            >
 
 
-</select>
+            <select id="type">
+
+                <option>
+                    نوع گله
+                </option>
+
+                <option>
+                    گوشتی
+                </option>
+
+                <option>
+                    تخمگذار
+                </option>
+
+                <option>
+                    مادر
+                </option>
+
+            </select>
+
+
+            <input
+                id="age"
+                placeholder="سن گله (روز)"
+            >
+
+
+            <input
+                id="countBird"
+                placeholder="تعداد پرنده"
+            >
+
+
+            <input
+                id="date"
+                type="date"
+            >
+
+
+        </div>
+
+    </div>
 
 
 
-<input id="age" placeholder="سن گله (روز)">
+    <!-- ورود وزن -->
+
+    <div class="card">
+
+
+        <h2>
+            ورود وزن
+        </h2>
+
+
+        <textarea
+            id="weightsInput"
+            placeholder="وزن ها را وارد کنید"
+        ></textarea>
+
+
+        <button
+            type="button"
+            onclick="calculate()"
+        >
+            محاسبه
+        </button>
+
+
+    </div>
 
 
 
-<input id="countBird" placeholder="تعداد پرنده">
+    <!-- نتایج -->
+
+    <div class="card">
+
+
+        <h2>
+            نتایج
+        </h2>
+
+
+        <div class="results">
+
+
+            <div>
+
+                تعداد نمونه
+
+                <strong id="sample">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                میانگین وزن
+
+                <strong id="mean">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                کمترین وزن
+
+                <strong id="min">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                بیشترین وزن
+
+                <strong id="max">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                SD
+
+                <strong id="sd">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                CV
+
+                <strong id="cv">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                یکنواختی ۱۰٪
+
+                <strong id="u10">
+                    -
+                </strong>
+
+            </div>
+
+
+            <div>
+
+                یکنواختی ۱۵٪
+
+                <strong id="u15">
+                    -
+                </strong>
+
+            </div>
+
+
+        </div>
+
+    </div>
 
 
 
-<input id="date" type="date">
+    <!-- نمودار وزن -->
 
+    <div class="card">
+
+
+        <h2>
+            نمودار وزن
+        </h2>
+
+
+        <canvas id="weightChart"></canvas>
+
+
+    </div>
+
+
+
+    <!-- نمودار رشد -->
+
+    <div class="card">
+
+
+        <h2>
+            رشد وزن Ross 308
+        </h2>
+
+
+        <canvas id="weightTrendChart"></canvas>
+
+
+    </div>
+
+
+
+    <!-- نمودار CV -->
+
+    <div class="card">
+
+
+        <h2>
+            CV Ross 308
+        </h2>
+
+
+        <canvas id="cvChart"></canvas>
+
+
+    </div>
 
 
 </div>
 
 
-</div>
 
-
-
-
-
-
-
-
-<div class="card">
-
-
-<h2>
-ورود وزن
-</h2>
-
-
-
-<textarea id="weightsInput"
-placeholder="وزن ها را وارد کنید"></textarea>
-
-
-<button onclick="calculate()">
-
-محاسبه
-
-</button>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-<div class="card">
-
-
-<h2>
-نتایج
-
-</h2>
-
-
-<div class="results">
-
-
-<div>
-تعداد نمونه
-
-<strong id="sample">-</strong>
-
-</div>
-
-
-<div>
-میانگین وزن
-
-<strong id="mean">-</strong>
-
-</div>
-
-
-<div>
-کمترین وزن
-
-<strong id="min">-</strong>
-
-</div>
-
-
-<div>
-بیشترین وزن
-
-<strong id="max">-</strong>
-
-</div>
-
-
-<div>
-SD
-
-<strong id="sd">-</strong>
-
-</div>
-
-
-<div>
-CV
-
-<strong id="cv">-</strong>
-
-</div>
-
-
-<div>
-یکنواختی ۱۰٪
-
-<strong id="u10">-</strong>
-
-</div>
-
-
-<div>
-یکنواختی ۱۵٪
-
-<strong id="u15">-</strong>
-
-</div>
-
-
-</div>
-
-
-</div>
-
-
-
-
-
-
-<div class="card">
-
-<h2>
-نمودار وزن
-
-</h2>
-
-<canvas id="weightChart"></canvas>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-<h2>
-رشد وزن Ross 308
-
-</h2>
-
-
-<canvas id="weightTrendChart"></canvas>
-
-
-</div>
-
-
-
-
-
-<div class="card">
-
-<h2>
-CV Ross 308
-
-</h2>
-
-
-<canvas id="cvChart"></canvas>
-
-
-</div>
-
-
-
-
-
-
-</div>
-
-
+<!-- ==============================
+     JavaScript اصلی برنامه
+     ============================== -->
 
 <script src="Script.js"></script>
 
 
 </body>
-
 
 </html>
