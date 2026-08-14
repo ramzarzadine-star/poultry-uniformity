@@ -1,419 +1,867 @@
-*{
+/* =====================================================
+   ADINEH POULTRY MANAGEMENT
+   Global Style
+===================================================== */
 
-box-sizing:border-box;
+* {
+    box-sizing: border-box;
+}
 
-font-family:tahoma,Arial;
+html {
+    direction: rtl;
+    scroll-behavior: smooth;
+}
 
+body {
+    margin: 0;
+    padding: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            #f1f6f4 0%,
+            #f8faf9 100%
+        );
+
+    color: #18352a;
+
+    font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    -webkit-tap-highlight-color: transparent;
 }
 
 
+/* =====================================================
+   HEADER
+===================================================== */
 
-body{
+.header {
+    position: relative;
 
-margin:0;
-
-background:#f2f5f7;
-
-direction:rtl;
-
-}
-
-
-
-
-
-.header{
-
-background:linear-gradient(135deg,#006b3c,#009879);
-
-color:white;
-
-text-align:center;
-
-padding:25px;
-
-border-radius:0 0 25px 25px;
-
-}
-
-
-
-.header h1{
-
-margin:5px;
-
-font-size:32px;
-
-}
-
-
-
-.header h3{
-
-margin:8px;
-
-font-size:18px;
-
-font-weight:normal;
-
-}
-
-
-
-#userBox{
-
-margin-top:15px;
-
-font-size:18px;
-
-background:rgba(255,255,255,.2);
-
-padding:8px;
-
-border-radius:10px;
-
-display:inline-block;
-
-}
-
-
-
-
-
-button{
-
-background:#006b3c;
-
-color:white;
-
-border:none;
-
-padding:12px 25px;
-
-border-radius:10px;
-
-cursor:pointer;
-
-font-size:16px;
-
-margin:10px;
-
-}
-
-
-
-button:hover{
-
-opacity:.85;
-
-}
-
-
-
-.logout{
-
-background:#b00020;
-
-}
-
-
-
-
-
-.container{
-
-width:95%;
-
-max-width:1200px;
-
-margin:20px auto;
-
-}
-
-
-
-
-
-.card{
-
-background:white;
-
-padding:20px;
-
-margin-bottom:20px;
-
-border-radius:20px;
-
-box-shadow:0 3px 12px rgba(0,0,0,.1);
-
-}
-
-
-
-.card h2{
-
-color:#006b3c;
-
-border-bottom:2px solid #eee;
-
-padding-bottom:10px;
-
-}
-
-
-
-
-
-.form-grid{
-
-display:grid;
-
-grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-
-gap:15px;
-
-}
-
-
-
-
-
-input,select,textarea{
-
-width:100%;
-
-padding:12px;
-
-border:1px solid #ccc;
-
-border-radius:10px;
-
-font-size:15px;
-
-}
-
-
-
-textarea{
-
-height:120px;
-
-resize:none;
-
-}
-
-
-
-
-
-.results{
-
-display:grid;
-
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-
-gap:15px;
-
-}
-
-
-
-
-
-.results div{
-
-background:#f7f7f7;
-
-padding:15px;
-
-border-radius:15px;
-
-text-align:center;
-
-font-size:16px;
-
-}
-
-
-
-.results strong{
-
-display:block;
-
-font-size:24px;
-
-color:#006b3c;
-
-margin-top:10px;
-
-}
-
-
-
-
-
-canvas{
-
-max-height:400px;
-
-}
-
-
-
-
-
-.login-box{
-
-width:90%;
-
-max-width:400px;
-
-margin:80px auto;
-
-background:white;
-
-padding:30px;
-
-border-radius:25px;
-
-box-shadow:0 5px 20px rgba(0,0,0,.15);
-
-text-align:center;
-
-}
-
-
-
-.login-box h1{
-
-color:#006b3c;
-
-}
-
-
-
-.login-box input{
-
-margin:10px 0;
-
-}
-
-
-
-.login-box button{
-
-width:100%;
-
-}
-
-
-
-.guest{
-
-background:#777;
-
-}
-
-
-
-
-
-@media(max-width:600px){
-
-
-.header h1{
-
-font-size:24px;
-
-}
-
-
-.card{
-
-padding:15px;
-
-}
-
-
-}
-.menu{
-
-display:flex;
-
-flex-wrap:wrap;
-
-gap:10px;
-
-justify-content:center;
-
-background:white;
-
-padding:15px;
-
-margin:15px;
-
-border-radius:15px;
-
-box-shadow:0 3px 10px #ddd;
-
-}
-
-
-
-.menu{
-
-display:flex;
-
-flex-wrap:wrap;
-
-gap:10px;
-
-justify-content:center;
-
-background:white;
-
-padding:15px;
-
-margin:15px;
-
-border-radius:15px;
-
-}
-
-
-
-.menu a{
-
-background:#006b3c;
-
-color:white;
-
-padding:12px 20px;
-
-border-radius:10px;
-
-text-decoration:none;
-
-}
-
-
-
-.menu a:hover{
-
-background:#009879;
-
-}
-<style>
-.login-logo {
-    width: 180px;
-    height: 180px;
-    margin: 0 auto 20px;
-    text-align: center;
-}
-
-.login-logo img {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+
+    padding: 25px 20px;
+
+    text-align: center;
+
+    background:
+        linear-gradient(
+            135deg,
+            #007a45,
+            #008d62,
+            #009b78
+        );
+
+    color: white;
+
+    border-radius:
+        0 0 45px 45px;
+
+    box-shadow:
+        0 8px 28px
+        rgba(0, 0, 0, 0.12);
 }
-</style>
+
+
+.header h1 {
+    margin: 10px 0 5px;
+
+    font-size: 28px;
+
+    font-weight: 800;
+
+    line-height: 1.5;
+}
+
+
+.header h3 {
+    margin: 0 0 15px;
+
+    font-size: 16px;
+
+    font-weight: 500;
+
+    line-height: 1.7;
+}
+
+
+/* =====================================================
+   LOGO
+===================================================== */
+
+.brand-logo,
+.app-logo {
+
+    object-fit: contain;
+
+    display: block;
+
+    margin: 0 auto;
+
+    max-width: 100%;
+
+    mix-blend-mode: multiply;
+
+}
+
+
+/* =====================================================
+   USER
+===================================================== */
+
+#userBox {
+
+    display: inline-block;
+
+    padding:
+        9px 18px;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255,255,255,0.18);
+
+    color: white;
+
+    font-size: 14px;
+
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+.logout {
+
+    border: none;
+
+    border-radius: 16px;
+
+    padding:
+        12px 22px;
+
+    background:
+        #c9002b;
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    cursor: pointer;
+
+    transition:
+        0.2s ease;
+
+}
+
+
+.logout:hover {
+
+    background:
+        #ae0025;
+
+}
+
+
+.logout:active {
+
+    transform:
+        scale(0.97);
+
+}
+
+
+/* =====================================================
+   MAIN MENU
+===================================================== */
+
+.menu {
+
+    width:
+        calc(100% - 30px);
+
+    max-width:
+        900px;
+
+    margin:
+        20px auto;
+
+    padding:
+        18px;
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        12px;
+
+    background:
+        #ffffff;
+
+    border-radius:
+        26px;
+
+    box-shadow:
+        0 7px 25px
+        rgba(0,0,0,0.08);
+}
+
+
+.menu a {
+
+    min-height:
+        70px;
+
+    display:
+        flex;
+
+    align-items:
+        center;
+
+    justify-content:
+        center;
+
+    padding:
+        12px;
+
+    border-radius:
+        18px;
+
+    background:
+        #007a45;
+
+    color:
+        white;
+
+    text-decoration:
+        none;
+
+    font-size:
+        17px;
+
+    font-weight:
+        700;
+
+    text-align:
+        center;
+
+    transition:
+        0.2s ease;
+
+}
+
+
+.menu a:hover {
+
+    background:
+        #00673a;
+
+    transform:
+        translateY(-2px);
+
+}
+
+
+.menu a:active {
+
+    transform:
+        scale(0.97);
+
+}
+
+
+/* =====================================================
+   MAIN CONTAINER
+===================================================== */
+
+.container {
+
+    width:
+        calc(100% - 30px);
+
+    max-width:
+        900px;
+
+    margin:
+        25px auto 50px;
+
+}
+
+
+/* =====================================================
+   CARDS
+===================================================== */
+
+.card {
+
+    background:
+        #ffffff;
+
+    border-radius:
+        25px;
+
+    padding:
+        22px;
+
+    margin-bottom:
+        20px;
+
+    box-shadow:
+        0 6px 22px
+        rgba(0,0,0,0.06);
+
+}
+
+
+.card h2 {
+
+    margin:
+        0 0 20px;
+
+    color:
+        #007548;
+
+    font-size:
+        21px;
+
+    font-weight:
+        800;
+
+    line-height:
+        1.6;
+
+}
+
+
+/* =====================================================
+   FORM
+===================================================== */
+
+.form-grid {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap:
+        12px;
+
+}
+
+
+.form-grid input,
+.form-grid select {
+
+    width:
+        100%;
+
+    height:
+        54px;
+
+    padding:
+        0 15px;
+
+    border:
+        1.5px solid
+        #d8dfdc;
+
+    border-radius:
+        16px;
+
+    background:
+        #ffffff;
+
+    color:
+        #263b32;
+
+    font-family:
+        inherit;
+
+    font-size:
+        15px;
+
+    outline:
+        none;
+
+}
+
+
+.form-grid input:focus,
+.form-grid select:focus {
+
+    border-color:
+        #007a45;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(0,122,69,0.08);
+
+}
+
+
+/* =====================================================
+   TEXTAREA
+===================================================== */
+
+textarea {
+
+    width:
+        100%;
+
+    min-height:
+        140px;
+
+    padding:
+        15px;
+
+    border:
+        1.5px solid
+        #d8dfdc;
+
+    border-radius:
+        17px;
+
+    resize:
+        vertical;
+
+    font-family:
+        inherit;
+
+    font-size:
+        15px;
+
+    outline:
+        none;
+
+}
+
+
+textarea:focus {
+
+    border-color:
+        #007a45;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(0,122,69,0.08);
+
+}
+
+
+/* =====================================================
+   BUTTON
+===================================================== */
+
+.card button {
+
+    min-height:
+        52px;
+
+    margin-top:
+        12px;
+
+    padding:
+        12px 25px;
+
+    border:
+        none;
+
+    border-radius:
+        16px;
+
+    background:
+        #007a45;
+
+    color:
+        white;
+
+    font-family:
+        inherit;
+
+    font-size:
+        16px;
+
+    font-weight:
+        700;
+
+    cursor:
+        pointer;
+
+}
+
+
+.card button:hover {
+
+    background:
+        #00673a;
+
+}
+
+
+.card button:active {
+
+    transform:
+        scale(0.98);
+
+}
+
+
+/* =====================================================
+   RESULTS
+===================================================== */
+
+.results {
+
+    display:
+        grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap:
+        10px;
+
+}
+
+
+.results > div {
+
+    min-height:
+        80px;
+
+    padding:
+        12px;
+
+    display:
+        flex;
+
+    flex-direction:
+        column;
+
+    justify-content:
+        center;
+
+    align-items:
+        center;
+
+    text-align:
+        center;
+
+    background:
+        #f3f8f5;
+
+    border-radius:
+        17px;
+
+    color:
+        #607067;
+
+    font-size:
+        13px;
+
+}
+
+
+.results strong {
+
+    display:
+        block;
+
+    margin-top:
+        7px;
+
+    color:
+        #007548;
+
+    font-size:
+        20px;
+
+    font-weight:
+        800;
+
+}
+
+
+/* =====================================================
+   CHARTS
+===================================================== */
+
+canvas {
+
+    display:
+        block;
+
+    width:
+        100% !important;
+
+    max-width:
+        100%;
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+.login-box {
+
+    width:
+        calc(100% - 30px);
+
+    max-width:
+        430px;
+
+    margin:
+        30px auto;
+
+    padding:
+        28px;
+
+    background:
+        #ffffff;
+
+    border-radius:
+        28px;
+
+    box-shadow:
+        0 10px 35px
+        rgba(0,0,0,0.10);
+
+    text-align:
+        center;
+
+}
+
+
+.login-box input {
+
+    width:
+        100%;
+
+    height:
+        55px;
+
+    margin-bottom:
+        12px;
+
+    padding:
+        0 16px;
+
+    border:
+        1.5px solid
+        #d8dfdc;
+
+    border-radius:
+        16px;
+
+    font-family:
+        inherit;
+
+    font-size:
+        15px;
+
+}
+
+
+.login-box button {
+
+    width:
+        100%;
+
+    min-height:
+        52px;
+
+    margin-top:
+        8px;
+
+    border:
+        none;
+
+    border-radius:
+        16px;
+
+    background:
+        #007a45;
+
+    color:
+        white;
+
+    font-family:
+        inherit;
+
+    font-size:
+        16px;
+
+    font-weight:
+        700;
+
+}
+
+
+.login-box .guest {
+
+    background:
+        #6b7c74;
+
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 600px) {
+
+
+    .header {
+
+        padding:
+            20px 15px;
+
+        border-radius:
+            0 0 35px 35px;
+
+    }
+
+
+    .header h1 {
+
+        font-size:
+            23px;
+
+    }
+
+
+    .header h3 {
+
+        font-size:
+            14px;
+
+    }
+
+
+    .menu {
+
+        width:
+            calc(100% - 24px);
+
+        padding:
+            14px;
+
+        gap:
+            10px;
+
+        border-radius:
+            23px;
+
+    }
+
+
+    .menu a {
+
+        min-height:
+            70px;
+
+        padding:
+            8px;
+
+        font-size:
+            15px;
+
+        border-radius:
+            16px;
+
+    }
+
+
+    .container {
+
+        width:
+            calc(100% - 24px);
+
+    }
+
+
+    .card {
+
+        padding:
+            18px;
+
+        border-radius:
+            22px;
+
+    }
+
+
+    .form-grid {
+
+        grid-template-columns:
+            1fr;
+
+    }
+
+
+    .results {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
+    }
+
+
+    .results strong {
+
+        font-size:
+            18px;
+
+    }
+
+
+    .login-box {
+
+        padding:
+            22px;
+
+    }
+
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+===================================================== */
+
+@media (max-width: 380px) {
+
+
+    .menu a {
+
+        font-size:
+            14px;
+
+        min-height:
+            65px;
+
+    }
+
+
+    .card h2 {
+
+        font-size:
+            19px;
+
+    }
+
+}
