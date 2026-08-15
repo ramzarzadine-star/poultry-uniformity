@@ -2,311 +2,514 @@
 
 /*
 =========================================================
- ADINEH POULTRY
- Authentication Guard
-=========================================================
-
-این فایل مسئول:
-
-1. بررسی Session
-2. بررسی Profile
-3. بررسی status
-4. بررسی role
-5. خروج امن
-6. جلوگیری از ورود حساب غیرفعال
+مرکز تخصصی سلامت طیور آدینه
+Authentication Guard
 =========================================================
 */
 
-
 (function () {
 
-    const client =
-        window.supabaseClient;
+  const client = window.supabaseClient;
+
+  /*
+  وضعیت اولیه احراز هویت
+  */
+  window.ADINEH_AUTH = {
+    ready: false,
+    user: null,
+    profile: null
+  };
 
 
-    if (!client) {
+  /*
+  ارسال رویداد آماده شدن
+  */
+  function authReady(user, profile) {
+
+    window.ADINEH_AUTH = {
+      ready: true,
+      user: user || null,
+      profile: profile || null
+    };
+
+    document.dispatchEvent(
+      new CustomEvent('adineh-auth-ready')
+    );
+
+  }
+
+
+  /*
+  انتقال به صفحه ورود
+  */
+  function goLogin() {
+
+    window.ADINEH_AUTH = {
+      ready: false,
+      user: null,
+      profile: null
+    };
+
+    window.location.replace('login.html');
+
+  }
+
+
+  /*
+  بررسی وجود Supabase
+  */
+  if (!client) {
+
+    console.error(
+      'Supabase client is not available.'
+    );
+
+    goLogin();
+
+    return;
+
+  }
+
+
+  /*
+  دریافت کاربر فعلی
+  */
+  async function getCurrentUser() {
+
+    try {
+
+      const {
+        data,
+        error
+      } = await client.auth.getUser();
+
+      if (error) {
 
         console.error(
-            'Supabase client is not available.'
+          'getCurrentUser:',
+          error
         );
 
-        return;
+        return null;
+
+      }
+
+      return data?.user || null;
+
+    } catch (error) {
+
+      console.error(
+        'getCurrentUser exception:',
+        error
+      );
+
+      return null;
+
+    }
+
+  }
+
+
+  /*
+  دریافت Profile
+  */
+  async function getCurrentProfile(user) {
+
+    if (!user)
+      return null;
+
+
+    try {
+
+      const {
+        data,
+        error
+      } = await client
+        .from('profiles')
+        .select(`
+          id,
+          username,
+          first_name,
+          last_name,
+          phone,
+          company_name,
+          role,
+          status,
+          created_at,
+          updated_at,
+          last_seen_at
+        `)
+        .eq(
+          'id',
+          user.id
+        )
+        .maybeSingle();
+
+
+      if (error) {
+
+        console.error(
+          'getCurrentProfile:',
+          error
+        );
+
+        return null;
+
+      }
+
+
+      return data || null;
+
+    } catch (error) {
+
+      console.error(
+        'getCurrentProfile exception:',
+        error
+      );
+
+      return null;
+
+    }
+
+  }
+
+
+  /*
+  بررسی دسترسی
+  */
+  async function requireActiveUser(
+    options = {}
+  ) {
+
+    const redirect =
+      options.redirect !== false;
+
+
+    const user =
+      await getCurrentUser();
+
+
+    /*
+    کاربر وارد نشده
+    */
+    if (!user) {
+
+      if (redirect)
+        goLogin();
+
+      return null;
+
     }
 
 
     /*
-    =====================================================
-    دریافت کاربر فعلی
-    =====================================================
+    دریافت پروفایل
     */
-
-    async function getCurrentUser() {
-
-        const {
-            data,
-            error
-        } =
-            await client.auth.getUser();
+    const profile =
+      await getCurrentProfile(user);
 
 
-        if (error) {
+    if (!profile) {
 
-            console.error(
-                'getCurrentUser:',
-                error
-            );
+      console.error(
+        'Profile not found for user:',
+        user.id
+      );
 
-            return null;
-        }
+      await client.auth.signOut();
 
+      if (redirect)
+        goLogin();
 
-        return data?.user || null;
+      return null;
 
     }
 
 
     /*
-    =====================================================
-    دریافت Profile
-    =====================================================
+    فقط حساب Active
     */
-
-    async function getCurrentProfile() {
-
-        const user =
-            await getCurrentUser();
-
-
-        if (!user) {
-            return null;
-        }
-
-
-        const {
-            data,
-            error
-        } =
-            await client
-                .from('profiles')
-                .select(`
-                    id,
-                    username,
-                    first_name,
-                    last_name,
-                    phone,
-                    company_name,
-                    role,
-                    status,
-                    created_at,
-                    updated_at,
-                    last_seen_at
-                `)
-                .eq(
-                    'id',
-                    user.id
-                )
-                .maybeSingle();
-
-
-        if (error) {
-
-            console.error(
-                'getCurrentProfile:',
-                error
-            );
-
-            return null;
-        }
-
-
-        return data || null;
-
-    }
-
-
-    /*
-    =====================================================
-    بررسی دسترسی
-    =====================================================
-    */
-
-    async function requireActiveUser(
-        options = {}
+    if (
+      profile.status !== 'active'
     ) {
 
-        const redirect =
-            options.redirect !== false;
+      console.warn(
+        'Account is not active:',
+        profile.status
+      );
 
+      await client.auth.signOut();
 
-        const loginUrl =
-            'login.html';
+      if (redirect)
+        goLogin();
 
-
-        const user =
-            await getCurrentUser();
-
-
-        if (!user) {
-
-            if (redirect) {
-
-                window.location.replace(
-                    loginUrl
-                );
-
-            }
-
-            return null;
-        }
-
-
-        const profile =
-            await getCurrentProfile();
-
-
-        if (!profile) {
-
-            await client.auth.signOut();
-
-
-            if (redirect) {
-
-                window.location.replace(
-                    loginUrl
-                );
-
-            }
-
-            return null;
-        }
-
-
-        if (
-            profile.status !==
-            'active'
-        ) {
-
-            await client.auth.signOut();
-
-
-            if (redirect) {
-
-                window.location.replace(
-                    loginUrl
-                );
-
-            }
-
-            return null;
-        }
-
-
-        return {
-
-            user,
-
-            profile
-
-        };
+      return null;
 
     }
 
 
-    /*
-    =====================================================
-    بررسی Owner
-    =====================================================
-    */
+    return {
+      user,
+      profile
+    };
 
-    async function requireOwner() {
-
-        const session =
-            await requireActiveUser();
+  }
 
 
-        if (!session) {
-            return null;
-        }
+  /*
+  بررسی Owner
+  */
+  async function requireOwner() {
+
+    const session =
+      await requireActiveUser();
 
 
-        if (
-            session.profile.role !==
-            'owner'
-        ) {
-
-            window.location.replace(
-                'index.html'
-            );
-
-            return null;
-        }
+    if (!session)
+      return null;
 
 
-        return session;
+    if (
+      session.profile.role !== 'owner'
+    ) {
+
+      window.location.replace(
+        'index.html'
+      );
+
+      return null;
 
     }
 
 
-    /*
-    =====================================================
-    خروج
-    =====================================================
-    */
+    return session;
 
-    async function logout() {
-
-        try {
-
-            await client.auth.signOut();
-
-        } catch (error) {
-
-            console.error(
-                'Logout error:',
-                error
-            );
-
-        }
+  }
 
 
-        try {
+  /*
+  خروج
+  */
+  async function logout() {
 
-            sessionStorage.removeItem(
-                'adineh_user_role'
-            );
+    try {
 
-            sessionStorage.removeItem(
-                'adineh_user_name'
-            );
+      await client.auth.signOut();
 
-        } catch (_) {}
+    } catch (error) {
+
+      console.error(
+        'Logout error:',
+        error
+      );
+
+    }
 
 
-        window.location.replace(
-            'login.html'
+    try {
+
+      sessionStorage.removeItem(
+        'adineh_user_role'
+      );
+
+      sessionStorage.removeItem(
+        'adineh_user_name'
+      );
+
+    } catch (_) {}
+
+
+    window.location.replace(
+      'login.html'
+    );
+
+  }
+
+
+  /*
+  Bootstrap اصلی
+  */
+  async function bootstrap() {
+
+    try {
+
+      /*
+      بررسی Session
+      */
+      const {
+        data,
+        error
+      } =
+        await client.auth.getSession();
+
+
+      if (error) {
+
+        console.error(
+          'getSession:',
+          error
         );
 
+        goLogin();
+
+        return;
+
+      }
+
+
+      const session =
+        data?.session;
+
+
+      if (!session?.user) {
+
+        goLogin();
+
+        return;
+
+      }
+
+
+      /*
+      دریافت Profile
+      */
+      const profile =
+        await getCurrentProfile(
+          session.user
+        );
+
+
+      if (!profile) {
+
+        await client.auth.signOut();
+
+        goLogin();
+
+        return;
+
+      }
+
+
+      /*
+      حساب باید Active باشد
+      */
+      if (
+        profile.status !== 'active'
+      ) {
+
+        console.warn(
+          'Inactive account:',
+          profile.status
+        );
+
+        await client.auth.signOut();
+
+        goLogin();
+
+        return;
+
+      }
+
+
+      /*
+      همه چیز OK
+      */
+      authReady(
+        session.user,
+        profile
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Authentication bootstrap error:',
+        error
+      );
+
+      goLogin();
+
     }
 
+  }
 
-    /*
-    =====================================================
-    API عمومی
-    =====================================================
-    */
 
-    window.AdinehAuth = {
+  /*
+  تغییر وضعیت Session
+  */
+  client.auth.onAuthStateChange(
+    async (
+      event,
+      session
+    ) => {
 
-        getCurrentUser,
+      console.log(
+        'Auth event:',
+        event
+      );
 
-        getCurrentProfile,
 
-        requireActiveUser,
+      if (
+        event === 'SIGNED_OUT'
+      ) {
 
-        requireOwner,
+        window.ADINEH_AUTH = {
+          ready: false,
+          user: null,
+          profile: null
+        };
 
-        logout
+        return;
 
-    };
+      }
+
+
+      if (
+        event === 'SIGNED_IN' ||
+        event === 'TOKEN_REFRESHED'
+      ) {
+
+        /*
+        اگر صفحه هنوز آماده نشده،
+        bootstrap آن را آماده می‌کند.
+        */
+
+        if (
+          !window.ADINEH_AUTH.ready
+        ) {
+
+          await bootstrap();
+
+        }
+
+      }
+
+    }
+  );
+
+
+  /*
+  API عمومی
+  */
+  window.AdinehAuth = {
+
+    getCurrentUser,
+
+    getCurrentProfile,
+
+    requireActiveUser,
+
+    requireOwner,
+
+    logout
+
+  };
+
+
+  /*
+  شروع
+  */
+  bootstrap();
+
 
 })();
