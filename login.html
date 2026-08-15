@@ -1,198 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="fa" dir="rtl">
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0,
-               maximum-scale=1.0, user-scalable=no">
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+>
 
-<title>ورود - مرکز تخصصی سلامت طیور آدینه</title>
+<link
+rel="stylesheet"
+href="Style.css"
+>
 
-<link rel="stylesheet" href="Style.css">
-
-<style>
-
-/* ==============================
-   صفحه ورود
-   ============================== */
-
-body {
-    margin: 0;
-    min-height: 100vh;
-    box-sizing: border-box;
-}
-
-/* کارت ورود */
-.login-box {
-    box-sizing: border-box;
-}
-
-/* لوگو */
-.login-logo {
-    width: 180px !important;
-    height: 180px !important;
-    margin: 0 auto 12px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
-    overflow: visible !important;
-}
-
-/* تصویر لوگو */
-.login-logo img {
-    width: 180px !important;
-    height: 180px !important;
-
-    max-width: none !important;
-    max-height: none !important;
-
-    object-fit: contain !important;
-
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-/* عنوان مرکز */
-.login-title {
-    margin: 5px 0 28px !important;
-    text-align: center !important;
-    font-weight: 700 !important;
-}
-
-/* ورودی‌ها */
-.login-box input {
-    box-sizing: border-box;
-    width: 100%;
-}
-
-/* دکمه‌ها */
-.login-box button {
-    box-sizing: border-box;
-}
-
-/* پیام */
-#message {
-    text-align: center;
-}
-
-/* موبایل */
-@media (max-width: 600px) {
-
-    .login-logo {
-        width: 165px !important;
-        height: 165px !important;
-    }
-
-    .login-logo img {
-        width: 165px !important;
-        height: 165px !important;
-    }
-
-}
-
-</style>
+<title>
+ورود | مرکز تخصصی سلامت طیور آدینه
+</title>
 
 </head>
 
 
-<body>
+<body class="login-page">
 
 
-<div class="login-box">
+<div class="login-hero">
 
 
-    <!-- =========================
-         لوگوی مرکز
-         ========================= -->
-
-    <div class="login-logo">
-
-        <img
-            src="IMG_4309.png"
-            alt="مرکز تخصصی سلامت طیور آدینه"
-        >
-
-    </div>
+<div class="login-bg"></div>
 
 
-    <!-- =========================
-         عنوان
-         ========================= -->
-<h3 class="login-title">
-    مرکز تخصصی سلامت طیور آدینه
-</h3>
+<img
+src="IMG_4309.png"
+class="login-logo"
+alt="لوگو"
+>
 
 
-    <!-- =========================
-         اطلاعات کاربر
-         ========================= -->
-
-    <div id="userBox"></div>
+<h1>
+مرکز تخصصی سلامت طیور آدینه
+</h1>
 
 
-    <input
-        id="username"
-        type="text"
-        placeholder="نام کاربری"
-        autocomplete="username"
-    >
-
-
-    <input
-        id="password"
-        type="password"
-        placeholder="رمز عبور"
-        autocomplete="current-password"
-    >
-
-
-    <!-- =========================
-         دکمه‌ها
-         ========================= -->
-
-    <button
-        type="button"
-        onclick="register()"
-    >
-        ثبت نام
-    </button>
-
-
-    <button
-        type="button"
-        onclick="login()"
-    >
-        ورود
-    </button>
-
-
-    <button
-        type="button"
-        class="guest"
-        onclick="guestLogin()"
-    >
-        ورود مهمان
-    </button>
-
-
-    <!-- پیام خطا / موفقیت -->
-
-    <p id="message"></p>
+<p>
+سامانه پایش و مدیریت سلامت گله‌های طیور
+</p>
 
 
 </div>
 
 
-<!-- فقط یک بار login.js -->
+<main class="login-card">
+
+
+<h2>
+ورود به سامانه
+</h2>
+
+
+<input
+id="username"
+placeholder="نام کاربری"
+>
+
+
+<input
+id="password"
+type="password"
+placeholder="رمز عبور"
+>
+
+
+<button onclick="login()">
+ورود
+</button>
+
+
+<button
+class="secondary"
+onclick="register()"
+>
+ثبت نام
+</button>
+
+
+<button
+class="ghost"
+onclick="guestLogin()"
+>
+ورود مهمان
+</button>
+
+
+<p
+id="message"
+class="message"
+></p>
+
+
+</main>
+
 
 <script src="login.js"></script>
-
 
 </body>
 
