@@ -1,59 +1,345 @@
 'use strict';
 
 /*
+  =========================================================
   مرکز تخصصی سلامت طیور آدینه
   Professional Poultry Health & Performance Management
-  V7
+  APP.JS — Stable Professional Version
+  =========================================================
+
+  نکته مهم:
+  تاریخ‌ها در دیتابیس به صورت Gregorian ذخیره می‌شوند
+  اما تمام تاریخ‌های قابل مشاهده برای کاربر به صورت شمسی
+  نمایش داده می‌شوند.
+
+  محاسبات:
+  Mean
+  SD
+  CV%
+  Uniformity ±10%
+  Uniformity ±15%
+  Min
+  Max
 */
+
+
+/* =========================================================
+   DATABASE KEY
+========================================================= */
 
 const DB_KEY =
   window.ADINEH_DB_KEY ||
-  'adineh_poultry_db_v7'; 
+  'adineh_poultry_db_v7';
+
+
+/* =========================================================
+   GENERAL HELPERS
+========================================================= */
 
 const uid = () =>
   Date.now().toString(36) +
-  Math.random().toString(36).slice(2, 8);
+  Math.random().toString(36).slice(2, 10);
+
 
 const esc = value =>
-  String(value ?? '').replace(/[&<>'"]/g, c => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    "'": '&#39;',
-    '"': '&quot;'
-  }[c]));
+  String(value ?? '').replace(
+    /[&<>'"]/g,
+    c => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[c])
+  );
+
 
 const num = value => {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ''
+  ) {
+    return null;
+  }
+
   const n = Number(value);
-  return Number.isFinite(n) ? n : null;
+
+  return Number.isFinite(n)
+    ? n
+    : null;
+
 };
 
-const fmt = (value, digits = 1) => {
+
+const fmt = (
+  value,
+  digits = 1
+) => {
+
   if (
     value === null ||
     value === undefined ||
     !Number.isFinite(Number(value))
-  ) return '—';
+  ) {
+    return '—';
+  }
 
-  return Number(value).toLocaleString('fa-IR', {
-    maximumFractionDigits: digits,
-    minimumFractionDigits: digits
-  });
+  return Number(value).toLocaleString(
+    'fa-IR',
+    {
+      maximumFractionDigits: digits,
+      minimumFractionDigits: digits
+    }
+  );
+
 };
 
-const today = () =>
-  new Date().toISOString().slice(0, 10);
 
-const daysBetween = (start, end = today()) => {
-  if (!start) return 0;
+/* =========================================================
+   DATE
+========================================================= */
 
-  const a = new Date(start);
-  const b = new Date(end);
+/*
+  تاریخ امروز به وقت محلی دستگاه.
+  از toISOString استفاده نمی‌کنیم تا مشکل اختلاف روز
+  به دلیل UTC ایجاد نشود.
+*/
+
+const today = () => {
+
+  const d = new Date();
+
+  const y = d.getFullYear();
+
+  const m =
+    String(d.getMonth() + 1)
+      .padStart(2, '0');
+
+  const day =
+    String(d.getDate())
+      .padStart(2, '0');
+
+  return `${y}-${m}-${day}`;
+
+};
+
+
+/*
+  تبدیل Gregorian → Jalali
+*/
+
+function gregorianToJalali(
+  gy,
+  gm,
+  gd
+) {
+
+  const g_d_m = [
+    0,
+    31,
+    59,
+    90,
+    120,
+    151,
+    181,
+    212,
+    243,
+    273,
+    304,
+    334
+  ];
+
+  let jy;
+
+  if (gy > 1600) {
+
+    jy = 979;
+
+    gy -= 1600;
+
+  } else {
+
+    jy = 0;
+
+    gy -= 621;
+
+  }
+
+  const gy2 =
+    gm > 2
+      ? gy + 1
+      : gy;
+
+  let days =
+    365 * gy +
+    Math.floor(
+      (gy2 + 3) / 4
+    ) -
+    Math.floor(
+      (gy2 + 99) / 100
+    ) +
+    Math.floor(
+      (gy2 + 399) / 400
+    ) -
+    80 +
+    gd +
+    g_d_m[gm - 1];
+
+  jy +=
+    33 *
+    Math.floor(days / 12053);
+
+  days %= 12053;
+
+  jy +=
+    4 *
+    Math.floor(days / 1461);
+
+  days %= 1461;
+
+  if (days > 365) {
+
+    jy +=
+      Math.floor(
+        (days - 1) / 365
+      );
+
+    days =
+      (days - 1) % 365;
+
+  }
+
+  const jm =
+    days < 186
+      ? 1 +
+        Math.floor(days / 31)
+      : 7 +
+        Math.floor(
+          (days - 186) / 30
+        );
+
+  const jd =
+    1 +
+    (
+      days < 186
+        ? days % 31
+        : (days - 186) % 30
+    );
+
+  return [
+    jy,
+    jm,
+    jd
+  ];
+
+}
+
+
+/*
+  نمایش تاریخ به شمسی
+
+  مثال:
+  2026-08-16
+  ↓
+  ۱۴۰۵/۰۵/۲۵
+*/
+
+function toPersianDate(
+  value
+) {
+
+  if (!value)
+    return '—';
+
+  const match =
+    String(value).match(
+      /^(\d{4})-(\d{1,2})-(\d{1,2})/
+    );
+
+  if (!match)
+    return esc(value);
+
+  const gy =
+    Number(match[1]);
+
+  const gm =
+    Number(match[2]);
+
+  const gd =
+    Number(match[3]);
+
+  const [
+    jy,
+    jm,
+    jd
+  ] =
+    gregorianToJalali(
+      gy,
+      gm,
+      gd
+    );
+
+  return [
+    jy,
+    String(jm).padStart(2, '0'),
+    String(jd).padStart(2, '0')
+  ].join('/');
+}
+
+
+/*
+  تاریخ شمسی + متن مناسب برای نمایش
+*/
+
+function displayDate(value) {
+
+  return toPersianDate(value);
+
+}
+
+
+/*
+  محاسبه سن گله بر اساس تاریخ واقعی
+*/
+
+const daysBetween = (
+  start,
+  end = today()
+) => {
+
+  if (!start)
+    return 0;
+
+  const a =
+    new Date(
+      `${start}T00:00:00`
+    );
+
+  const b =
+    new Date(
+      `${end}T00:00:00`
+    );
+
+  if (
+    Number.isNaN(a.getTime()) ||
+    Number.isNaN(b.getTime())
+  ) {
+    return 0;
+  }
 
   return Math.max(
     0,
-    Math.floor((b - a) / 86400000)
+    Math.floor(
+      (
+        b.getTime() -
+        a.getTime()
+      ) /
+      86400000
+    )
   );
+
 };
 
 
@@ -62,56 +348,138 @@ const daysBetween = (start, end = today()) => {
 ========================================================= */
 
 const defaultDB = {
+
   farms: [],
+
   houses: [],
+
   flocks: [],
 
   weights: [],
+
   feed: [],
+
   water: [],
+
   mortality: [],
+
   eggs: [],
 
   health: [],
+
   vaccines: [],
+
   meds: [],
+
   labs: [],
+
   environment: [],
+
   tasks: [],
 
   settings: {
-    clinic: 'مرکز تخصصی سلامت طیور آدینه'
+
+    clinic:
+      'مرکز تخصصی سلامت طیور آدینه'
+
   }
+
 };
+
+
+function createDefaultDB() {
+
+  return JSON.parse(
+    JSON.stringify(
+      defaultDB
+    )
+  );
+
+}
+
 
 function loadDB() {
 
   try {
 
-    const saved =
-      JSON.parse(
-        localStorage.getItem(DB_KEY) || '{}'
+    const raw =
+      localStorage.getItem(
+        DB_KEY
       );
 
-    return {
-      ...structuredClone(defaultDB),
-      ...saved
-    };
+    if (!raw)
+      return createDefaultDB();
 
-  } catch {
+    const saved =
+      JSON.parse(raw);
 
-    return structuredClone(defaultDB);
+    if (
+      !saved ||
+      typeof saved !== 'object'
+    ) {
+      return createDefaultDB();
+    }
+
+    const result =
+      createDefaultDB();
+
+    Object.keys(result)
+      .forEach(key => {
+
+        if (
+          saved[key] !== undefined
+        ) {
+          result[key] =
+            saved[key];
+        }
+
+      });
+
+    return result;
+
+  } catch (error) {
+
+    console.error(
+      'Database load error:',
+      error
+    );
+
+    return createDefaultDB();
 
   }
+
 }
+
 
 let db = loadDB();
 
+
 function saveDB() {
-  localStorage.setItem(
-    DB_KEY,
-    JSON.stringify(db)
-  );
+
+  try {
+
+    localStorage.setItem(
+      DB_KEY,
+      JSON.stringify(db)
+    );
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      'Database save error:',
+      error
+    );
+
+    toast(
+      'خطا در ذخیره اطلاعات'
+    );
+
+    return false;
+
+  }
+
 }
 
 
@@ -124,61 +492,85 @@ const standards = {
   'Hy-Line W-80': {
 
     type: 'layer',
+
     unit: 'week',
+
     uniformity: 85,
 
     rows: {
 
       1: [67, 75],
+
       2: [125, 137],
+
       3: [187, 206],
+
       4: [256, 280],
+
       5: [331, 361],
+
       6: [414, 450],
+
       7: [504, 546],
+
       8: [598, 645],
+
       9: [692, 744],
+
       10: [783, 840],
+
       11: [867, 927],
+
       12: [942, 1004],
+
       13: [1008, 1070],
+
       14: [1066, 1127],
+
       15: [1116, 1177],
+
       16: [1164, 1223],
+
       17: [1212, 1269]
 
     }
 
   },
 
+
   'Hy-Line W-80 Plus': {
 
     type: 'layer',
+
     unit: 'week',
+
     uniformity: 85,
 
     rows: {
 
       18: [1280, 1360],
+
       26: [1560, 1660],
+
       32: [1660, 1770],
+
       70: [1710, 1820],
+
       100: [1710, 1820]
 
     }
 
   },
 
-  /*
-    استاندارد سفارشی
-    اعداد فرضی برای سویه‌های دیگر وارد نشده‌اند.
-  */
 
   'Custom': {
 
     type: 'custom',
+
     unit: 'week',
+
     uniformity: 85,
+
     rows: {}
 
   }
@@ -187,69 +579,150 @@ const standards = {
 
 
 /* =========================================================
-   CALCULATIONS
+   STATISTICS
 ========================================================= */
 
-function calculateStatistics(weights) {
+function calculateStatistics(
+  weights
+) {
 
-  const values = weights
-    .map(Number)
-    .filter(Number.isFinite);
+  const values =
+    weights
+      .map(Number)
+      .filter(
+        Number.isFinite
+      );
+
 
   if (!values.length)
     return null;
 
-  const n = values.length;
+
+  const n =
+    values.length;
+
+
+  const sum =
+    values.reduce(
+      (total, value) =>
+        total + value,
+      0
+    );
+
 
   const mean =
-    values.reduce(
-      (sum, value) => sum + value,
-      0
-    ) / n;
+    sum / n;
+
+
+  /*
+    Sample SD
+    n - 1
+  */
 
   const variance =
-  n > 1
-    ? values.reduce(
-        (sum, value) =>
-          sum + Math.pow(value - mean, 2),
-        0
-      ) / (n - 1)
-    : 0;
+    n > 1
 
-  const sd = Math.sqrt(variance);
+      ? values.reduce(
+          (
+            total,
+            value
+          ) =>
+            total +
+            Math.pow(
+              value - mean,
+              2
+            ),
+          0
+        ) /
+        (n - 1)
+
+      : 0;
+
+
+  const sd =
+    Math.sqrt(
+      variance
+    );
+
 
   const cv =
     mean > 0
-      ? (sd / mean) * 100
+      ? (
+          sd /
+          mean
+        ) *
+        100
       : 0;
 
+
+  /*
+    Uniformity ±10%
+  */
+
+  const lower10 =
+    mean * 0.90;
+
+  const upper10 =
+    mean * 1.10;
+
+
   const u10 =
-    values.filter(
-      value =>
-        value >= mean * 0.90 &&
-        value <= mean * 1.10
-    ).length / n * 100;
+    (
+      values.filter(
+        value =>
+          value >= lower10 &&
+          value <= upper10
+      ).length /
+      n
+    ) *
+    100;
+
+
+  /*
+    Uniformity ±15%
+  */
+
+  const lower15 =
+    mean * 0.85;
+
+  const upper15 =
+    mean * 1.15;
+
 
   const u15 =
-    values.filter(
-      value =>
-        value >= mean * 0.85 &&
-        value <= mean * 1.15
-    ).length / n * 100;
+    (
+      values.filter(
+        value =>
+          value >= lower15 &&
+          value <= upper15
+      ).length /
+      n
+    ) *
+    100;
+
 
   return {
 
     n,
+
     mean,
+
     sd,
+
     cv,
+
     u10,
+
     u15,
 
-    min: Math.min(...values),
-    max: Math.max(...values)
+    min:
+      Math.min(...values),
+
+    max:
+      Math.max(...values)
 
   };
+
 }
 
 
@@ -257,43 +730,66 @@ function calculateStatistics(weights) {
    STANDARD LOOKUP
 ========================================================= */
 
-function getReference(profile, ageDays) {
+function getReference(
+  profile,
+  ageDays
+) {
 
   const standard =
     standards[profile];
 
+
   if (!standard)
     return null;
+
 
   const week =
     Math.max(
       1,
-      Math.round(ageDays / 7)
+      Math.round(
+        Number(ageDays || 0) /
+        7
+      )
     );
+
 
   const keys =
     Object.keys(
       standard.rows
-    ).map(Number);
+    )
+      .map(Number);
+
 
   if (!keys.length)
     return null;
 
+
   const closest =
     keys.reduce(
-      (previous, current) =>
-        Math.abs(current - week) <
-        Math.abs(previous - week)
+      (
+        previous,
+        current
+      ) =>
+        Math.abs(
+          current - week
+        ) <
+        Math.abs(
+          previous - week
+        )
           ? current
           : previous
     );
 
+
   return {
 
-    week: closest,
+    week:
+      closest,
 
     range:
-      standard.rows[closest],
+      standard.rows[
+        closest
+      ],
 
     approximate:
       closest !== week,
@@ -302,6 +798,7 @@ function getReference(profile, ageDays) {
       standard.uniformity
 
   };
+
 }
 
 
@@ -309,46 +806,95 @@ function getReference(profile, ageDays) {
    STATUS
 ========================================================= */
 
-function performanceStatus(value, range) {
+function performanceStatus(
+  value,
+  range
+) {
 
   if (
     value === null ||
     value === undefined ||
     !range
-  )
+  ) {
     return 'info';
+  }
+
 
   if (
     value >= range[0] &&
     value <= range[1]
-  )
+  ) {
     return 'ok';
+  }
+
 
   const margin =
-    (range[1] - range[0] || 10) * 0.15;
+    (
+      range[1] -
+      range[0] ||
+      10
+    ) *
+    0.15;
+
 
   if (
-    value >= range[0] - margin &&
-    value <= range[1] + margin
-  )
+    value >=
+      range[0] - margin &&
+    value <=
+      range[1] + margin
+  ) {
     return 'warn';
+  }
+
 
   return 'bad';
+
 }
 
 
-function badge(status) {
+function badge(
+  status
+) {
 
-  if (status === 'ok')
-    return '<span class="status ok">در محدوده</span>';
+  if (
+    status === 'ok'
+  ) {
+    return `
+      <span class="status ok">
+        در محدوده
+      </span>
+    `;
+  }
 
-  if (status === 'warn')
-    return '<span class="status warn">نزدیک محدوده</span>';
 
-  if (status === 'bad')
-    return '<span class="status bad">نیازمند بررسی</span>';
+  if (
+    status === 'warn'
+  ) {
+    return `
+      <span class="status warn">
+        نزدیک محدوده
+      </span>
+    `;
+  }
 
-  return '<span class="status info">بدون مرجع</span>';
+
+  if (
+    status === 'bad'
+  ) {
+    return `
+      <span class="status bad">
+        نیازمند بررسی
+      </span>
+    `;
+  }
+
+
+  return `
+    <span class="status info">
+      بدون مرجع
+    </span>
+  `;
+
 }
 
 
@@ -356,34 +902,61 @@ function badge(status) {
    HELPERS
 ========================================================= */
 
-function farmName(id) {
+function farmName(
+  id
+) {
 
-  return db.farms.find(
-    item => item.id === id
-  )?.name || '—';
-
-}
-
-function houseName(id) {
-
-  return db.houses.find(
-    item => item.id === id
-  )?.name || '—';
+  return (
+    db.farms.find(
+      item =>
+        item.id === id
+    )?.name ||
+    '—'
+  );
 
 }
 
-function flockName(id) {
 
-  return db.flocks.find(
-    item => item.id === id
-  )?.name || '—';
+function houseName(
+  id
+) {
+
+  return (
+    db.houses.find(
+      item =>
+        item.id === id
+    )?.name ||
+    '—'
+  );
 
 }
 
-function flockAge(flock, date = today()) {
+
+function flockName(
+  id
+) {
+
+  return (
+    db.flocks.find(
+      item =>
+        item.id === id
+    )?.name ||
+    '—'
+  );
+
+}
+
+
+function flockAge(
+  flock,
+  date = today()
+) {
 
   return flock?.placement
-    ? daysBetween(flock.placement, date)
+    ? daysBetween(
+        flock.placement,
+        date
+      )
     : 0;
 
 }
@@ -393,29 +966,47 @@ function flockAge(flock, date = today()) {
    TOAST
 ========================================================= */
 
-function toast(message) {
+function toast(
+  message
+) {
 
   let element =
-    document.querySelector('.toast');
+    document.querySelector(
+      '.toast'
+    );
+
 
   if (!element) {
 
     element =
-      document.createElement('div');
+      document.createElement(
+        'div'
+      );
 
-    element.className = 'toast';
+    element.className =
+      'toast';
 
-    document.body.appendChild(element);
+    document.body.appendChild(
+      element
+    );
 
   }
 
-  element.textContent = message;
 
-  element.classList.add('show');
+  element.textContent =
+    message;
+
+
+  element.classList.add(
+    'show'
+  );
+
 
   setTimeout(
     () =>
-      element.classList.remove('show'),
+      element.classList.remove(
+        'show'
+      ),
     2200
   );
 
@@ -434,14 +1025,22 @@ function field(
   options = ''
 ) {
 
-  if (type === 'select') {
+  if (
+    type === 'select'
+  ) {
 
     return `
       <div class="field">
 
-        <label>${esc(label)}</label>
+        <label
+          for="${esc(name)}"
+        >
+          ${esc(label)}
+        </label>
 
-        <select id="${name}">
+        <select
+          id="${esc(name)}"
+        >
           ${value}
         </select>
 
@@ -450,14 +1049,19 @@ function field(
 
   }
 
+
   return `
     <div class="field">
 
-      <label>${esc(label)}</label>
+      <label
+        for="${esc(name)}"
+      >
+        ${esc(label)}
+      </label>
 
       <input
-        id="${name}"
-        type="${type}"
+        id="${esc(name)}"
+        type="${esc(type)}"
         value="${esc(value)}"
         ${options}
       >
@@ -472,49 +1076,98 @@ function field(
    NAVIGATION
 ========================================================= */
 
-let currentPage = 'dashboard';
+let currentPage =
+  'dashboard';
+
 
 function navigation() {
 
   const items = [
 
-    ['dashboard', 'داشبورد'],
+    [
+      'dashboard',
+      'داشبورد'
+    ],
 
-    ['farms', 'فارم‌ها'],
+    [
+      'farms',
+      'فارم‌ها'
+    ],
 
-    ['houses', 'سالن‌ها'],
+    [
+      'houses',
+      'سالن‌ها'
+    ],
 
-    ['flocks', 'گله‌ها'],
+    [
+      'flocks',
+      'گله‌ها'
+    ],
 
-    ['weights', 'وزن و یکنواختی'],
+    [
+      'weights',
+      'وزن و یکنواختی'
+    ],
 
-    ['feed', 'دان'],
+    [
+      'feed',
+      'دان'
+    ],
 
-    ['water', 'آب'],
+    [
+      'water',
+      'آب'
+    ],
 
-    ['eggs', 'تولید تخم'],
+    [
+      'eggs',
+      'تولید تخم'
+    ],
 
-    ['health', 'سلامت'],
+    [
+      'health',
+      'سلامت'
+    ],
 
-    ['labs', 'آزمایشگاه'],
+    [
+      'labs',
+      'آزمایشگاه'
+    ],
 
-    ['environment', 'محیط'],
+    [
+      'environment',
+      'محیط'
+    ],
 
-    ['reports', 'گزارش']
+    [
+      'reports',
+      'گزارش'
+    ]
 
   ];
+
 
   return `
     <nav class="nav">
 
       ${items.map(
-        ([page, title]) => `
+        (
+          [
+            page,
+            title
+          ]
+        ) => `
 
           <button
-            class="${currentPage === page ? 'active' : ''}"
+            class="${
+              currentPage === page
+                ? 'active'
+                : ''
+            }"
             data-page="${page}"
+            type="button"
           >
-            ${title}
+            ${esc(title)}
           </button>
 
         `
@@ -555,7 +1208,9 @@ function shell(
               <div>
 
                 <b>
-                  ${esc(db.settings.clinic)}
+                  ${esc(
+                    db.settings.clinic
+                  )}
                 </b>
 
                 <small>
@@ -566,11 +1221,13 @@ function shell(
 
             </div>
 
+
             <div class="topactions">
 
               <button
                 class="glass"
                 data-action="backup"
+                type="button"
               >
                 پشتیبان
               </button>
@@ -609,6 +1266,7 @@ function shell(
             <button
               class="btn small"
               data-page="flocks"
+              type="button"
             >
               + گله
             </button>
@@ -616,6 +1274,7 @@ function shell(
             <button
               class="btn small"
               data-page="weights"
+              type="button"
             >
               + وزن‌کشی
             </button>
@@ -640,6 +1299,7 @@ function shell(
 
       </main>
 
+
       <div class="toast"></div>
 
     </div>
@@ -657,152 +1317,221 @@ function dashboard() {
 
   let warnings = 0;
 
+
   const cards =
-    db.flocks.map(flock => {
+    db.flocks.map(
+      flock => {
 
-      const records =
-        db.weights
-          .filter(
-            record =>
-              record.flock === flock.id
-          )
-          .sort(
-            (a, b) =>
-              b.date.localeCompare(a.date)
-          );
-
-      const latest =
-        records[0];
-
-      const reference =
-        latest
-          ? getReference(
-              flock.standard,
-              latest.ageDays
+        const records =
+          db.weights
+            .filter(
+              record =>
+                record.flock ===
+                flock.id
             )
-          : null;
+            .sort(
+              (
+                a,
+                b
+              ) =>
+                String(b.date)
+                  .localeCompare(
+                    String(a.date)
+                  )
+            );
 
-      const status =
-        latest && reference
-          ? performanceStatus(
-              latest.stats.mean,
-              reference.range
-            )
-          : 'info';
 
-      if (status === 'bad')
-        warnings++;
+        const latest =
+          records[0];
 
-      return `
 
-        <div class="card">
+        const reference =
+          latest
+            ? getReference(
+                flock.standard,
+                latest.ageDays
+              )
+            : null;
 
-          <div class="sectionTitle">
 
-            <h2>
-              ${esc(flock.name)}
-            </h2>
+        const status =
+          latest &&
+          reference
+            ? performanceStatus(
+                latest.stats.mean,
+                reference.range
+              )
+            : 'info';
 
-            ${badge(status)}
+
+        if (
+          status === 'bad'
+        ) {
+          warnings++;
+        }
+
+
+        return `
+
+          <div class="card">
+
+            <div class="sectionTitle">
+
+              <h2>
+                ${esc(
+                  flock.name
+                )}
+              </h2>
+
+              ${badge(status)}
+
+            </div>
+
+
+            <p class="muted">
+
+              ${esc(
+                farmName(
+                  flock.farm
+                )
+              )}
+
+              ·
+
+              ${esc(
+                houseName(
+                  flock.house
+                )
+              )}
+
+              ·
+
+              سن
+
+              ${fmt(
+                latest?.ageDays ||
+                flockAge(flock),
+                0
+              )}
+
+              روز
+
+              ·
+
+              ${esc(
+                flock.standard ||
+                'بدون استاندارد'
+              )}
+
+            </p>
+
+
+            <div class="kpis">
+
+              <div class="kpi">
+
+                <small>
+                  وزن
+                </small>
+
+                <strong>
+
+                  ${
+                    latest
+                      ? fmt(
+                          latest.stats.mean,
+                          0
+                        ) +
+                        ' g'
+                      : '—'
+                  }
+
+                </strong>
+
+              </div>
+
+
+              <div class="kpi">
+
+                <small>
+                  CV
+                </small>
+
+                <strong>
+
+                  ${
+                    latest
+                      ? fmt(
+                          latest.stats.cv,
+                          1
+                        ) +
+                        '٪'
+                      : '—'
+                  }
+
+                </strong>
+
+              </div>
+
+
+              <div class="kpi">
+
+                <small>
+                  Uniformity ±10%
+                </small>
+
+                <strong>
+
+                  ${
+                    latest
+                      ? fmt(
+                          latest.stats.u10,
+                          1
+                        ) +
+                        '٪'
+                      : '—'
+                  }
+
+                </strong>
+
+              </div>
+
+
+              <div class="kpi">
+
+                <small>
+                  مرجع وزن
+                </small>
+
+                <strong>
+
+                  ${
+                    reference
+                      ? fmt(
+                          reference.range[0],
+                          0
+                        ) +
+                        '–' +
+                        fmt(
+                          reference.range[1],
+                          0
+                        )
+                      : '—'
+                  }
+
+                </strong>
+
+              </div>
+
+            </div>
 
           </div>
 
+        `;
 
-          <p class="muted">
-
-            ${esc(farmName(flock.farm))}
-            ·
-            ${esc(houseName(flock.house))}
-            ·
-            سن ${fmt(
-              latest?.ageDays ||
-              flockAge(flock),
-              0
-            )} روز
-
-            ·
-
-            ${esc(
-              flock.standard ||
-              'بدون استاندارد'
-            )}
-
-          </p>
-
-
-          <div class="kpis">
-
-            <div class="kpi">
-              <small>وزن</small>
-              <strong>
-                ${
-                  latest
-                    ? fmt(
-                        latest.stats.mean,
-                        0
-                      ) + ' g'
-                    : '—'
-                }
-              </strong>
-            </div>
-
-
-            <div class="kpi">
-              <small>CV</small>
-              <strong>
-                ${
-                  latest
-                    ? fmt(
-                        latest.stats.cv,
-                        1
-                      ) + '٪'
-                    : '—'
-                }
-              </strong>
-            </div>
-
-
-            <div class="kpi">
-              <small>Uniformity ±10%</small>
-              <strong>
-                ${
-                  latest
-                    ? fmt(
-                        latest.stats.u10,
-                        1
-                      ) + '٪'
-                    : '—'
-                }
-              </strong>
-            </div>
-
-
-            <div class="kpi">
-              <small>مرجع وزن</small>
-              <strong>
-                ${
-                  reference
-                    ? fmt(
-                        reference.range[0],
-                        0
-                      ) +
-                      '–' +
-                      fmt(
-                        reference.range[1],
-                        0
-                      )
-                    : '—'
-                }
-              </strong>
-            </div>
-
-          </div>
-
-        </div>
-
-      `;
-
-    }).join('');
+      }
+    )
+    .join('');
 
 
   return shell(
@@ -832,22 +1561,42 @@ function dashboard() {
 
             <div class="kpi">
               <small>فارم</small>
-              <strong>${db.farms.length}</strong>
+              <strong>
+                ${fmt(
+                  db.farms.length,
+                  0
+                )}
+              </strong>
             </div>
 
             <div class="kpi">
               <small>سالن</small>
-              <strong>${db.houses.length}</strong>
+              <strong>
+                ${fmt(
+                  db.houses.length,
+                  0
+                )}
+              </strong>
             </div>
 
             <div class="kpi">
               <small>گله</small>
-              <strong>${db.flocks.length}</strong>
+              <strong>
+                ${fmt(
+                  db.flocks.length,
+                  0
+                )}
+              </strong>
             </div>
 
             <div class="kpi">
               <small>هشدار</small>
-              <strong>${warnings}</strong>
+              <strong>
+                ${fmt(
+                  warnings,
+                  0
+                )}
+              </strong>
             </div>
 
           </div>
@@ -866,6 +1615,7 @@ function dashboard() {
             <button
               class="btn"
               data-page="weights"
+              type="button"
             >
               ثبت وزن
             </button>
@@ -873,6 +1623,7 @@ function dashboard() {
             <button
               class="btn secondary"
               data-page="feed"
+              type="button"
             >
               ثبت دان
             </button>
@@ -880,6 +1631,7 @@ function dashboard() {
             <button
               class="btn secondary"
               data-page="water"
+              type="button"
             >
               ثبت آب
             </button>
@@ -887,6 +1639,7 @@ function dashboard() {
             <button
               class="btn secondary"
               data-page="health"
+              type="button"
             >
               ثبت سلامت
             </button>
@@ -931,7 +1684,7 @@ function dashboard() {
 
 
 /* =========================================================
-   FARM
+   FARMS
 ========================================================= */
 
 function farmsPage() {
@@ -970,6 +1723,7 @@ function farmsPage() {
           <button
             class="btn"
             data-save="farm"
+            type="button"
           >
             ثبت فارم
           </button>
@@ -988,8 +1742,14 @@ function farmsPage() {
         ${table(
           db.farms,
           [
-            ['name', 'نام'],
-            ['code', 'کد']
+            [
+              'name',
+              'نام'
+            ],
+            [
+              'code',
+              'کد'
+            ]
           ]
         )}
 
@@ -1010,12 +1770,21 @@ function housesPage() {
 
   const farmOptions =
     db.farms.length
+
       ? db.farms.map(
-          farm =>
-            `<option value="${farm.id}">
-              ${esc(farm.name)}
-            </option>`
+          farm => `
+            <option
+              value="${esc(
+                farm.id
+              )}"
+            >
+              ${esc(
+                farm.name
+              )}
+            </option>
+          `
         ).join('')
+
       : `
           <option value="">
             ابتدا فارم ثبت کنید
@@ -1065,6 +1834,7 @@ function housesPage() {
           <button
             class="btn"
             data-save="house"
+            type="button"
           >
             ثبت سالن
           </button>
@@ -1081,17 +1851,39 @@ function housesPage() {
         </h2>
 
         ${table(
+
           db.houses,
+
           [
-            ['name', 'سالن'],
-            ['farm', 'فارم'],
-            ['capacity', 'ظرفیت']
+            [
+              'name',
+              'سالن'
+            ],
+            [
+              'farm',
+              'فارم'
+            ],
+            [
+              'capacity',
+              'ظرفیت'
+            ]
           ],
+
           item => ({
-            name: item.name,
-            farm: farmName(item.farm),
-            capacity: item.capacity
+
+            name:
+              item.name,
+
+            farm:
+              farmName(
+                item.farm
+              ),
+
+            capacity:
+              item.capacity
+
           })
+
         )}
 
       </section>
@@ -1111,12 +1903,21 @@ function flocksPage() {
 
   const farmOptions =
     db.farms.length
+
       ? db.farms.map(
-          farm =>
-            `<option value="${farm.id}">
-              ${esc(farm.name)}
-            </option>`
+          farm => `
+            <option
+              value="${esc(
+                farm.id
+              )}"
+            >
+              ${esc(
+                farm.name
+              )}
+            </option>
+          `
         ).join('')
+
       : `
           <option value="">
             ابتدا فارم ثبت کنید
@@ -1126,18 +1927,27 @@ function flocksPage() {
 
   const houseOptions =
     db.houses.length
+
       ? db.houses.map(
-          house =>
-            `<option
-              value="${house.id}"
+          house => `
+            <option
+              value="${esc(
+                house.id
+              )}"
             >
-              ${esc(house.name)}
+              ${esc(
+                house.name
+              )}
               —
               ${esc(
-                farmName(house.farm)
+                farmName(
+                  house.farm
+                )
               )}
-            </option>`
+            </option>
+          `
         ).join('')
+
       : `
           <option value="">
             ابتدا سالن ثبت کنید
@@ -1147,19 +1957,27 @@ function flocksPage() {
 
   const standardOptions =
 
-    `<option value="">
-      بدون استاندارد
-    </option>` +
+    `
+      <option value="">
+        بدون استاندارد
+      </option>
+    ` +
 
-    Object.keys(standards)
+    Object.keys(
+      standards
+    )
       .filter(
-        name => name !== 'Custom'
+        name =>
+          name !== 'Custom'
       )
       .map(
-        name =>
-          `<option value="${esc(name)}">
+        name => `
+          <option
+            value="${esc(name)}"
+          >
             ${esc(name)}
-          </option>`
+          </option>
+        `
       )
       .join('');
 
@@ -1205,10 +2023,21 @@ function flocksPage() {
             'select',
 
             `
-              <option>گوشتی</option>
-              <option>تخمگذار</option>
-              <option>پولت</option>
-              <option>مادر</option>
+              <option>
+                گوشتی
+              </option>
+
+              <option>
+                تخمگذار
+              </option>
+
+              <option>
+                پولت
+              </option>
+
+              <option>
+                مادر
+              </option>
             `
           )}
 
@@ -1245,6 +2074,7 @@ function flocksPage() {
           <button
             class="btn"
             data-save="flock"
+            type="button"
           >
             ثبت گله
           </button>
@@ -1265,38 +2095,69 @@ function flocksPage() {
           db.flocks,
 
           [
-            ['name', 'گله'],
-            ['farm', 'فارم'],
-            ['house', 'سالن'],
-            ['type', 'نوع'],
-            ['placement', 'جوجه‌ریزی'],
-            ['age', 'سن'],
-            ['standard', 'استاندارد']
+            [
+              'name',
+              'گله'
+            ],
+            [
+              'farm',
+              'فارم'
+            ],
+            [
+              'house',
+              'سالن'
+            ],
+            [
+              'type',
+              'نوع'
+            ],
+            [
+              'placement',
+              'جوجه‌ریزی'
+            ],
+            [
+              'age',
+              'سن'
+            ],
+            [
+              'standard',
+              'استاندارد'
+            ]
           ],
 
           item => ({
 
-            name: item.name,
+            name:
+              item.name,
 
             farm:
-              farmName(item.farm),
+              farmName(
+                item.farm
+              ),
 
             house:
-              houseName(item.house),
+              houseName(
+                item.house
+              ),
 
-            type: item.type,
+            type:
+              item.type,
 
             placement:
-              item.placement,
+              displayDate(
+                item.placement
+              ),
 
             age:
               fmt(
                 flockAge(item),
                 0
-              ) + ' روز',
+              ) +
+              ' روز',
 
             standard:
-              item.standard || '—'
+              item.standard ||
+              '—'
 
           })
 
@@ -1321,10 +2182,17 @@ function weightsPage() {
     db.flocks.length
 
       ? db.flocks.map(
-          flock =>
-            `<option value="${flock.id}">
-              ${esc(flock.name)}
-            </option>`
+          flock => `
+            <option
+              value="${esc(
+                flock.id
+              )}"
+            >
+              ${esc(
+                flock.name
+              )}
+            </option>
+          `
         ).join('')
 
       : `
@@ -1360,7 +2228,7 @@ function weightsPage() {
 
           ${field(
             'weightDate',
-            'تاریخ',
+            'تاریخ ارزیابی',
             'date',
             today()
           )}
@@ -1395,6 +2263,7 @@ function weightsPage() {
           <button
             class="btn"
             data-action="calculateWeight"
+            type="button"
           >
             محاسبه و ثبت
           </button>
@@ -1418,41 +2287,74 @@ function weightsPage() {
           db.weights,
 
           [
-            ['date', 'تاریخ'],
-            ['flock', 'گله'],
-            ['n', 'نمونه'],
-            ['mean', 'میانگین'],
-            ['cv', 'CV'],
-            ['u10', '±10%']
+            [
+              'date',
+              'تاریخ ارزیابی'
+            ],
+            [
+              'flock',
+              'گله'
+            ],
+            [
+              'n',
+              'نمونه'
+            ],
+            [
+              'mean',
+              'میانگین'
+            ],
+            [
+              'cv',
+              'CV'
+            ],
+            [
+              'u10',
+              '±10%'
+            ]
           ],
 
           item => ({
 
-            date: item.date,
+            date:
+              displayDate(
+                item.date
+              ),
 
             flock:
-              flockName(item.flock),
+              flockName(
+                item.flock
+              ),
 
             n:
-              item.stats.n,
+              item.stats?.n ??
+              '—',
 
             mean:
-              fmt(
-                item.stats.mean,
-                1
-              ) + ' g',
+              item.stats
+                ? fmt(
+                    item.stats.mean,
+                    1
+                  ) +
+                  ' g'
+                : '—',
 
             cv:
-              fmt(
-                item.stats.cv,
-                2
-              ) + '٪',
+              item.stats
+                ? fmt(
+                    item.stats.cv,
+                    2
+                  ) +
+                  '٪'
+                : '—',
 
             u10:
-              fmt(
-                item.stats.u10,
-                1
-              ) + '٪'
+              item.stats
+                ? fmt(
+                    item.stats.u10,
+                    1
+                  ) +
+                  '٪'
+                : '—'
 
           })
 
@@ -1482,10 +2384,17 @@ function simplePage(
     db.flocks.length
 
       ? db.flocks.map(
-          flock =>
-            `<option value="${flock.id}">
-              ${esc(flock.name)}
-            </option>`
+          flock => `
+            <option
+              value="${esc(
+                flock.id
+              )}"
+            >
+              ${esc(
+                flock.name
+              )}
+            </option>
+          `
         ).join('')
 
       : `
@@ -1507,11 +2416,14 @@ function simplePage(
 
   const columns =
     records.length
-      ? Object.keys(records[0])
-          .filter(
-            key => key !== 'id'
-          )
-          .slice(0, 7)
+      ? Object.keys(
+          records[0]
+        )
+        .filter(
+          key =>
+            key !== 'id'
+        )
+        .slice(0, 7)
       : [];
 
 
@@ -1555,7 +2467,8 @@ function simplePage(
 
           <button
             class="btn"
-            data-save="${type}"
+            data-save="${esc(type)}"
+            type="button"
           >
             ثبت اطلاعات
           </button>
@@ -1604,12 +2517,14 @@ function table(
 ) {
 
   const rows =
-    array.map(
-      item =>
-        mapper
-          ? mapper(item)
-          : item
-    );
+    Array.isArray(array)
+      ? array.map(
+          item =>
+            mapper
+              ? mapper(item)
+              : item
+        )
+      : [];
 
 
   return `
@@ -1627,7 +2542,9 @@ function table(
 
                 <th>
                   ${esc(
-                    Array.isArray(column)
+                    Array.isArray(
+                      column
+                    )
                       ? column[1]
                       : column
                   )}
@@ -1661,12 +2578,15 @@ function table(
                               ? column[0]
                               : column;
 
+
                           return `
+
                             <td>
                               ${esc(
-                                row[key]
+                                row?.[key]
                               )}
                             </td>
+
                           `;
 
                         }
@@ -1682,7 +2602,10 @@ function table(
                   <tr>
 
                     <td
-                      colspan="${columns.length || 1}"
+                      colspan="${
+                        columns.length ||
+                        1
+                      }"
                     >
                       هنوز اطلاعاتی ثبت نشده است.
                     </td>
@@ -1711,10 +2634,17 @@ function reportsPage() {
 
   const flockOptions =
     db.flocks.map(
-      flock =>
-        `<option value="${flock.id}">
-          ${esc(flock.name)}
-        </option>`
+      flock => `
+        <option
+          value="${esc(
+            flock.id
+          )}"
+        >
+          ${esc(
+            flock.name
+          )}
+        </option>
+      `
     ).join('');
 
 
@@ -1750,13 +2680,15 @@ function reportsPage() {
           <button
             class="btn"
             data-action="report"
+            type="button"
           >
             ساخت گزارش
           </button>
 
           <button
             class="btn secondary"
-            onclick="window.print()"
+            type="button"
+            data-action="printReport"
           >
             چاپ / PDF
           </button>
@@ -1783,185 +2715,268 @@ function render() {
 
   let html = '';
 
-  switch (currentPage) {
+
+  switch (
+    currentPage
+  ) {
 
     case 'farms':
-      html = farmsPage();
+
+      html =
+        farmsPage();
+
       break;
+
 
     case 'houses':
-      html = housesPage();
+
+      html =
+        housesPage();
+
       break;
+
 
     case 'flocks':
-      html = flocksPage();
+
+      html =
+        flocksPage();
+
       break;
 
+
     case 'weights':
-      html = weightsPage();
+
+      html =
+        weightsPage();
+
       break;
+
 
     case 'feed':
 
-      html = simplePage(
-        'feed',
-        'مصرف دان',
-        'ثبت مصرف روزانه دان',
-        field(
-          'feedKg',
-          'دان مصرفی kg',
-          'number'
-        )
-      );
+      html =
+        simplePage(
+
+          'feed',
+
+          'مصرف دان',
+
+          'ثبت مصرف روزانه دان',
+
+          field(
+            'feedKg',
+            'دان مصرفی kg',
+            'number'
+          )
+
+        );
 
       break;
+
 
     case 'water':
 
-      html = simplePage(
-        'water',
-        'مصرف آب',
-        'ثبت مصرف روزانه آب',
-        field(
-          'waterL',
-          'آب مصرفی L',
-          'number'
-        )
-      );
+      html =
+        simplePage(
+
+          'water',
+
+          'مصرف آب',
+
+          'ثبت مصرف روزانه آب',
+
+          field(
+            'waterL',
+            'آب مصرفی L',
+            'number'
+          )
+
+        );
 
       break;
+
 
     case 'eggs':
 
-      html = simplePage(
-        'eggs',
-        'تولید تخم',
-        'ثبت تولید روزانه تخم',
-        field(
-          'eggCount',
-          'تعداد تخم',
-          'number'
-        ) +
+      html =
+        simplePage(
 
-        field(
-          'eggBirds',
-          'تعداد پرنده',
-          'number'
-        ) +
+          'eggs',
 
-        field(
-          'eggWeight',
-          'میانگین وزن تخم g',
-          'number'
-        )
-      );
+          'تولید تخم',
+
+          'ثبت تولید روزانه تخم',
+
+          field(
+            'eggCount',
+            'تعداد تخم',
+            'number'
+          ) +
+
+          field(
+            'eggBirds',
+            'تعداد پرنده',
+            'number'
+          ) +
+
+          field(
+            'eggWeight',
+            'میانگین وزن تخم g',
+            'number'
+          )
+
+        );
 
       break;
+
 
     case 'health':
 
-      html = simplePage(
-        'health',
-        'سلامت و تلفات',
-        'ثبت تلفات و وضعیت سلامت',
-        field(
-          'healthMortality',
-          'تلفات',
-          'number'
-        ) +
+      html =
+        simplePage(
 
-        field(
-          'healthCull',
-          'حذفی',
-          'number'
-        ) +
+          'health',
 
-        field(
-          'healthNote',
-          'یادداشت'
-        )
-      );
+          'سلامت و تلفات',
+
+          'ثبت تلفات و وضعیت سلامت',
+
+          field(
+            'healthMortality',
+            'تلفات',
+            'number'
+          ) +
+
+          field(
+            'healthCull',
+            'حذفی',
+            'number'
+          ) +
+
+          field(
+            'healthNote',
+            'یادداشت'
+          )
+
+        );
 
       break;
+
 
     case 'labs':
 
-      html = simplePage(
-        'labs',
-        'آزمایشگاه',
-        'PCR / ELISA / پایش آزمایشگاهی',
-        field(
-          'labTest',
-          'نوع آزمایش'
-        ) +
+      html =
+        simplePage(
 
-        field(
-          'labCt',
-          'Ct',
-          'number'
-        ) +
+          'labs',
 
-        field(
-          'labGmt',
-          'GMT',
-          'number'
-        ) +
+          'آزمایشگاه',
 
-        field(
-          'labCv',
-          'CV %',
-          'number'
-        )
-      );
+          'PCR / ELISA / پایش آزمایشگاهی',
+
+          field(
+            'labTest',
+            'نوع آزمایش'
+          ) +
+
+          field(
+            'labCt',
+            'Ct',
+            'number'
+          ) +
+
+          field(
+            'labGmt',
+            'GMT',
+            'number'
+          ) +
+
+          field(
+            'labCv',
+            'CV %',
+            'number'
+          )
+
+        );
 
       break;
+
 
     case 'environment':
 
-      html = simplePage(
-        'environment',
-        'محیط سالن',
-        'پایش دما، رطوبت، آمونیاک و CO₂',
-        field(
-          'environmentTemp',
-          'دما °C',
-          'number'
-        ) +
+      html =
+        simplePage(
 
-        field(
-          'environmentRh',
-          'RH %',
-          'number'
-        ) +
+          'environment',
 
-        field(
-          'environmentNh3',
-          'NH₃ ppm',
-          'number'
-        ) +
+          'محیط سالن',
 
-        field(
-          'environmentCo2',
-          'CO₂ ppm',
-          'number'
-        )
-      );
+          'پایش دما، رطوبت، آمونیاک و CO₂',
+
+          field(
+            'environmentTemp',
+            'دما °C',
+            'number'
+          ) +
+
+          field(
+            'environmentRh',
+            'RH %',
+            'number'
+          ) +
+
+          field(
+            'environmentNh3',
+            'NH₃ ppm',
+            'number'
+          ) +
+
+          field(
+            'environmentCo2',
+            'CO₂ ppm',
+            'number'
+          )
+
+        );
 
       break;
+
 
     case 'reports':
-      html = reportsPage();
+
+      html =
+        reportsPage();
+
       break;
 
+
     default:
-      html = dashboard();
+
+      html =
+        dashboard();
 
   }
 
 
-  document.getElementById(
-    'app'
-  ).innerHTML = html;
+  const app =
+    document.getElementById(
+      'app'
+    );
+
+
+  if (!app) {
+
+    console.error(
+      'Element #app not found.'
+    );
+
+    return;
+
+  }
+
+
+  app.innerHTML =
+    html;
 
 
   bindEvents();
@@ -1973,18 +2988,26 @@ function render() {
    SAVE FORMS
 ========================================================= */
 
-function saveForm(type) {
+function saveForm(
+  type
+) {
 
-  const id = uid();
+  const id =
+    uid();
 
 
-  if (type === 'farm') {
+  if (
+    type === 'farm'
+  ) {
 
     const name =
       document
-        .getElementById('farmName')
-        .value
+        .getElementById(
+          'farmName'
+        )
+        ?.value
         .trim();
+
 
     if (!name) {
 
@@ -2005,27 +3028,38 @@ function saveForm(type) {
 
       code:
         document
-          .getElementById('farmCode')
-          .value
-          .trim()
+          .getElementById(
+            'farmCode'
+          )
+          ?.value
+          .trim() ||
+        ''
 
     });
 
   }
 
 
-  else if (type === 'house') {
+  else if (
+    type === 'house'
+  ) {
 
     const name =
       document
-        .getElementById('houseName')
-        .value
+        .getElementById(
+          'houseName'
+        )
+        ?.value
         .trim();
+
 
     const farm =
       document
-        .getElementById('houseFarm')
-        .value;
+        .getElementById(
+          'houseFarm'
+        )
+        ?.value;
+
 
     const capacity =
       num(
@@ -2033,11 +3067,14 @@ function saveForm(type) {
           .getElementById(
             'houseCapacity'
           )
-          .value
+          ?.value
       ) || 0;
 
 
-    if (!name || !farm) {
+    if (
+      !name ||
+      !farm
+    ) {
 
       toast(
         'نام سالن و فارم الزامی است'
@@ -2063,30 +3100,42 @@ function saveForm(type) {
   }
 
 
-  else if (type === 'flock') {
+  else if (
+    type === 'flock'
+  ) {
 
     const name =
       document
-        .getElementById('flockName')
-        .value
+        .getElementById(
+          'flockName'
+        )
+        ?.value
         .trim();
+
 
     const farm =
       document
-        .getElementById('flockFarm')
-        .value;
+        .getElementById(
+          'flockFarm'
+        )
+        ?.value;
+
 
     const house =
       document
-        .getElementById('flockHouse')
-        .value;
+        .getElementById(
+          'flockHouse'
+        )
+        ?.value;
+
 
     const placement =
       document
         .getElementById(
           'flockPlacement'
         )
-        .value;
+        ?.value;
+
 
     const initial =
       num(
@@ -2094,7 +3143,7 @@ function saveForm(type) {
           .getElementById(
             'flockInitial'
           )
-          .value
+          ?.value
       );
 
 
@@ -2119,13 +3168,15 @@ function saveForm(type) {
     const selectedHouse =
       db.houses.find(
         item =>
-          item.id === house
+          item.id ===
+          house
       );
 
 
     if (
       !selectedHouse ||
-      selectedHouse.farm !== farm
+      selectedHouse.farm !==
+        farm
     ) {
 
       toast(
@@ -2152,7 +3203,8 @@ function saveForm(type) {
           .getElementById(
             'flockType'
           )
-          .value,
+          ?.value ||
+        '',
 
       placement,
 
@@ -2163,15 +3215,17 @@ function saveForm(type) {
           .getElementById(
             'flockStrain'
           )
-          .value
-          .trim(),
+          ?.value
+          .trim() ||
+        '',
 
       standard:
         document
           .getElementById(
             'flockStandard'
           )
-          .value
+          ?.value ||
+        ''
 
     });
 
@@ -2185,6 +3239,7 @@ function saveForm(type) {
         `${type}Flock`
       );
 
+
     const dateElement =
       document.getElementById(
         `${type}Date`
@@ -2193,6 +3248,7 @@ function saveForm(type) {
 
     const flock =
       flockElement?.value;
+
 
     const date =
       dateElement?.value ||
@@ -2221,7 +3277,9 @@ function saveForm(type) {
     };
 
 
-    if (type === 'feed') {
+    if (
+      type === 'feed'
+    ) {
 
       record.kg =
         num(
@@ -2229,13 +3287,15 @@ function saveForm(type) {
             .getElementById(
               'feedKg'
             )
-            .value
+            ?.value
         );
 
     }
 
 
-    if (type === 'water') {
+    if (
+      type === 'water'
+    ) {
 
       record.l =
         num(
@@ -2243,13 +3303,15 @@ function saveForm(type) {
             .getElementById(
               'waterL'
             )
-            .value
+            ?.value
         );
 
     }
 
 
-    if (type === 'eggs') {
+    if (
+      type === 'eggs'
+    ) {
 
       record.count =
         num(
@@ -2257,8 +3319,9 @@ function saveForm(type) {
             .getElementById(
               'eggCount'
             )
-            .value
+            ?.value
         );
+
 
       record.birds =
         num(
@@ -2266,8 +3329,9 @@ function saveForm(type) {
             .getElementById(
               'eggBirds'
             )
-            .value
+            ?.value
         );
+
 
       record.weight =
         num(
@@ -2275,7 +3339,7 @@ function saveForm(type) {
             .getElementById(
               'eggWeight'
             )
-            .value
+            ?.value
         );
 
 
@@ -2285,8 +3349,10 @@ function saveForm(type) {
       ) {
 
         record.hd =
-          record.count /
-          record.birds *
+          (
+            record.count /
+            record.birds
+          ) *
           100;
 
       }
@@ -2294,7 +3360,9 @@ function saveForm(type) {
     }
 
 
-    if (type === 'health') {
+    if (
+      type === 'health'
+    ) {
 
       record.mortality =
         num(
@@ -2302,8 +3370,9 @@ function saveForm(type) {
             .getElementById(
               'healthMortality'
             )
-            .value
+            ?.value
         ) || 0;
+
 
       record.cull =
         num(
@@ -2311,27 +3380,33 @@ function saveForm(type) {
             .getElementById(
               'healthCull'
             )
-            .value
+            ?.value
         ) || 0;
+
 
       record.note =
         document
           .getElementById(
             'healthNote'
           )
-          .value;
+          ?.value ||
+        '';
 
     }
 
 
-    if (type === 'labs') {
+    if (
+      type === 'labs'
+    ) {
 
       record.test =
         document
           .getElementById(
             'labTest'
           )
-          .value;
+          ?.value ||
+        '';
+
 
       record.ct =
         num(
@@ -2339,8 +3414,9 @@ function saveForm(type) {
             .getElementById(
               'labCt'
             )
-            .value
+            ?.value
         );
+
 
       record.gmt =
         num(
@@ -2348,8 +3424,9 @@ function saveForm(type) {
             .getElementById(
               'labGmt'
             )
-            .value
+            ?.value
         );
+
 
       record.cv =
         num(
@@ -2357,13 +3434,15 @@ function saveForm(type) {
             .getElementById(
               'labCv'
             )
-            .value
+            ?.value
         );
 
     }
 
 
-    if (type === 'environment') {
+    if (
+      type === 'environment'
+    ) {
 
       record.temp =
         num(
@@ -2371,8 +3450,9 @@ function saveForm(type) {
             .getElementById(
               'environmentTemp'
             )
-            .value
+            ?.value
         );
+
 
       record.rh =
         num(
@@ -2380,8 +3460,9 @@ function saveForm(type) {
             .getElementById(
               'environmentRh'
             )
-            .value
+            ?.value
         );
+
 
       record.nh3 =
         num(
@@ -2389,8 +3470,9 @@ function saveForm(type) {
             .getElementById(
               'environmentNh3'
             )
-            .value
+            ?.value
         );
+
 
       record.co2 =
         num(
@@ -2398,7 +3480,7 @@ function saveForm(type) {
             .getElementById(
               'environmentCo2'
             )
-            .value
+            ?.value
         );
 
     }
@@ -2410,18 +3492,35 @@ function saveForm(type) {
         : type;
 
 
-    db[key].push(record);
+    if (
+      !Array.isArray(
+        db[key]
+      )
+    ) {
+
+      db[key] = [];
+
+    }
+
+
+    db[key].push(
+      record
+    );
 
   }
 
 
-  saveDB();
+  if (
+    saveDB()
+  ) {
 
-  toast(
-    'اطلاعات با موفقیت ثبت شد'
-  );
+    toast(
+      'اطلاعات با موفقیت ثبت شد'
+    );
 
-  render();
+    render();
+
+  }
 
 }
 
@@ -2430,10 +3529,14 @@ function saveForm(type) {
    ACTIONS
 ========================================================= */
 
-function actions(action) {
+function actions(
+  action
+) {
 
-
-  if (action === 'calculateWeight') {
+  if (
+    action ===
+    'calculateWeight'
+  ) {
 
     calculateWeight();
 
@@ -2442,7 +3545,10 @@ function actions(action) {
   }
 
 
-  if (action === 'backup') {
+  if (
+    action ===
+    'backup'
+  ) {
 
     backupDatabase();
 
@@ -2451,9 +3557,24 @@ function actions(action) {
   }
 
 
-  if (action === 'report') {
+  if (
+    action ===
+    'report'
+  ) {
 
     buildReport();
+
+    return;
+
+  }
+
+
+  if (
+    action ===
+    'printReport'
+  ) {
+
+    window.print();
 
     return;
 
@@ -2468,57 +3589,127 @@ function actions(action) {
 
 function calculateWeight() {
 
-  const flockId =
-    document
-      .getElementById(
-        'weightFlock'
-      )
-      .value;
-
-  const date =
-    document
-      .getElementById(
-        'weightDate'
-      )
-      .value ||
-    today();
+  const flockElement =
+    document.getElementById(
+      'weightFlock'
+    );
 
 
-  const raw =
-    document
-      .getElementById(
-        'weightsInput'
-      )
-      .value
-      .trim();
+  const dateElement =
+    document.getElementById(
+      'weightDate'
+    );
 
 
-  const values =
-    raw
-      .split(
-        /[\s,،;]+/
-      )
-      .map(Number)
-      .filter(
-        Number.isFinite
-      );
+  const inputElement =
+    document.getElementById(
+      'weightsInput'
+    );
 
 
-  /*
-    حداقل نمونه عملیاتی این نسخه:
-    30 پرنده.
-  */
-
-  if (values.length < 30) {
+  if (
+    !flockElement ||
+    !inputElement
+  ) {
 
     toast(
-      'برای تحلیل این بخش حداقل ۳۰ وزن وارد کنید'
+      'فرم وزن‌کشی پیدا نشد'
     );
 
     return;
 
   }
 
+
+  const flockId =
+    flockElement.value;
+
+
+  const date =
+    dateElement?.value ||
+    today();
+
+
+  const raw =
+    inputElement.value
+      .trim();
+
+
+  /*
+    پشتیبانی از:
+    Enter
+    فاصله
+    ,
+    ،
+    ;
+  */
+
+  const values =
+    raw
+      .split(
+        /[\s,،;]+/
+      )
+      .map(
+        value => {
+
+          /*
+            پشتیبانی از اعداد فارسی
+          */
+
+          const normalized =
+            String(value)
+              .replace(
+                /[۰-۹]/g,
+                d =>
+                  String(
+                    '۰۱۲۳۴۵۶۷۸۹'
+                      .indexOf(d)
+                  )
+              )
+              .replace(
+                /٬/g,
+                ''
+              )
+              .replace(
+                /٫/g,
+                '.'
+              );
+
+          return Number(
+            normalized
+          );
+
+        }
+      )
+      .filter(
+        Number.isFinite
+      );
+
+
+  /*
+    حداقل نمونه عملیاتی:
+    30 پرنده
+  */
+
+  if (
+    values.length < 30
+  ) {
+
+    toast(
+      `حداقل ۳۰ وزن لازم است؛ اکنون ${fmt(
+        values.length,
+        0
+      )} وزن وارد شده`
+    );
+
+    return;
+
+  }
+
+
+  /*
+    کنترل محدوده وزن
+  */
 
   if (
     values.some(
@@ -2543,10 +3734,22 @@ function calculateWeight() {
     );
 
 
+  if (!stats) {
+
+    toast(
+      'محاسبه آماری انجام نشد'
+    );
+
+    return;
+
+  }
+
+
   const flock =
     db.flocks.find(
       item =>
-        item.id === flockId
+        item.id ===
+        flockId
     );
 
 
@@ -2561,6 +3764,10 @@ function calculateWeight() {
   }
 
 
+  /*
+    سن گله در تاریخ ارزیابی
+  */
+
   const ageDays =
     flockAge(
       flock,
@@ -2570,7 +3777,8 @@ function calculateWeight() {
 
   const record = {
 
-    id: uid(),
+    id:
+      uid(),
 
     date,
 
@@ -2594,7 +3802,14 @@ function calculateWeight() {
     record
   );
 
-  saveDB();
+
+  if (
+    !saveDB()
+  ) {
+
+    return;
+
+  }
 
 
   const reference =
@@ -2619,6 +3834,10 @@ function calculateWeight() {
     );
 
 
+  if (!result)
+    return;
+
+
   result.innerHTML = `
 
     <section class="card">
@@ -2626,7 +3845,7 @@ function calculateWeight() {
       <div class="sectionTitle">
 
         <h2>
-          نتیجه محاسبه
+          نتیجه ارزیابی
         </h2>
 
         ${badge(status)}
@@ -2634,69 +3853,164 @@ function calculateWeight() {
       </div>
 
 
+      <div class="alert">
+
+        <strong>
+          تاریخ ارزیابی:
+        </strong>
+
+        ${esc(
+          displayDate(
+            date
+          )
+        )}
+
+        <br>
+
+        <strong>
+          سن گله:
+        </strong>
+
+        ${fmt(
+          ageDays,
+          0
+        )}
+
+        روز
+
+      </div>
+
+
       <div class="kpis">
 
         <div class="kpi">
-          <small>تعداد نمونه</small>
+
+          <small>
+            تعداد نمونه
+          </small>
+
           <strong>
-            ${fmt(stats.n, 0)}
+            ${fmt(
+              stats.n,
+              0
+            )}
           </strong>
+
         </div>
 
 
         <div class="kpi">
-          <small>میانگین</small>
+
+          <small>
+            میانگین
+          </small>
+
           <strong>
-            ${fmt(stats.mean, 1)} g
+            ${fmt(
+              stats.mean,
+              1
+            )}
+            g
           </strong>
+
         </div>
 
 
         <div class="kpi">
-          <small>SD</small>
+
+          <small>
+            SD
+          </small>
+
           <strong>
-            ${fmt(stats.sd, 1)}
+            ${fmt(
+              stats.sd,
+              1
+            )}
           </strong>
+
         </div>
 
 
         <div class="kpi">
-          <small>CV</small>
+
+          <small>
+            CV
+          </small>
+
           <strong>
-            ${fmt(stats.cv, 2)}٪
+            ${fmt(
+              stats.cv,
+              2
+            )}٪
           </strong>
+
         </div>
 
 
         <div class="kpi">
-          <small>Uniformity ±10%</small>
+
+          <small>
+            Uniformity ±10%
+          </small>
+
           <strong>
-            ${fmt(stats.u10, 1)}٪
+            ${fmt(
+              stats.u10,
+              1
+            )}٪
           </strong>
+
         </div>
 
 
         <div class="kpi">
-          <small>Uniformity ±15%</small>
+
+          <small>
+            Uniformity ±15%
+          </small>
+
           <strong>
-            ${fmt(stats.u15, 1)}٪
+            ${fmt(
+              stats.u15,
+              1
+            )}٪
           </strong>
+
         </div>
 
 
         <div class="kpi">
-          <small>حداقل</small>
+
+          <small>
+            حداقل
+          </small>
+
           <strong>
-            ${fmt(stats.min, 0)} g
+            ${fmt(
+              stats.min,
+              0
+            )}
+            g
           </strong>
+
         </div>
 
 
         <div class="kpi">
-          <small>حداکثر</small>
+
+          <small>
+            حداکثر
+          </small>
+
           <strong>
-            ${fmt(stats.max, 0)} g
+            ${fmt(
+              stats.max,
+              0
+            )}
+            g
           </strong>
+
         </div>
 
       </div>
@@ -2717,16 +4031,20 @@ function calculateWeight() {
               }"
             >
 
-              استاندارد:
               <strong>
-                ${esc(
-                  flock.standard
-                )}
+                استاندارد:
               </strong>
+
+              ${esc(
+                flock.standard
+              )}
 
               <br>
 
-              سن مرجع:
+              <strong>
+                سن مرجع:
+              </strong>
+
               ${fmt(
                 reference.week,
                 0
@@ -2735,12 +4053,17 @@ function calculateWeight() {
 
               <br>
 
-              محدوده وزن:
+              <strong>
+                محدوده وزن:
+              </strong>
+
               ${fmt(
                 reference.range[0],
                 0
               )}
+
               تا
+
               ${fmt(
                 reference.range[1],
                 0
@@ -2749,19 +4072,27 @@ function calculateWeight() {
 
               <br>
 
-              هدف Uniformity:
+              <strong>
+                هدف Uniformity:
+              </strong>
+
               ≥
+
               ${fmt(
                 reference.targetUniformity,
                 0
               )}٪
 
               ${
-  reference.approximate
-    ? `
+                reference.approximate
+                  ? `
                     <br>
-                    نزدیک‌ترین سن موجود در جدول
-                    برای مقایسه استفاده شده است.
+
+                    <span class="muted">
+                      برای این سن، نزدیک‌ترین
+                      سن موجود در جدول استاندارد
+                      برای مقایسه استفاده شده است.
+                    </span>
                   `
                   : ''
               }
@@ -2810,51 +4141,82 @@ function calculateWeight() {
 
 function backupDatabase() {
 
-  const data =
-    JSON.stringify(
-      db,
-      null,
-      2
+  try {
+
+    const data =
+      JSON.stringify(
+        db,
+        null,
+        2
+      );
+
+
+    const blob =
+      new Blob(
+        [data],
+        {
+          type:
+            'application/json'
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        'a'
+      );
+
+
+    link.href =
+      url;
+
+
+    link.download =
+      'adineh-poultry-backup.json';
+
+
+    document.body.appendChild(
+      link
     );
 
 
-  const blob =
-    new Blob(
-      [data],
-      {
-        type:
-          'application/json'
-      }
+    link.click();
+
+
+    link.remove();
+
+
+    setTimeout(
+      () =>
+        URL.revokeObjectURL(
+          url
+        ),
+      1000
     );
 
 
-  const url =
-    URL.createObjectURL(
-      blob
+    toast(
+      'پشتیبان ساخته شد'
     );
 
+  } catch (error) {
 
-  const link =
-    document.createElement(
-      'a'
+    console.error(
+      'Backup error:',
+      error
     );
 
-  link.href = url;
+    toast(
+      'ساخت پشتیبان ناموفق بود'
+    );
 
-  link.download =
-    'adineh-poultry-backup.json';
-
-  link.click();
-
-
-  URL.revokeObjectURL(
-    url
-  );
-
-
-  toast(
-    'پشتیبان ساخته شد'
-  );
+  }
 
 }
 
@@ -2865,36 +4227,60 @@ function backupDatabase() {
 
 function buildReport() {
 
+  const flockElement =
+    document.getElementById(
+      'reportFlock'
+    );
+
+
+  const result =
+    document.getElementById(
+      'reportResult'
+    );
+
+
   const flockId =
-    document
-      .getElementById(
-        'reportFlock'
-      )
-      .value;
+    flockElement?.value;
 
 
   const flock =
     db.flocks.find(
       item =>
-        item.id === flockId
+        item.id ===
+        flockId
     );
 
 
-  if (!flock)
+  if (
+    !flock ||
+    !result
+  ) {
+
+    toast(
+      'گله‌ای برای گزارش انتخاب نشده است'
+    );
+
     return;
+
+  }
 
 
   const records =
     db.weights
       .filter(
         item =>
-          item.flock === flock.id
+          item.flock ===
+          flock.id
       )
       .sort(
-        (a, b) =>
-          b.date.localeCompare(
-            a.date
-          )
+        (
+          a,
+          b
+        ) =>
+          String(b.date)
+            .localeCompare(
+              String(a.date)
+            )
       );
 
 
@@ -2911,34 +4297,42 @@ function buildReport() {
       : null;
 
 
-  document.getElementById(
-    'reportResult'
-  ).innerHTML = `
+  result.innerHTML = `
 
     <div class="card">
 
       <h2>
         گزارش گله
-        ${esc(flock.name)}
+        ${esc(
+          flock.name
+        )}
       </h2>
 
 
       <p>
+
         فارم:
+
         ${esc(
-          farmName(flock.farm)
+          farmName(
+            flock.farm
+          )
         )}
 
         ·
 
         سالن:
+
         ${esc(
-          houseName(flock.house)
+          houseName(
+            flock.house
+          )
         )}
 
         ·
 
         سن:
+
         ${fmt(
           flockAge(flock),
           0
@@ -2953,44 +4347,112 @@ function buildReport() {
 
           ? `
 
+            <div class="alert">
+
+              <strong>
+                آخرین تاریخ ارزیابی:
+              </strong>
+
+              ${esc(
+                displayDate(
+                  latest.date
+                )
+              )}
+
+            </div>
+
+
             <div class="kpis">
 
               <div class="kpi">
-                <small>میانگین وزن</small>
+
+                <small>
+                  میانگین وزن
+                </small>
+
                 <strong>
                   ${fmt(
                     latest.stats.mean,
                     1
-                  )} g
+                  )}
+                  g
                 </strong>
+
               </div>
 
 
               <div class="kpi">
-                <small>CV</small>
+
+                <small>
+                  SD
+                </small>
+
+                <strong>
+                  ${fmt(
+                    latest.stats.sd,
+                    1
+                  )}
+                </strong>
+
+              </div>
+
+
+              <div class="kpi">
+
+                <small>
+                  CV
+                </small>
+
                 <strong>
                   ${fmt(
                     latest.stats.cv,
                     2
                   )}٪
                 </strong>
+
               </div>
 
 
               <div class="kpi">
-                <small>Uniformity ±10%</small>
+
+                <small>
+                  Uniformity ±10%
+                </small>
+
                 <strong>
                   ${fmt(
                     latest.stats.u10,
                     1
                   )}٪
                 </strong>
+
               </div>
 
 
               <div class="kpi">
-                <small>استاندارد</small>
+
+                <small>
+                  Uniformity ±15%
+                </small>
+
                 <strong>
+                  ${fmt(
+                    latest.stats.u15,
+                    1
+                  )}٪
+                </strong>
+
+              </div>
+
+
+              <div class="kpi">
+
+                <small>
+                  استاندارد
+                </small>
+
+                <strong>
+
                   ${
                     reference
                       ? fmt(
@@ -3005,7 +4467,9 @@ function buildReport() {
                         ' g'
                       : '—'
                   }
+
                 </strong>
+
               </div>
 
             </div>
@@ -3037,6 +4501,10 @@ function buildReport() {
 
 function bindEvents() {
 
+  /*
+    Navigation
+  */
+
   document
     .querySelectorAll(
       '[data-page]'
@@ -3044,18 +4512,23 @@ function bindEvents() {
     .forEach(
       button => {
 
-        button.onclick = () => {
+        button.onclick =
+          () => {
 
-          currentPage =
-            button.dataset.page;
+            currentPage =
+              button.dataset.page;
 
-          render();
+            render();
 
-        };
+          };
 
       }
     );
 
+
+  /*
+    Save buttons
+  */
 
   document
     .querySelectorAll(
@@ -3064,17 +4537,22 @@ function bindEvents() {
     .forEach(
       button => {
 
-        button.onclick = () => {
+        button.onclick =
+          () => {
 
-          saveForm(
-            button.dataset.save
-          );
+            saveForm(
+              button.dataset.save
+            );
 
-        };
+          };
 
       }
     );
 
+
+  /*
+    Actions
+  */
 
   document
     .querySelectorAll(
@@ -3083,13 +4561,14 @@ function bindEvents() {
     .forEach(
       button => {
 
-        button.onclick = () => {
+        button.onclick =
+          () => {
 
-          actions(
-            button.dataset.action
-          );
+            actions(
+              button.dataset.action
+            );
 
-        };
+          };
 
       }
     );
@@ -3098,7 +4577,7 @@ function bindEvents() {
 
 
 /* =========================================================
-   ERROR PROTECTION
+   GLOBAL ERROR PROTECTION
 ========================================================= */
 
 window.addEventListener(
@@ -3109,6 +4588,19 @@ window.addEventListener(
       'Adineh App Error:',
       event.error ||
       event.message
+    );
+
+  }
+);
+
+
+window.addEventListener(
+  'unhandledrejection',
+  event => {
+
+    console.error(
+      'Adineh Promise Error:',
+      event.reason
     );
 
   }
