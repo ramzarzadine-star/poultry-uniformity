@@ -2,6 +2,7 @@
 <html lang="fa" dir="rtl">
 
 <head>
+
   <meta charset="utf-8">
 
   <meta
@@ -9,7 +10,10 @@
     content="width=device-width,initial-scale=1,viewport-fit=cover"
   >
 
-  <meta name="theme-color" content="#0b766e">
+  <meta
+    name="theme-color"
+    content="#0b766e"
+  >
 
   <meta
     name="apple-mobile-web-app-capable"
@@ -26,9 +30,15 @@
     content="سلامت طیور آدینه"
   >
 
-  <link rel="manifest" href="manifest.json">
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
 
-  <link rel="stylesheet" href="Style.css">
+  <link
+    rel="stylesheet"
+    href="Style.css"
+  >
 
   <title>
     مرکز تخصصی سلامت طیور آدینه
@@ -36,38 +46,44 @@
 
 </head>
 
+
 <body>
 
   <div id="app">
 
-    <div style="
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-family:Tahoma,sans-serif;
-      color:#16766f;
-      font-size:20px;
-      font-weight:bold;
-    ">
+    <div
+      style="
+        min-height:100vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-family:Tahoma,sans-serif;
+        color:#16766f;
+        font-size:20px;
+        font-weight:bold;
+      "
+    >
       در حال بررسی دسترسی...
     </div>
 
   </div>
 
 
-  <!-- Supabase -->
+  <!-- 1. Supabase Library -->
   <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
-  </script>
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
+  ></script>
 
-  <!-- Supabase Client -->
+
+  <!-- 2. Supabase Configuration -->
   <script src="supabase.js"></script>
 
-  <!-- Authentication Guard -->
+
+  <!-- 3. Authentication -->
   <script src="auth.js"></script>
 
-  <!-- Application -->
+
+  <!-- 4. Main Application -->
   <script src="app.js"></script>
 
 
