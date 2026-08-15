@@ -1,271 +1,128 @@
-const DB_PREFIX="adineh_v2_";
+const DB_KEY = "adineh_poultry_database_v3";
 
-
-function activeUser(){
-
-return localStorage.getItem("activeUser") || "guest";
-
+function dbLoad() {
+    try {
+        return JSON.parse(localStorage.getItem(DB_KEY)) || {};
+    } catch {
+        return {};
+    }
 }
 
-
-function canSave(){
-
-return activeUser()!=="guest";
-
+function dbSave(data) {
+    localStorage.setItem(DB_KEY, JSON.stringify(data));
 }
 
-
-function dbKey(name){
-
-return DB_PREFIX+activeUser()+"_"+name;
-
+function getActiveUser() {
+    return localStorage.getItem("activeUser") || "guest";
 }
 
+function userData() {
+    const db = dbLoad();
+    const user = getActiveUser();
 
-function read(name,fallback=[]){
+    if (!db[user]) {
+        db[user] = {
+            flock: {},
+            weights: [],
+            performance: [],
+            feed: [],
+            water: [],
+            vaccine: [],
+            medicine: []
+        };
+        dbSave(db);
+    }
 
-try{
-
-return JSON.parse(
-
-localStorage.getItem(dbKey(name))
-
-) ?? fallback;
-
+    return db[user];
 }
 
-catch(error){
-
-console.error(error);
-
-return fallback;
-
+function saveUserData(data) {
+    const db = dbLoad();
+    db[getActiveUser()] = data;
+    dbSave(db);
 }
 
+function saveFlock(data) {
+    const d = userData();
+    d.flock = data;
+    saveUserData(d);
 }
 
-
-function write(name,data){
-
-if(!canSave()){
-
-return false;
-
+function loadFlock() {
+    return userData().flock || {};
 }
 
-localStorage.setItem(
+function addWeightRecord(record) {
+    const d = userData();
+    d.weights = d.weights || [];
 
-dbKey(name),
+    d.weights = d.weights.filter(x => Number(x.age) !== Number(record.age));
+    d.weights.push(record);
 
-JSON.stringify(data)
+    d.weights.sort((a,b) => Number(a.age) - Number(b.age));
 
-);
-
-return true;
-
+    saveUserData(d);
 }
 
-
-function addRecord(name,record){
-
-if(!canSave()){
-
-return null;
-
+function getWeightRecords() {
+    return userData().weights || [];
 }
 
-
-const data=read(name,[]);
-
-
-record.id=
-
-record.id ||
-
-(
-
-crypto.randomUUID
-
-?
-
-crypto.randomUUID()
-
-:
-
-String(Date.now()+Math.random())
-
-);
-
-
-record.createdAt=
-
-record.createdAt ||
-
-new Date().toISOString();
-
-
-data.push(record);
-
-
-write(name,data);
-
-
-return record;
-
+function addFeedRecord(record) {
+    const d = userData();
+    d.feed = d.feed || [];
+    d.feed.push(record);
+    saveUserData(d);
 }
 
-
-function updateRecord(name,id,patch){
-
-const data=read(name,[]);
-
-
-const index=data.findIndex(
-
-function(item){
-
-return item.id===id;
-
+function getFeedRecords() {
+    return userData().feed || [];
 }
 
-);
-
-
-if(index<0){
-
-return false;
-
+function addWaterRecord(record) {
+    const d = userData();
+    d.water = d.water || [];
+    d.water.push(record);
+    saveUserData(d);
 }
 
-
-data[index]={
-
-...data[index],
-
-...patch,
-
-updatedAt:new Date().toISOString()
-
-};
-
-
-return write(name,data);
-
+function getWaterRecords() {
+    return userData().water || [];
 }
 
-
-function deleteRecord(name,id){
-
-return write(
-
-name,
-
-read(name,[]).filter(
-
-function(item){
-
-return item.id!==id;
-
+function addVaccineRecord(record) {
+    const d = userData();
+    d.vaccine = d.vaccine || [];
+    d.vaccine.push(record);
+    saveUserData(d);
 }
 
-)
-
-);
-
+function getVaccineRecords() {
+    return userData().vaccine || [];
 }
 
-
-function getFlocks(){
-
-return read("flocks",[]);
-
+function addMedicineRecord(record) {
+    const d = userData();
+    d.medicine = d.medicine || [];
+    d.medicine.push(record);
+    saveUserData(d);
 }
 
-
-function getSelectedFlock(){
-
-return localStorage.getItem(
-
-"adineh_selected_flock"
-
-) || "";
-
+function getMedicineRecords() {
+    return userData().medicine || [];
 }
 
+function removeRecord(type, index) {
+    const d = userData();
 
-function setSelectedFlock(id){
-
-if(id){
-
-localStorage.setItem(
-
-"adineh_selected_flock",
-
-id
-
-);
-
+    if (Array.isArray(d[type])) {
+        d[type].splice(index, 1);
+        saveUserData(d);
+    }
 }
 
-else{
-
-localStorage.removeItem(
-
-"adineh_selected_flock"
-
-);
-
-}
-
-}
-
-
-function selectedFlock(){
-
-return getFlocks().find(
-
-function(item){
-
-return item.id===getSelectedFlock();
-
-}
-
-) || null;
-
-}
-
-
-function todayISO(){
-
-return new Date()
-
-.toISOString()
-
-.slice(0,10);
-
-}
-
-
-function escapeHTML(value){
-
-return String(value ?? "")
-
-.replace(/[&<>"']/g,function(match){
-
-return {
-
-"&":"&amp;",
-
-"<":"&lt;",
-
-">":"&gt;",
-
-'"':"&quot;",
-
-"'":"&#39;"
-
-}[match];
-
-});
-
+function clearUserData() {
+    const db = dbLoad();
+    delete db[getActiveUser()];
+    dbSave(db);
 }
