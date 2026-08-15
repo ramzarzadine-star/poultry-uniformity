@@ -1,1058 +1,444 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<!doctype html>
+
+<html
+  lang="fa"
+  dir="rtl"
+>
 
 <head>
-    <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
-    >
+  <meta charset="UTF-8">
 
-    <meta
-        name="theme-color"
-        content="#0b766e"
-    >
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
 
-    <meta
-        name="apple-mobile-web-app-capable"
-        content="yes"
-    >
+  <meta
+    name="theme-color"
+    content="#07564f"
+  >
 
-    <meta
-        name="apple-mobile-web-app-status-bar-style"
-        content="default"
-    >
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
 
-    <title>
-        ورود | مرکز تخصصی سلامت طیور آدینه
-    </title>
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
 
-    <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-    >
+  <title>
+    ورود | مرکز تخصصی سلامت طیور آدینه
+  </title>
 
-    <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin
-    >
+  <link
+    rel="stylesheet"
+    href="Style.css"
+  >
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
-    >
-
-    <style>
-
-        :root {
-            --primary: #0b766e;
-            --primary-dark: #07564f;
-            --primary-light: #dff5f1;
-
-            --text: #17212b;
-            --muted: #64748b;
-
-            --background: #f3f7f6;
-            --card: rgba(255,255,255,.96);
-
-            --border: #e2e8f0;
-
-            --danger: #c2413a;
-            --success: #16845b;
-
-            --shadow:
-                0 24px 70px rgba(15,23,42,.14);
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            min-height: 100%;
-        }
-
-        body {
-            font-family:
-                Vazirmatn,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                Tahoma,
-                Arial,
-                sans-serif;
-
-            color: var(--text);
-
-            background:
-                radial-gradient(
-                    circle at 15% 10%,
-                    rgba(11,118,110,.16),
-                    transparent 30%
-                ),
-                radial-gradient(
-                    circle at 90% 90%,
-                    rgba(7,86,79,.12),
-                    transparent 35%
-                ),
-                var(--background);
-
-            min-height: 100dvh;
-
-            -webkit-font-smoothing: antialiased;
-        }
-
-        button,
-        input {
-            font-family: inherit;
-        }
-
-        button {
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .login-page {
-
-            min-height: 100dvh;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            padding:
-                max(24px, env(safe-area-inset-top))
-                18px
-                max(24px, env(safe-area-inset-bottom));
-
-            position: relative;
-
-            overflow: hidden;
-        }
-
-        /* پس زمینه تزئینی */
-
-        .background-shape {
-
-            position: fixed;
-
-            width: 360px;
-            height: 360px;
-
-            border-radius: 50%;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    rgba(11,118,110,.13),
-                    rgba(7,86,79,.02)
-                );
-
-            top: -180px;
-            left: -120px;
-
-            pointer-events: none;
-        }
-
-        .background-shape.two {
-
-            width: 300px;
-            height: 300px;
-
-            top: auto;
-            left: auto;
-
-            right: -150px;
-            bottom: -150px;
-        }
-
-        .login-container {
-
-            width: 100%;
-
-            max-width: 430px;
-
-            position: relative;
-
-            z-index: 2;
-        }
-
-        .login-card {
-
-            background: var(--card);
-
-            border:
-                1px solid
-                rgba(255,255,255,.9);
-
-            border-radius: 28px;
-
-            box-shadow: var(--shadow);
-
-            padding: 30px 24px 24px;
-
-            backdrop-filter: blur(16px);
-
-            -webkit-backdrop-filter: blur(16px);
-        }
-
-        /* برند */
-
-        .brand {
-
-            text-align: center;
-
-            margin-bottom: 24px;
-        }
-
-        .logo-wrap {
-
-            width: 118px;
-            height: 118px;
-
-            margin: 0 auto 16px;
-
-            border-radius: 28px;
-
-            background: #fff;
-
-            border: 1px solid var(--border);
-
-            box-shadow:
-                0 12px 30px rgba(15,23,42,.10);
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            overflow: hidden;
-        }
-
-        .logo {
-
-            width: 92px;
-            height: 92px;
-
-            object-fit: contain;
-
-            display: block;
-        }
-
-        .brand h1 {
-
-            margin: 0;
-
-            font-size: 21px;
-
-            line-height: 1.8;
-
-            font-weight: 800;
-
-            color: var(--text);
-        }
-
-        .brand p {
-
-            margin: 4px 0 0;
-
-            font-size: 11px;
-
-            color: var(--muted);
-
-            line-height: 1.8;
-        }
-
-        /* تب ها */
-
-        .auth-tabs {
-
-            display: grid;
-
-            grid-template-columns: 1fr 1fr;
-
-            gap: 5px;
-
-            background: #f1f5f9;
-
-            padding: 5px;
-
-            border-radius: 14px;
-
-            margin-bottom: 22px;
-        }
-
-        .auth-tab {
-
-            border: 0;
-
-            background: transparent;
-
-            color: var(--muted);
-
-            padding: 10px;
-
-            border-radius: 10px;
-
-            font-size: 12px;
-
-            font-weight: 700;
-
-            transition: .2s;
-        }
-
-        .auth-tab.active {
-
-            background: #fff;
-
-            color: var(--primary);
-
-            box-shadow:
-                0 3px 10px rgba(15,23,42,.08);
-        }
-
-        /* فرم */
-
-        .form-section {
-
-            display: none;
-        }
-
-        .form-section.active {
-
-            display: block;
-        }
-
-        .field {
-
-            margin-bottom: 13px;
-        }
-
-        .field label {
-
-            display: block;
-
-            margin-bottom: 6px;
-
-            font-size: 11px;
-
-            font-weight: 700;
-
-            color: #475569;
-        }
-
-        .input-wrap {
-
-            position: relative;
-        }
-
-        .field input {
-
-            width: 100%;
-
-            height: 48px;
-
-            border:
-                1px solid
-                #cbd5e1;
-
-            border-radius: 13px;
-
-            background: #fff;
-
-            color: var(--text);
-
-            padding:
-                0 13px;
-
-            font-size: 13px;
-
-            outline: none;
-
-            transition:
-                border-color .2s,
-                box-shadow .2s,
-                background .2s;
-        }
-
-        .field input:focus {
-
-            border-color: var(--primary);
-
-            box-shadow:
-                0 0 0 4px
-                rgba(11,118,110,.10);
-        }
-
-        .field input::placeholder {
-
-            color: #94a3b8;
-        }
-
-        .password-toggle {
-
-            position: absolute;
-
-            left: 7px;
-
-            top: 7px;
-
-            width: 34px;
-
-            height: 34px;
-
-            border: 0;
-
-            border-radius: 9px;
-
-            background: transparent;
-
-            color: #64748b;
-
-            font-size: 16px;
-        }
-
-        .password-toggle:active {
-
-            background: #f1f5f9;
-        }
-
-        .two-fields {
-
-            display: grid;
-
-            grid-template-columns: 1fr 1fr;
-
-            gap: 9px;
-        }
-
-        .submit-btn {
-
-            width: 100%;
-
-            height: 50px;
-
-            border: 0;
-
-            border-radius: 14px;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    var(--primary-dark),
-                    var(--primary)
-                );
-
-            color: #fff;
-
-            font-size: 13px;
-
-            font-weight: 800;
-
-            box-shadow:
-                0 10px 24px
-                rgba(11,118,110,.22);
-
-            transition:
-                transform .15s,
-                box-shadow .15s,
-                opacity .15s;
-
-            margin-top: 5px;
-        }
-
-        .submit-btn:active {
-
-            transform: scale(.985);
-        }
-
-        .submit-btn:disabled {
-
-            opacity: .65;
-
-            cursor: not-allowed;
-
-            box-shadow: none;
-        }
-
-        .loading {
-
-            display: inline-flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 8px;
-        }
-
-        .spinner {
-
-            width: 16px;
-            height: 16px;
-
-            border:
-                2px solid
-                rgba(255,255,255,.4);
-
-            border-top-color: #fff;
-
-            border-radius: 50%;
-
-            animation:
-                spin .7s linear infinite;
-        }
-
-        @keyframes spin {
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* پیام */
-
-        .message {
-
-            min-height: 0;
-
-            margin-top: 13px;
-
-            padding: 0;
-
-            border-radius: 12px;
-
-            font-size: 11px;
-
-            line-height: 1.9;
-
-            text-align: center;
-        }
-
-        .message.show {
-
-            padding: 10px 12px;
-        }
-
-        .message.error {
-
-            background: #fff1f0;
-
-            color: var(--danger);
-
-            border:
-                1px solid
-                #ffd8d5;
-        }
-
-        .message.success {
-
-            background: #effaf4;
-
-            color: var(--success);
-
-            border:
-                1px solid
-                #cceedd;
-        }
-
-        .message.info {
-
-            background: #eff6ff;
-
-            color: #1d4ed8;
-
-            border:
-                1px solid
-                #dbeafe;
-        }
-
-        /* پایین کارت */
-
-        .security-note {
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            gap: 6px;
-
-            color: #94a3b8;
-
-            font-size: 9px;
-
-            margin-top: 18px;
-
-            line-height: 1.8;
-
-            text-align: center;
-        }
-
-        .security-icon {
-
-            font-size: 13px;
-        }
-
-        .footer {
-
-            text-align: center;
-
-            margin-top: 14px;
-
-            color: #94a3b8;
-
-            font-size: 9px;
-
-            line-height: 1.8;
-        }
-
-        /* موبایل */
-
-        @media (max-width: 430px) {
-
-            .login-page {
-
-                padding-left: 12px;
-                padding-right: 12px;
-            }
-
-            .login-card {
-
-                padding:
-                    24px
-                    17px
-                    20px;
-
-                border-radius: 24px;
-            }
-
-            .logo-wrap {
-
-                width: 100px;
-                height: 100px;
-
-                border-radius: 24px;
-            }
-
-            .logo {
-
-                width: 78px;
-                height: 78px;
-            }
-
-            .brand h1 {
-
-                font-size: 18px;
-            }
-
-            .brand p {
-
-                font-size: 10px;
-            }
-
-            .two-fields {
-
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-        }
-
-        @media (max-height: 700px) {
-
-            .login-page {
-
-                align-items: flex-start;
-
-                padding-top: 18px;
-            }
-
-            .logo-wrap {
-
-                width: 82px;
-                height: 82px;
-
-                margin-bottom: 10px;
-            }
-
-            .logo {
-
-                width: 65px;
-                height: 65px;
-            }
-
-            .brand {
-
-                margin-bottom: 15px;
-            }
-
-            .login-card {
-
-                padding-top: 18px;
-            }
-        }
-
-    </style>
 </head>
 
 
-<body>
+<body class="login-body">
 
-    <main class="login-page">
 
-        <div class="background-shape"></div>
-        <div class="background-shape two"></div>
+  <main class="login-page">
 
 
-        <div class="login-container">
+    <section class="login-card">
 
-            <section class="login-card">
 
+      <!-- لوگو -->
 
-                <!-- برند -->
+      <div class="login-logo-wrap">
 
-                <header class="brand">
+        <img
+          src="IMG_4309.png"
+          class="login-logo"
+          alt="مرکز تخصصی سلامت طیور آدینه"
+        >
 
-                    <div class="logo-wrap">
+      </div>
 
-                        <img
-                            src="IMG_4309.png"
-                            class="logo"
-                            alt="مرکز تخصصی سلامت طیور آدینه"
-                        >
 
-                    </div>
+      <!-- عنوان -->
 
-                    <h1>
-                        مرکز تخصصی سلامت طیور آدینه
-                    </h1>
+      <div class="login-heading">
 
-                    <p>
-                        سامانه مدیریت، پایش و سلامت فارم‌های طیور
-                    </p>
+        <h1>
+          مرکز تخصصی سلامت طیور آدینه
+        </h1>
 
-                </header>
+        <p>
+          سامانه تخصصی مدیریت و پایش سلامت فارم‌های طیور
+        </p>
 
+      </div>
 
-                <!-- تب ورود / ثبت نام -->
 
-                <div class="auth-tabs">
+      <!-- تب‌ها -->
 
-                    <button
-                        id="loginTab"
-                        class="auth-tab active"
-                        type="button"
-                    >
-                        ورود
-                    </button>
+      <div class="login-tabs">
 
-                    <button
-                        id="registerTab"
-                        class="auth-tab"
-                        type="button"
-                    >
-                        ثبت‌نام
-                    </button>
+        <button
+          type="button"
+          class="login-tab active"
+          id="loginTab"
+          onclick="showLoginMode()"
+        >
+          ورود
+        </button>
 
-                </div>
 
+        <button
+          type="button"
+          class="login-tab"
+          id="registerTab"
+          onclick="showRegisterMode()"
+        >
+          ثبت‌نام
+        </button>
 
-                <!-- ورود -->
+      </div>
 
-                <section
-                    id="loginSection"
-                    class="form-section active"
-                >
 
-                    <div class="field">
+      <!-- =========================
+           ورود
+      ========================== -->
 
-                        <label for="loginEmail">
-                            ایمیل
-                        </label>
+      <div
+        id="loginMode"
+        class="login-mode"
+      >
 
-                        <input
-                            id="loginEmail"
-                            type="email"
-                            inputmode="email"
-                            autocomplete="email"
-                            placeholder="example@email.com"
-                            dir="ltr"
-                        >
+        <div class="login-form">
 
-                    </div>
 
+          <div class="login-field">
 
-                    <div class="field">
+            <label for="loginEmail">
+              ایمیل
+            </label>
 
-                        <label for="loginPassword">
-                            رمز عبور
-                        </label>
+            <div class="input-wrap">
 
-                        <div class="input-wrap">
+              <span class="input-icon">
+                ✉
+              </span>
 
-                            <input
-                                id="loginPassword"
-                                type="password"
-                                autocomplete="current-password"
-                                placeholder="رمز عبور"
-                                dir="ltr"
-                            >
+              <input
+                id="loginEmail"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                placeholder="example@email.com"
+              >
 
-                            <button
-                                class="password-toggle"
-                                type="button"
-                                data-target="loginPassword"
-                                aria-label="نمایش رمز عبور"
-                            >
-                                ◉
-                            </button>
+            </div>
 
-                        </div>
+          </div>
 
-                    </div>
 
+          <div class="login-field">
 
-                    <button
-                        id="loginButton"
-                        class="submit-btn"
-                        type="button"
-                    >
-                        ورود به سامانه
-                    </button>
+            <label for="loginPassword">
+              رمز عبور
+            </label>
 
-                </section>
+            <div class="input-wrap">
 
+              <span class="input-icon">
+                ●
+              </span>
 
-                <!-- ثبت نام -->
+              <input
+                id="loginPassword"
+                type="password"
+                autocomplete="current-password"
+                placeholder="رمز عبور"
+              >
 
-                <section
-                    id="registerSection"
-                    class="form-section"
-                >
+              <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword('loginPassword',this)"
+                aria-label="نمایش رمز"
+              >
+                ◉
+              </button>
 
-                    <div class="two-fields">
+            </div>
 
-                        <div class="field">
+          </div>
 
-                            <label for="firstName">
-                                نام
-                            </label>
 
-                            <input
-                                id="firstName"
-                                type="text"
-                                autocomplete="given-name"
-                                placeholder="نام"
-                            >
+          <button
+            type="button"
+            class="login-submit"
+            id="loginButton"
+            onclick="loginUser()"
+          >
 
-                        </div>
+            <span>
+              ورود به سامانه
+            </span>
 
+          </button>
 
-                        <div class="field">
 
-                            <label for="lastName">
-                                نام خانوادگی
-                            </label>
+          <button
+            type="button"
+            class="magic-button"
+            onclick="sendMagicLink()"
+          >
+            ورود با لینک یک‌بارمصرف ایمیل
+          </button>
 
-                            <input
-                                id="lastName"
-                                type="text"
-                                autocomplete="family-name"
-                                placeholder="نام خانوادگی"
-                            >
 
-                        </div>
+          <button
+            type="button"
+            class="forgot-button"
+            onclick="showForgotPassword()"
+          >
+            رمز عبور را فراموش کرده‌ام
+          </button>
 
-                    </div>
-
-
-                    <div class="field">
-
-                        <label for="registerEmail">
-                            ایمیل
-                        </label>
-
-                        <input
-                            id="registerEmail"
-                            type="email"
-                            inputmode="email"
-                            autocomplete="email"
-                            placeholder="example@email.com"
-                            dir="ltr"
-                        >
-
-                    </div>
-
-
-                    <div class="field">
-
-                        <label for="phone">
-                            شماره تماس
-                        </label>
-
-                        <input
-                            id="phone"
-                            type="tel"
-                            inputmode="tel"
-                            autocomplete="tel"
-                            placeholder="09xxxxxxxxx"
-                            dir="ltr"
-                        >
-
-                    </div>
-
-
-                    <div class="field">
-
-                        <label for="companyName">
-                            نام شرکت / مجموعه
-                        </label>
-
-                        <input
-                            id="companyName"
-                            type="text"
-                            autocomplete="organization"
-                            placeholder="اختیاری"
-                        >
-
-                    </div>
-
-
-                    <div class="field">
-
-                        <label for="registerPassword">
-                            رمز عبور
-                        </label>
-
-                        <div class="input-wrap">
-
-                            <input
-                                id="registerPassword"
-                                type="password"
-                                autocomplete="new-password"
-                                placeholder="حداقل ۸ کاراکتر"
-                                dir="ltr"
-                            >
-
-                            <button
-                                class="password-toggle"
-                                type="button"
-                                data-target="registerPassword"
-                                aria-label="نمایش رمز عبور"
-                            >
-                                ◉
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="field">
-
-                        <label for="confirmPassword">
-                            تکرار رمز عبور
-                        </label>
-
-                        <div class="input-wrap">
-
-                            <input
-                                id="confirmPassword"
-                                type="password"
-                                autocomplete="new-password"
-                                placeholder="تکرار رمز عبور"
-                                dir="ltr"
-                            >
-
-                            <button
-                                class="password-toggle"
-                                type="button"
-                                data-target="confirmPassword"
-                                aria-label="نمایش رمز عبور"
-                            >
-                                ◉
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        id="registerButton"
-                        class="submit-btn"
-                        type="button"
-                    >
-                        ایجاد حساب
-                    </button>
-
-                </section>
-
-
-                <!-- پیام -->
-
-                <div
-                    id="message"
-                    class="message"
-                    role="alert"
-                    aria-live="polite"
-                ></div>
-
-
-                <div class="security-note">
-
-                    <span class="security-icon">
-                        🔒
-                    </span>
-
-                    <span>
-                        ارتباط حساب کاربری با سامانه امن مدیریت سلامت طیور
-                    </span>
-
-                </div>
-
-            </section>
-
-
-            <footer class="footer">
-
-                مرکز تخصصی سلامت طیور آدینه
-
-                <br>
-
-                سامانه حرفه‌ای مدیریت و پایش فارم‌های طیور
-
-            </footer>
 
         </div>
 
-    </main>
+      </div>
 
 
-    <!-- Supabase -->
+      <!-- =========================
+           ثبت نام
+      ========================== -->
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-    ></script>
+      <div
+        id="registerMode"
+        class="login-mode"
+        style="display:none;"
+      >
+
+        <div class="login-form">
 
 
-    <!-- تنظیمات Supabase -->
+          <div class="login-field">
 
-    <script src="supabase.js"></script>
+            <label for="registerEmail">
+              ایمیل
+            </label>
+
+            <div class="input-wrap">
+
+              <span class="input-icon">
+                ✉
+              </span>
+
+              <input
+                id="registerEmail"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                placeholder="ایمیل معتبر"
+              >
+
+            </div>
+
+          </div>
 
 
-    <!-- منطق ورود -->
+          <div class="login-field">
 
-    <script src="login.js"></script>
+            <label for="registerPassword">
+              رمز عبور
+            </label>
+
+            <div class="input-wrap">
+
+              <span class="input-icon">
+                ●
+              </span>
+
+              <input
+                id="registerPassword"
+                type="password"
+                autocomplete="new-password"
+                placeholder="حداقل ۶ کاراکتر"
+              >
+
+              <button
+                type="button"
+                class="password-toggle"
+                onclick="togglePassword('registerPassword',this)"
+              >
+                ◉
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div class="login-field">
+
+            <label for="registerPassword2">
+              تکرار رمز عبور
+            </label>
+
+            <div class="input-wrap">
+
+              <span class="input-icon">
+                ●
+              </span>
+
+              <input
+                id="registerPassword2"
+                type="password"
+                autocomplete="new-password"
+                placeholder="رمز عبور را دوباره وارد کنید"
+              >
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="login-submit"
+            id="registerButton"
+            onclick="registerUser()"
+          >
+            ایجاد حساب کاربری
+          </button>
+
+
+          <div class="register-note">
+
+            پس از ثبت‌نام، فعال‌سازی حساب توسط مدیریت مرکز انجام می‌شود.
+
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- =========================
+           فراموشی رمز
+      ========================== -->
+
+      <div
+        id="forgotMode"
+        class="login-mode"
+        style="display:none;"
+      >
+
+        <div class="login-form">
+
+
+          <div class="forgot-title">
+            بازیابی رمز عبور
+          </div>
+
+
+          <p class="forgot-description">
+            ایمیل حساب کاربری خود را وارد کنید تا لینک بازیابی برای شما ارسال شود.
+          </p>
+
+
+          <div class="login-field">
+
+            <label for="forgotEmail">
+              ایمیل
+            </label>
+
+            <div class="input-wrap">
+
+              <span class="input-icon">
+                ✉
+              </span>
+
+              <input
+                id="forgotEmail"
+                type="email"
+                inputmode="email"
+                autocomplete="email"
+                placeholder="ایمیل حساب کاربری"
+              >
+
+            </div>
+
+          </div>
+
+
+          <button
+            type="button"
+            class="login-submit"
+            onclick="resetPassword()"
+          >
+            ارسال لینک بازیابی
+          </button>
+
+
+          <button
+            type="button"
+            class="back-login-button"
+            onclick="showLoginMode()"
+          >
+            بازگشت به ورود
+          </button>
+
+
+        </div>
+
+      </div>
+
+
+      <!-- پیام -->
+
+      <div
+        id="loginMessage"
+        class="login-message"
+      ></div>
+
+
+      <!-- وضعیت -->
+
+      <div class="login-footer">
+
+        <span>
+          سامانه اختصاصی
+        </span>
+
+        <span>
+          •
+        </span>
+
+        <span>
+          مرکز تخصصی سلامت طیور آدینه
+        </span>
+
+      </div>
+
+
+    </section>
+
+
+  </main>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+  <script
+    src="login.js"
+  ></script>
+
 
 </body>
 
