@@ -1,19 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="fa" dir="rtl">
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 
-<title>آدینه</title>
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+>
+
+<title>
+مرکز تخصصی سلامت طیور آدینه
+</title>
 
 </head>
 
+
 <body>
 
+
 <script>
-location.href="login.html";
+
+if(
+localStorage.getItem("activeUser")
+){
+
+location.replace(
+"panel.html"
+);
+
+}
+
+else{
+
+location.replace(
+"login.html"
+);
+
+}
+
 </script>
+
 
 </body>
 
