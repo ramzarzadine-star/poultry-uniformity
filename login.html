@@ -7,7 +7,7 @@
 
 <head>
 
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
 
   <meta
     name="viewport"
@@ -16,7 +16,7 @@
 
   <meta
     name="theme-color"
-    content="#07564f"
+    content="#0b766e"
   >
 
   <meta
@@ -24,18 +24,13 @@
     content="yes"
   >
 
-  <meta
-    name="apple-mobile-web-app-status-bar-style"
-    content="black-translucent"
-  >
-
   <title>
-    ورود | مرکز تخصصی سلامت طیور آدینه
+    ورود امن | مرکز تخصصی سلامت طیور آدینه
   </title>
 
   <link
     rel="stylesheet"
-    href="Style.css"
+    href="Login.css"
   >
 
 </head>
@@ -44,400 +39,332 @@
 <body class="login-body">
 
 
-  <main class="login-page">
+<main class="login-page">
 
 
-    <section class="login-card">
+<section
+  class="login-card"
+  aria-label="احراز هویت"
+>
 
 
-      <!-- لوگو -->
+  <div class="login-brand">
 
-      <div class="login-logo-wrap">
+    <div class="logo-wrap">
 
-        <img
-          src="IMG_4309.png"
-          class="login-logo"
-          alt="مرکز تخصصی سلامت طیور آدینه"
+      <img
+        src="IMG_4309.png"
+        alt="مرکز تخصصی سلامت طیور آدینه"
+        onerror="this.style.display='none'"
+      >
+
+      <div class="logo-fallback">
+        🐔
+      </div>
+
+    </div>
+
+
+    <div>
+
+      <div class="brand-title">
+
+        مرکز تخصصی سلامت طیور آدینه
+
+      </div>
+
+
+      <div class="brand-subtitle">
+
+        سامانه حرفه‌ای پایش و مدیریت طیور
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div
+    class="mode-switch"
+    role="tablist"
+  >
+
+    <button
+      id="loginModeBtn"
+      class="mode-btn active"
+      type="button"
+    >
+      ورود
+    </button>
+
+
+    <button
+      id="registerModeBtn"
+      class="mode-btn"
+      type="button"
+    >
+      ثبت‌نام
+    </button>
+
+  </div>
+
+
+  <header class="login-heading">
+
+    <h1 id="modeTitle">
+      ورود امن به سامانه
+    </h1>
+
+    <p id="modeText">
+
+      برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.
+
+    </p>
+
+  </header>
+
+
+  <div
+    id="message"
+    class="login-message"
+    role="alert"
+    aria-live="polite"
+  ></div>
+
+
+  <div
+    id="loading"
+    class="loading-line"
+    hidden
+  >
+    در حال برقراری ارتباط امن…
+  </div>
+
+
+  <!-- LOGIN -->
+
+  <form
+    id="loginForm"
+    novalidate
+  >
+
+    <label
+      for="loginEmail"
+    >
+      ایمیل
+    </label>
+
+    <input
+      id="loginEmail"
+      type="email"
+      autocomplete="username"
+      inputmode="email"
+      placeholder="example@domain.com"
+      required
+    >
+
+
+    <label
+      for="loginPassword"
+    >
+      رمز عبور
+    </label>
+
+    <input
+      id="loginPassword"
+      type="password"
+      autocomplete="current-password"
+      placeholder="رمز عبور"
+      required
+    >
+
+
+    <button
+      id="submitLoginBtn"
+      class="primary-btn"
+      type="submit"
+    >
+      ورود به سامانه
+    </button>
+
+
+    <div class="secondary-actions">
+
+      <button
+        id="magicLinkBtn"
+        type="button"
+      >
+        ورود با لینک ایمیل
+      </button>
+
+
+      <button
+        id="forgotBtn"
+        type="button"
+      >
+        فراموشی رمز عبور
+      </button>
+
+    </div>
+
+  </form>
+
+
+  <!-- REGISTER -->
+
+  <form
+    id="registerForm"
+    hidden
+    novalidate
+  >
+
+    <div class="form-grid">
+
+      <div>
+
+        <label
+          for="firstName"
+        >
+          نام
+        </label>
+
+        <input
+          id="firstName"
+          type="text"
+          autocomplete="given-name"
+          placeholder="نام"
+          required
         >
 
       </div>
 
 
-      <!-- عنوان -->
+      <div>
 
-      <div class="login-heading">
-
-        <h1>
-          مرکز تخصصی سلامت طیور آدینه
-        </h1>
-
-        <p>
-          سامانه تخصصی مدیریت و پایش سلامت فارم‌های طیور
-        </p>
-
-      </div>
-
-
-      <!-- تب‌ها -->
-
-      <div class="login-tabs">
-
-        <button
-          type="button"
-          class="login-tab active"
-          id="loginTab"
-          onclick="showLoginMode()"
+        <label
+          for="lastName"
         >
-          ورود
-        </button>
+          نام خانوادگی
+        </label>
 
-
-        <button
-          type="button"
-          class="login-tab"
-          id="registerTab"
-          onclick="showRegisterMode()"
+        <input
+          id="lastName"
+          type="text"
+          autocomplete="family-name"
+          placeholder="نام خانوادگی"
+          required
         >
-          ثبت‌نام
-        </button>
 
       </div>
 
+    </div>
 
-      <!-- =========================
-           ورود
-      ========================== -->
 
-      <div
-        id="loginMode"
-        class="login-mode"
-      >
+    <label
+      for="registerPhone"
+    >
+      شماره تماس
+    </label>
 
-        <div class="login-form">
+    <input
+      id="registerPhone"
+      type="tel"
+      autocomplete="tel"
+      inputmode="tel"
+      placeholder="شماره تماس"
+    >
 
 
-          <div class="login-field">
+    <label
+      for="registerEmail"
+    >
+      ایمیل
+    </label>
 
-            <label for="loginEmail">
-              ایمیل
-            </label>
+    <input
+      id="registerEmail"
+      type="email"
+      autocomplete="email"
+      inputmode="email"
+      placeholder="example@domain.com"
+      required
+    >
 
-            <div class="input-wrap">
 
-              <span class="input-icon">
-                ✉
-              </span>
+    <label
+      for="registerPassword"
+    >
+      رمز عبور
+    </label>
 
-              <input
-                id="loginEmail"
-                type="email"
-                inputmode="email"
-                autocomplete="email"
-                placeholder="example@email.com"
-              >
+    <input
+      id="registerPassword"
+      type="password"
+      autocomplete="new-password"
+      placeholder="حداقل ۸ کاراکتر"
+      required
+    >
 
-            </div>
 
-          </div>
+    <label
+      for="registerPasswordConfirm"
+    >
+      تکرار رمز عبور
+    </label>
 
+    <input
+      id="registerPasswordConfirm"
+      type="password"
+      autocomplete="new-password"
+      placeholder="تکرار رمز عبور"
+      required
+    >
 
-          <div class="login-field">
 
-            <label for="loginPassword">
-              رمز عبور
-            </label>
+    <button
+      id="submitRegisterBtn"
+      class="primary-btn"
+      type="submit"
+    >
+      ایجاد حساب
+    </button>
 
-            <div class="input-wrap">
+  </form>
 
-              <span class="input-icon">
-                ●
-              </span>
 
-              <input
-                id="loginPassword"
-                type="password"
-                autocomplete="current-password"
-                placeholder="رمز عبور"
-              >
+  <div class="security-note">
 
-              <button
-                type="button"
-                class="password-toggle"
-                onclick="togglePassword('loginPassword',this)"
-                aria-label="نمایش رمز"
-              >
-                ◉
-              </button>
+    <span>🔒</span>
 
-            </div>
+    <span>
+      دسترسی فقط برای حساب‌های تأیید و فعال‌شده مجاز است.
+    </span>
 
-          </div>
+  </div>
 
 
-          <button
-            type="button"
-            class="login-submit"
-            id="loginButton"
-            onclick="loginUser()"
-          >
+  <footer>
+    مرکز تخصصی سلامت طیور آدینه
+  </footer>
 
-            <span>
-              ورود به سامانه
-            </span>
 
-          </button>
+</section>
 
+</main>
 
-          <button
-            type="button"
-            class="magic-button"
-            onclick="sendMagicLink()"
-          >
-            ورود با لینک یک‌بارمصرف ایمیل
-          </button>
 
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
 
-          <button
-            type="button"
-            class="forgot-button"
-            onclick="showForgotPassword()"
-          >
-            رمز عبور را فراموش کرده‌ام
-          </button>
-
-
-        </div>
-
-      </div>
-
-
-      <!-- =========================
-           ثبت نام
-      ========================== -->
-
-      <div
-        id="registerMode"
-        class="login-mode"
-        style="display:none;"
-      >
-
-        <div class="login-form">
-
-
-          <div class="login-field">
-
-            <label for="registerEmail">
-              ایمیل
-            </label>
-
-            <div class="input-wrap">
-
-              <span class="input-icon">
-                ✉
-              </span>
-
-              <input
-                id="registerEmail"
-                type="email"
-                inputmode="email"
-                autocomplete="email"
-                placeholder="ایمیل معتبر"
-              >
-
-            </div>
-
-          </div>
-
-
-          <div class="login-field">
-
-            <label for="registerPassword">
-              رمز عبور
-            </label>
-
-            <div class="input-wrap">
-
-              <span class="input-icon">
-                ●
-              </span>
-
-              <input
-                id="registerPassword"
-                type="password"
-                autocomplete="new-password"
-                placeholder="حداقل ۶ کاراکتر"
-              >
-
-              <button
-                type="button"
-                class="password-toggle"
-                onclick="togglePassword('registerPassword',this)"
-              >
-                ◉
-              </button>
-
-            </div>
-
-          </div>
-
-
-          <div class="login-field">
-
-            <label for="registerPassword2">
-              تکرار رمز عبور
-            </label>
-
-            <div class="input-wrap">
-
-              <span class="input-icon">
-                ●
-              </span>
-
-              <input
-                id="registerPassword2"
-                type="password"
-                autocomplete="new-password"
-                placeholder="رمز عبور را دوباره وارد کنید"
-              >
-
-            </div>
-
-          </div>
-
-
-          <button
-            type="button"
-            class="login-submit"
-            id="registerButton"
-            onclick="registerUser()"
-          >
-            ایجاد حساب کاربری
-          </button>
-
-
-          <div class="register-note">
-
-            پس از ثبت‌نام، فعال‌سازی حساب توسط مدیریت مرکز انجام می‌شود.
-
-          </div>
-
-
-        </div>
-
-      </div>
-
-
-      <!-- =========================
-           فراموشی رمز
-      ========================== -->
-
-      <div
-        id="forgotMode"
-        class="login-mode"
-        style="display:none;"
-      >
-
-        <div class="login-form">
-
-
-          <div class="forgot-title">
-            بازیابی رمز عبور
-          </div>
-
-
-          <p class="forgot-description">
-            ایمیل حساب کاربری خود را وارد کنید تا لینک بازیابی برای شما ارسال شود.
-          </p>
-
-
-          <div class="login-field">
-
-            <label for="forgotEmail">
-              ایمیل
-            </label>
-
-            <div class="input-wrap">
-
-              <span class="input-icon">
-                ✉
-              </span>
-
-              <input
-                id="forgotEmail"
-                type="email"
-                inputmode="email"
-                autocomplete="email"
-                placeholder="ایمیل حساب کاربری"
-              >
-
-            </div>
-
-          </div>
-
-
-          <button
-            type="button"
-            class="login-submit"
-            onclick="resetPassword()"
-          >
-            ارسال لینک بازیابی
-          </button>
-
-
-          <button
-            type="button"
-            class="back-login-button"
-            onclick="showLoginMode()"
-          >
-            بازگشت به ورود
-          </button>
-
-
-        </div>
-
-      </div>
-
-
-      <!-- پیام -->
-
-      <div
-        id="loginMessage"
-        class="login-message"
-      ></div>
-
-
-      <!-- وضعیت -->
-
-      <div class="login-footer">
-
-        <span>
-          سامانه اختصاصی
-        </span>
-
-        <span>
-          •
-        </span>
-
-        <span>
-          مرکز تخصصی سلامت طیور آدینه
-        </span>
-
-      </div>
-
-
-    </section>
-
-
-  </main>
-
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  ></script>
-
-  <script
-    src="login.js"
-  ></script>
+<script
+  src="supabase-config.js"
+></script>
+
+<script
+  src="login.js"
+></script>
 
 
 </body>
