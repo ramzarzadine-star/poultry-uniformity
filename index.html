@@ -1,81 +1,447 @@
 <!doctype html>
-
-<html
-    lang="fa"
-    dir="rtl"
->
+<html lang="fa" dir="rtl">
 
 <head>
 
-    <meta charset="utf-8">
+  <meta charset="utf-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width,initial-scale=1,viewport-fit=cover"
-    >
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover"
+  >
 
-    <meta
-        name="theme-color"
-        content="#0b766e"
-    >
+  <meta
+    name="theme-color"
+    content="#0b766e"
+  >
 
-    <meta
-        name="apple-mobile-web-app-capable"
-        content="yes"
-    >
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
 
-    <meta
-        name="apple-mobile-web-app-status-bar-style"
-        content="default"
-    >
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="default"
+  >
 
-    <meta
-        name="apple-mobile-web-app-title"
-        content="سلامت طیور آدینه"
-    >
+  <meta
+    name="apple-mobile-web-app-title"
+    content="سلامت طیور آدینه"
+  >
 
-    <link
-        rel="manifest"
-        href="manifest.json"
-    >
+  <link
+    rel="manifest"
+    href="manifest.json"
+  >
 
-    <link
-        rel="stylesheet"
-        href="Style.css"
-    >
+  <link
+    rel="stylesheet"
+    href="Style.css"
+  >
 
-    <title>
-        مرکز تخصصی سلامت طیور آدینه
-    </title>
+  <title>
+    مرکز تخصصی سلامت طیور آدینه
+  </title>
 
 </head>
 
 
 <body>
 
-    <div id="app"></div>
+  <!--
+    صفحه موقت هنگام بررسی وضعیت ورود
+  -->
+
+  <div
+    id="authLoading"
+    style="
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#f4f7f8;
+      font-family:Vazirmatn,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    "
+  >
+
+    <div
+      style="
+        text-align:center;
+        padding:30px;
+      "
+    >
+
+      <div
+        class="auth-spinner"
+      ></div>
+
+      <div
+        style="
+          margin-top:18px;
+          color:#475569;
+          font-size:14px;
+          font-weight:600;
+        "
+      >
+        در حال بررسی دسترسی...
+      </div>
+
+    </div>
+
+  </div>
 
 
-    <!-- Supabase Library -->
+  <!--
+    برنامه اصلی فقط بعد از تأیید دسترسی ساخته می‌شود
+  -->
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-    ></script>
-
-
-    <!-- Supabase Configuration -->
-
-    <script src="supabase.js"></script>
+  <div
+    id="app"
+    style="display:none;"
+  ></div>
 
 
-    <!-- Authentication -->
+  <!-- Supabase -->
 
-    <script src="auth.js"></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
 
 
-    <!-- Main Application -->
+  <script>
 
-    <script src="app.js"></script>
+    'use strict';
+
+
+    /*
+      تنظیمات Supabase
+    */
+
+    const SUPABASE_URL =
+      'https://qxiktabmwwjygsocjcyl.supabase.co';
+
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
+
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY
+      );
+
+
+    /*
+      انتقال به صفحه ورود
+    */
+
+    function goToLogin() {
+
+      window.location.replace(
+        'login.html'
+      );
+
+    }
+
+
+    /*
+      بررسی حساب کاربر
+    */
+
+    async function checkApplicationAccess() {
+
+      try {
+
+        const {
+          data: sessionData,
+          error: sessionError
+        } =
+          await supabaseClient.auth.getSession();
+
+
+        if (
+          sessionError ||
+          !sessionData ||
+          !sessionData.session
+        ) {
+
+          goToLogin();
+
+          return;
+
+        }
+
+
+        const user =
+          sessionData.session.user;
+
+
+        /*
+          دریافت پروفایل
+        */
+
+        const {
+          data: profile,
+          error: profileError
+        } =
+          await supabaseClient
+            .from('profiles')
+            .select(`
+              id,
+              username,
+              first_name,
+              last_name,
+              phone,
+              company_name,
+              role,
+              status
+            `)
+            .eq(
+              'id',
+              user.id
+            )
+            .maybeSingle();
+
+
+        if (profileError) {
+
+          console.error(
+            'Profile error:',
+            profileError
+          );
+
+          goToLogin();
+
+          return;
+
+        }
+
+
+        /*
+          پروفایل وجود ندارد
+        */
+
+        if (!profile) {
+
+          alert(
+            'پروفایل کاربری شما هنوز ایجاد نشده است. لطفاً با مدیریت مرکز تماس بگیرید.'
+          );
+
+          await supabaseClient.auth.signOut();
+
+          goToLogin();
+
+          return;
+
+        }
+
+
+        /*
+          فقط حساب فعال اجازه ورود دارد.
+        */
+
+        if (
+          profile.status !== 'active'
+        ) {
+
+          let msg =
+            'حساب شما فعال نیست.';
+
+
+          if (
+            profile.status === 'pending'
+          ) {
+
+            msg =
+              'حساب شما در انتظار تأیید مدیریت مرکز است.';
+
+          }
+
+
+          if (
+            profile.status === 'suspended'
+          ) {
+
+            msg =
+              'دسترسی حساب شما موقتاً متوقف شده است.';
+
+          }
+
+
+          if (
+            profile.status === 'disabled'
+          ) {
+
+            msg =
+              'دسترسی حساب شما غیرفعال شده است.';
+
+          }
+
+
+          alert(msg);
+
+
+          await supabaseClient.auth.signOut();
+
+
+          goToLogin();
+
+          return;
+
+        }
+
+
+        /*
+          اطلاعات کاربر برای استفاده
+          در قسمت‌های دیگر برنامه
+        */
+
+        window.AdinehAuth = {
+
+          user,
+
+          profile,
+
+          supabase:
+            supabaseClient,
+
+          isOwner:
+            profile.role === 'owner',
+
+          isAdmin:
+            profile.role === 'admin',
+
+          isUser:
+            profile.role === 'user'
+
+        };
+
+
+        /*
+          سازگاری با ساختار قبلی برنامه
+        */
+
+        localStorage.setItem(
+          'activeUser',
+          user.id
+        );
+
+
+        localStorage.setItem(
+          'adineh_user_profile',
+          JSON.stringify(profile)
+        );
+
+
+        /*
+          نمایش برنامه
+        */
+
+        const loading =
+          document.getElementById(
+            'authLoading'
+          );
+
+
+        const app =
+          document.getElementById(
+            'app'
+          );
+
+
+        if (loading)
+          loading.style.display =
+            'none';
+
+
+        if (app)
+          app.style.display =
+            'block';
+
+
+        /*
+          اجرای برنامه اصلی
+        */
+
+        const script =
+          document.createElement(
+            'script'
+          );
+
+
+        script.src =
+          'app.js';
+
+
+        script.onload =
+          () => {
+
+            console.log(
+              'Adineh Poultry App started.'
+            );
+
+          };
+
+
+        script.onerror =
+          () => {
+
+            console.error(
+              'Unable to load app.js'
+            );
+
+          };
+
+
+        document.body.appendChild(
+          script
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          'Authentication error:',
+          error
+        );
+
+
+        goToLogin();
+
+      }
+
+    }
+
+
+    /*
+      اجرای بررسی
+    */
+
+    checkApplicationAccess();
+
+
+    /*
+      اگر وضعیت ورود تغییر کرد،
+      برنامه دوباره بررسی می‌شود.
+    */
+
+    supabaseClient.auth.onAuthStateChange(
+      (event) => {
+
+        if (
+          event === 'SIGNED_OUT'
+        ) {
+
+          goToLogin();
+
+        }
+
+      }
+    );
+
+  </script>
 
 </body>
 
