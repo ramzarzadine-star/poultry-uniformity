@@ -1,1083 +1,1029 @@
 'use strict';
 
-/*
-=========================================================
- ADINEH POULTRY
- Professional Authentication
- Supabase Auth
-=========================================================
-*/
 
-(function () {
+/* =========================================================
+   SUPABASE
+========================================================= */
 
-    const client = window.supabaseClient;
+const SUPABASE_URL =
+  'https://qxiktabmwwjygsocjcyl.supabase.co';
 
-    if (!client) {
 
-        console.error(
-            'Supabase client is not available.'
-        );
+const SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
 
-        return;
+
+const supabaseClient =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function get(id) {
+
+  return document.getElementById(id);
+
+}
+
+
+function showMessage(
+  text,
+  type = 'error'
+) {
+
+  const element =
+    get('loginMessage');
+
+
+  if (!element)
+    return;
+
+
+  element.textContent =
+    text;
+
+
+  element.className =
+    'login-message ' + type;
+
+
+  element.style.display =
+    'block';
+
+}
+
+
+function clearMessage() {
+
+  const element =
+    get('loginMessage');
+
+
+  if (!element)
+    return;
+
+
+  element.textContent =
+    '';
+
+
+  element.className =
+    'login-message';
+
+
+  element.style.display =
+    'none';
+
+}
+
+
+function setButtonLoading(
+  button,
+  loading,
+  loadingText
+) {
+
+  if (!button)
+    return;
+
+
+  if (loading) {
+
+    button.disabled =
+      true;
+
+    button.dataset.originalText =
+      button.innerHTML;
+
+    button.innerHTML =
+      `
+        <span class="button-spinner"></span>
+        ${loadingText}
+      `;
+
+  } else {
+
+    button.disabled =
+      false;
+
+    button.innerHTML =
+      button.dataset.originalText ||
+      '';
+
+  }
+
+}
+
+
+/* =========================================================
+   TABS
+========================================================= */
+
+function hideAllModes() {
+
+  const modes = [
+    'loginMode',
+    'registerMode',
+    'forgotMode'
+  ];
+
+
+  modes.forEach(
+    id => {
+
+      const element =
+        get(id);
+
+
+      if (element)
+        element.style.display =
+          'none';
+
     }
+  );
 
+
+  document
+    .querySelectorAll('.login-tab')
+    .forEach(
+      tab =>
+        tab.classList.remove(
+          'active'
+        )
+    );
+
+}
+
+
+function showLoginMode() {
+
+  hideAllModes();
+
+
+  get('loginMode').style.display =
+    'block';
+
+
+  get('loginTab')
+    ?.classList
+    .add('active');
+
+
+  clearMessage();
+
+}
+
+
+function showRegisterMode() {
+
+  hideAllModes();
+
+
+  get('registerMode').style.display =
+    'block';
+
+
+  get('registerTab')
+    ?.classList
+    .add('active');
+
+
+  clearMessage();
+
+}
+
+
+function showForgotPassword() {
+
+  hideAllModes();
+
+
+  get('forgotMode').style.display =
+    'block';
+
+
+  clearMessage();
+
+
+  const email =
+    get('loginEmail')?.value?.trim();
+
+
+  if (email) {
+
+    get('forgotEmail').value =
+      email;
+
+  }
+
+}
+
+
+/* =========================================================
+   PASSWORD
+========================================================= */
+
+function togglePassword(
+  id,
+  button
+) {
+
+  const input =
+    get(id);
+
+
+  if (!input)
+    return;
+
+
+  if (
+    input.type === 'password'
+  ) {
+
+    input.type =
+      'text';
+
+
+    if (button)
+      button.textContent =
+        '◉';
+
+  } else {
+
+    input.type =
+      'password';
+
+
+    if (button)
+      button.textContent =
+        '◉';
+
+  }
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+async function loginUser() {
+
+  clearMessage();
+
+
+  const email =
+    get('loginEmail')
+      ?.value
+      .trim()
+      .toLowerCase();
+
+
+  const password =
+    get('loginPassword')
+      ?.value || '';
+
+
+  if (!email) {
+
+    showMessage(
+      'لطفاً ایمیل را وارد کنید.'
+    );
+
+    return;
+
+  }
+
+
+  if (!password) {
+
+    showMessage(
+      'لطفاً رمز عبور را وارد کنید.'
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    get('loginButton');
+
+
+  setButtonLoading(
+    button,
+    true,
+    'در حال ورود...'
+  );
+
+
+  try {
 
     /*
-    =====================================================
-    عناصر
-    =====================================================
+      ورود از طریق Supabase
     */
 
-    const loginTab =
-        document.getElementById('loginTab');
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signInWithPassword({
 
-    const registerTab =
-        document.getElementById('registerTab');
+        email,
 
-    const loginSection =
-        document.getElementById('loginSection');
+        password
 
-    const registerSection =
-        document.getElementById('registerSection');
-
-    const loginButton =
-        document.getElementById('loginButton');
-
-    const registerButton =
-        document.getElementById('registerButton');
-
-    const messageElement =
-        document.getElementById('message');
+      });
 
 
-    /*
-    =====================================================
-    پیام
-    =====================================================
-    */
+    if (error)
+      throw error;
 
-    function showMessage(
-        text,
-        type = 'error'
+
+    if (
+      !data ||
+      !data.user
     ) {
 
-        if (!messageElement) {
-            return;
-        }
+      throw new Error(
+        'ورود انجام نشد.'
+      );
 
-        messageElement.textContent =
-            text || '';
-
-        messageElement.className =
-            'message';
-
-        if (!text) {
-            return;
-        }
-
-        messageElement.classList.add(
-            'show',
-            type
-        );
     }
 
 
     /*
-    =====================================================
-    تغییر تب
-    =====================================================
+      دریافت پروفایل
     */
 
-    function showLogin() {
+    const {
+      data: profile,
+      error: profileError
+    } =
+      await supabaseClient
+        .from('profiles')
+        .select(`
+          id,
+          username,
+          first_name,
+          last_name,
+          phone,
+          company_name,
+          role,
+          status
+        `)
+        .eq(
+          'id',
+          data.user.id
+        )
+        .maybeSingle();
 
-        loginTab.classList.add('active');
 
-        registerTab.classList.remove('active');
+    if (profileError)
+      throw profileError;
 
-        loginSection.classList.add('active');
 
-        registerSection.classList.remove('active');
+    if (!profile) {
 
-        showMessage('');
+      await supabaseClient.auth.signOut();
+
+
+      throw new Error(
+        'پروفایل این حساب در سامانه ایجاد نشده است. با مدیریت مرکز تماس بگیرید.'
+      );
+
     }
 
 
-    function showRegister() {
-
-        registerTab.classList.add('active');
-
-        loginTab.classList.remove('active');
-
-        registerSection.classList.add('active');
-
-        loginSection.classList.remove('active');
-
-        showMessage('');
-    }
-
-
-    loginTab.addEventListener(
-        'click',
-        showLogin
-    );
-
-
-    registerTab.addEventListener(
-        'click',
-        showRegister
-    );
-
-
     /*
-    =====================================================
-    نمایش / مخفی کردن رمز
-    =====================================================
+      حساب باید فعال باشد.
     */
 
-    document
-        .querySelectorAll('.password-toggle')
-        .forEach(button => {
-
-            button.addEventListener(
-                'click',
-                function () {
-
-                    const targetId =
-                        this.dataset.target;
-
-                    const input =
-                        document.getElementById(
-                            targetId
-                        );
-
-                    if (!input) {
-                        return;
-                    }
-
-                    if (
-                        input.type ===
-                        'password'
-                    ) {
-
-                        input.type =
-                            'text';
-
-                        this.textContent =
-                            '◉';
-
-                    } else {
-
-                        input.type =
-                            'password';
-
-                        this.textContent =
-                            '◉';
-                    }
-
-                }
-            );
-
-        });
-
-
-    /*
-    =====================================================
-    Loading
-    =====================================================
-    */
-
-    function setLoading(
-        button,
-        loading,
-        text
+    if (
+      profile.status !== 'active'
     ) {
 
-        if (!button) {
-            return;
-        }
-
-        button.disabled =
-            loading;
-
-        if (loading) {
-
-            button.innerHTML =
-                `
-                <span class="loading">
-                    <span class="spinner"></span>
-                    ${text}
-                </span>
-                `;
-
-        } else {
-
-            button.textContent =
-                text;
-        }
-
-    }
+      await supabaseClient.auth.signOut();
 
 
-    /*
-    =====================================================
-    اعتبارسنجی ایمیل
-    =====================================================
-    */
+      if (
+        profile.status === 'pending'
+      ) {
 
-    function isValidEmail(email) {
-
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            .test(email);
-
-    }
-
-
-    /*
-    =====================================================
-    تبدیل شماره فارسی به انگلیسی
-    =====================================================
-    */
-
-    function normalizeDigits(value) {
-
-        if (!value) {
-            return '';
-        }
-
-        return value
-            .replace(/[۰-۹]/g, digit =>
-                String(
-                    '۰۱۲۳۴۵۶۷۸۹'
-                        .indexOf(digit)
-                )
-            )
-            .replace(/[٠-٩]/g, digit =>
-                String(
-                    '٠١٢٣٤٥٦٧٨٩'
-                        .indexOf(digit)
-                )
-            );
-
-    }
-
-
-    /*
-    =====================================================
-    ورود
-    =====================================================
-    */
-
-    async function login() {
-
-        const email =
-            document
-                .getElementById(
-                    'loginEmail'
-                )
-                .value
-                .trim()
-                .toLowerCase();
-
-        const password =
-            document
-                .getElementById(
-                    'loginPassword'
-                )
-                .value;
-
-
-        if (!email) {
-
-            showMessage(
-                'ایمیل را وارد کنید.'
-            );
-
-            return;
-        }
-
-
-        if (!isValidEmail(email)) {
-
-            showMessage(
-                'فرمت ایمیل صحیح نیست.'
-            );
-
-            return;
-        }
-
-
-        if (!password) {
-
-            showMessage(
-                'رمز عبور را وارد کنید.'
-            );
-
-            return;
-        }
-
-
-        setLoading(
-            loginButton,
-            true,
-            'در حال ورود...'
+        throw new Error(
+          'حساب شما ثبت شده اما هنوز توسط مدیریت مرکز تأیید نشده است.'
         );
 
+      }
 
-        try {
 
-            const {
-                data,
-                error
-            } =
-                await client.auth.signInWithPassword({
+      if (
+        profile.status === 'suspended'
+      ) {
 
-                    email,
-                    password
-
-                });
-
-
-            if (error) {
-
-                console.error(
-                    'Login error:',
-                    error
-                );
-
-                showMessage(
-                    translateAuthError(
-                        error
-                    )
-                );
-
-                return;
-            }
-
-
-            if (
-                !data ||
-                !data.user
-            ) {
-
-                showMessage(
-                    'ورود انجام نشد. دوباره تلاش کنید.'
-                );
-
-                return;
-            }
-
-
-            /*
-            ---------------------------------------------
-            دریافت پروفایل
-            ---------------------------------------------
-            */
-
-            const {
-                data: profile,
-                error: profileError
-            } =
-                await client
-                    .from('profiles')
-                    .select(`
-                        id,
-                        username,
-                        first_name,
-                        last_name,
-                        phone,
-                        company_name,
-                        role,
-                        status,
-                        last_seen_at
-                    `)
-                    .eq(
-                        'id',
-                        data.user.id
-                    )
-                    .maybeSingle();
-
-
-            if (profileError) {
-
-                console.error(
-                    'Profile error:',
-                    profileError
-                );
-
-                await client.auth.signOut();
-
-                showMessage(
-                    'خطا در دریافت اطلاعات حساب کاربری.'
-                );
-
-                return;
-            }
-
-
-            if (!profile) {
-
-                await client.auth.signOut();
-
-                showMessage(
-                    'پروفایل کاربری شما هنوز ایجاد نشده است. با مدیریت مرکز تماس بگیرید.'
-                );
-
-                return;
-            }
-
-
-            /*
-            ---------------------------------------------
-            وضعیت حساب
-            ---------------------------------------------
-            */
-
-            if (
-                profile.status !==
-                'active'
-            ) {
-
-                await client.auth.signOut();
-
-
-                if (
-                    profile.status ===
-                    'pending'
-                ) {
-
-                    showMessage(
-                        'حساب شما ثبت شده اما هنوز توسط مدیریت مرکز فعال نشده است.'
-                    );
-
-                } else if (
-                    profile.status ===
-                    'suspended'
-                ) {
-
-                    showMessage(
-                        'دسترسی حساب شما موقتاً تعلیق شده است.'
-                    );
-
-                } else if (
-                    profile.status ===
-                    'disabled'
-                ) {
-
-                    showMessage(
-                        'دسترسی این حساب غیرفعال شده است.'
-                    );
-
-                } else {
-
-                    showMessage(
-                        'وضعیت حساب شما اجازه ورود به سامانه را نمی‌دهد.'
-                    );
-
-                }
-
-                return;
-            }
-
-
-            /*
-            ---------------------------------------------
-            بروزرسانی آخرین فعالیت
-            ---------------------------------------------
-            */
-
-            try {
-
-                await client
-                    .from('profiles')
-                    .update({
-                        last_seen_at:
-                            new Date()
-                                .toISOString()
-                    })
-                    .eq(
-                        'id',
-                        data.user.id
-                    );
-
-            } catch (
-                lastSeenError
-            ) {
-
-                console.warn(
-                    'last_seen update failed:',
-                    lastSeenError
-                );
-
-            }
-
-
-            /*
-            ---------------------------------------------
-            ذخیره اطلاعات غیرحساس برای UI
-            ---------------------------------------------
-            */
-
-            sessionStorage.setItem(
-                'adineh_user_role',
-                profile.role || 'user'
-            );
-
-            sessionStorage.setItem(
-                'adineh_user_name',
-                (
-                    profile.first_name ||
-                    profile.username ||
-                    email
-                )
-            );
-
-
-            showMessage(
-                'ورود با موفقیت انجام شد.',
-                'success'
-            );
-
-
-            /*
-            ---------------------------------------------
-            Owner
-            ---------------------------------------------
-            */
-
-            setTimeout(
-                () => {
-
-                    if (
-                        profile.role ===
-                        'owner'
-                    ) {
-
-                        /*
-                        فعلاً به برنامه اصلی می‌رویم.
-                        پنل مدیریتی اختصاصی را در مرحله بعد
-                        به‌صورت امن اضافه می‌کنیم.
-                        */
-
-                        window.location.replace(
-                            'index.html'
-                        );
-
-                    } else {
-
-                        window.location.replace(
-                            'index.html'
-                        );
-
-                    }
-
-                },
-                500
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                'Unexpected login error:',
-                error
-            );
-
-            showMessage(
-                'خطای غیرمنتظره‌ای رخ داد. اتصال اینترنت و اطلاعات ورود را بررسی کنید.'
-            );
-
-        } finally {
-
-            setLoading(
-                loginButton,
-                false,
-                'ورود به سامانه'
-            );
-
-        }
-
-    }
-
-
-    /*
-    =====================================================
-    ثبت نام
-    =====================================================
-    */
-
-    async function register() {
-
-        const firstName =
-            document
-                .getElementById(
-                    'firstName'
-                )
-                .value
-                .trim();
-
-        const lastName =
-            document
-                .getElementById(
-                    'lastName'
-                )
-                .value
-                .trim();
-
-        const email =
-            document
-                .getElementById(
-                    'registerEmail'
-                )
-                .value
-                .trim()
-                .toLowerCase();
-
-        const phone =
-            normalizeDigits(
-                document
-                    .getElementById(
-                        'phone'
-                    )
-                    .value
-                    .trim()
-            );
-
-        const companyName =
-            document
-                .getElementById(
-                    'companyName'
-                )
-                .value
-                .trim();
-
-        const password =
-            document
-                .getElementById(
-                    'registerPassword'
-                )
-                .value;
-
-        const confirmPassword =
-            document
-                .getElementById(
-                    'confirmPassword'
-                )
-                .value;
-
-
-        if (!firstName) {
-
-            showMessage(
-                'نام را وارد کنید.'
-            );
-
-            return;
-        }
-
-
-        if (!lastName) {
-
-            showMessage(
-                'نام خانوادگی را وارد کنید.'
-            );
-
-            return;
-        }
-
-
-        if (!email) {
-
-            showMessage(
-                'ایمیل را وارد کنید.'
-            );
-
-            return;
-        }
-
-
-        if (!isValidEmail(email)) {
-
-            showMessage(
-                'فرمت ایمیل صحیح نیست.'
-            );
-
-            return;
-        }
-
-
-        if (
-            password.length <
-            8
-        ) {
-
-            showMessage(
-                'رمز عبور باید حداقل ۸ کاراکتر باشد.'
-            );
-
-            return;
-        }
-
-
-        if (
-            password !==
-            confirmPassword
-        ) {
-
-            showMessage(
-                'تکرار رمز عبور با رمز اصلی یکسان نیست.'
-            );
-
-            return;
-        }
-
-
-        setLoading(
-            registerButton,
-            true,
-            'در حال ایجاد حساب...'
+        throw new Error(
+          'دسترسی حساب شما موقتاً متوقف شده است.'
         );
 
-
-        try {
-
-            /*
-            ---------------------------------------------
-            ثبت نام در Supabase Auth
-            ---------------------------------------------
-            */
-
-            const {
-                data,
-                error
-            } =
-                await client.auth.signUp({
-
-                    email,
-
-                    password,
-
-                    options: {
-
-                        data: {
-
-                            first_name:
-                                firstName,
-
-                            last_name:
-                                lastName,
-
-                            phone:
-                                phone || null,
-
-                            company_name:
-                                companyName || null
-
-                        }
-
-                    }
-
-                });
+      }
 
 
-            if (error) {
+      if (
+        profile.status === 'disabled'
+      ) {
 
-                console.error(
-                    'Register error:',
-                    error
-                );
+        throw new Error(
+          'حساب شما غیرفعال شده است.'
+        );
 
-                showMessage(
-                    translateAuthError(
-                        error
-                    )
-                );
-
-                return;
-            }
+      }
 
 
-            if (
-                !data ||
-                !data.user
-            ) {
-
-                showMessage(
-                    'ثبت نام انجام نشد. دوباره تلاش کنید.'
-                );
-
-                return;
-            }
-
-
-            /*
-            ---------------------------------------------
-            اگر تأیید ایمیل فعال باشد
-            ---------------------------------------------
-            */
-
-            if (
-                !data.session
-            ) {
-
-                showMessage(
-                    'ثبت‌نام انجام شد. لینک تأیید به ایمیل شما ارسال شده است. پس از تأیید ایمیل، حساب توسط مدیریت مرکز بررسی و فعال می‌شود.',
-                    'success'
-                );
-
-                return;
-            }
-
-
-            /*
-            ---------------------------------------------
-            اگر تأیید ایمیل غیرفعال باشد
-            ---------------------------------------------
-            */
-
-            showMessage(
-                'ثبت‌نام با موفقیت انجام شد. حساب شما در انتظار تأیید مدیریت مرکز است.',
-                'success'
-            );
-
-
-            setTimeout(
-                () => {
-
-                    showLogin();
-
-                    document
-                        .getElementById(
-                            'loginEmail'
-                        )
-                        .value =
-                        email;
-
-                },
-                1500
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                'Unexpected registration error:',
-                error
-            );
-
-            showMessage(
-                'خطای غیرمنتظره‌ای هنگام ثبت‌نام رخ داد.'
-            );
-
-        } finally {
-
-            setLoading(
-                registerButton,
-                false,
-                'ایجاد حساب'
-            );
-
-        }
+      throw new Error(
+        'دسترسی این حساب فعال نیست.'
+      );
 
     }
 
 
     /*
-    =====================================================
-    ترجمه خطاهای Supabase
-    =====================================================
+      ذخیره اطلاعات پایه برای سازگاری
+      با نسخه قبلی برنامه
     */
 
-    function translateAuthError(
-        error
+    localStorage.setItem(
+      'activeUser',
+      data.user.id
+    );
+
+
+    localStorage.setItem(
+      'adineh_user_profile',
+      JSON.stringify(profile)
+    );
+
+
+    showMessage(
+      'ورود موفق بود. در حال ورود به سامانه...',
+      'success'
+    );
+
+
+    setTimeout(
+      () => {
+
+        window.location.replace(
+          'index.html'
+        );
+
+      },
+      500
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      'Login error:',
+      error
+    );
+
+
+    let message =
+      'ورود انجام نشد. اطلاعات ورود را بررسی کنید.';
+
+
+    if (
+      error?.message
+        ?.toLowerCase()
+        .includes('invalid login credentials')
     ) {
 
-        if (!error) {
+      message =
+        'ایمیل یا رمز عبور صحیح نیست.';
 
-            return 'خطایی رخ داد. دوباره تلاش کنید.';
-
-        }
-
-
-        const message =
-            String(
-                error.message || ''
-            )
-                .toLowerCase();
+    }
 
 
-        if (
-            message.includes(
-                'invalid login credentials'
-            )
-        ) {
+    if (
+      error?.message
+        ?.toLowerCase()
+        .includes('email not confirmed')
+    ) {
 
-            return 'ایمیل یا رمز عبور صحیح نیست.';
+      message =
+        'ایمیل شما هنوز تأیید نشده است. ابتدا ایمیل تأیید را بررسی کنید.';
 
-        }
-
-
-        if (
-            message.includes(
-                'email not confirmed'
-            )
-        ) {
-
-            return 'ایمیل حساب هنوز تأیید نشده است. ایمیل خود را بررسی کنید.';
-
-        }
+    }
 
 
-        if (
-            message.includes(
-                'user already registered'
-            )
-        ) {
+    if (
+      error?.message
+        ?.toLowerCase()
+        .includes('failed to fetch')
+    ) {
 
-            return 'این ایمیل قبلاً ثبت شده است. از بخش ورود استفاده کنید.';
+      message =
+        'ارتباط با سرور برقرار نشد. اینترنت را بررسی کنید.';
 
-        }
-
-
-        if (
-            message.includes(
-                'password should be at least'
-            )
-        ) {
-
-            return 'رمز عبور به اندازه کافی قوی نیست.';
-
-        }
+    }
 
 
-        if (
-            message.includes(
-                'rate limit'
-            )
-        ) {
+    if (
+      error?.message &&
+      !error.message
+        .toLowerCase()
+        .includes('invalid login credentials')
+    ) {
 
-            return 'تعداد درخواست‌ها زیاد است. چند دقیقه بعد دوباره تلاش کنید.';
+      /*
+        خطاهای فارسی خودمان را نمایش بده.
+      */
 
-        }
+      if (
+        error.message.length <
+        220
+      ) {
+
+        message =
+          error.message;
+
+      }
+
+    }
 
 
-        if (
-            message.includes(
-                'network'
-            )
-        ) {
-
-            return 'اتصال اینترنت را بررسی کنید.';
-
-        }
+    showMessage(
+      message
+    );
 
 
-        return (
-            error.message ||
-            'خطایی در احراز هویت رخ داد.'
-        );
+  } finally {
+
+    setButtonLoading(
+      button,
+      false
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   REGISTER
+========================================================= */
+
+async function registerUser() {
+
+  clearMessage();
+
+
+  const email =
+    get('registerEmail')
+      ?.value
+      .trim()
+      .toLowerCase();
+
+
+  const password =
+    get('registerPassword')
+      ?.value || '';
+
+
+  const password2 =
+    get('registerPassword2')
+      ?.value || '';
+
+
+  if (!email) {
+
+    showMessage(
+      'ایمیل را وارد کنید.'
+    );
+
+    return;
+
+  }
+
+
+  if (!email.includes('@')) {
+
+    showMessage(
+      'فرمت ایمیل صحیح نیست.'
+    );
+
+    return;
+
+  }
+
+
+  if (password.length < 6) {
+
+    showMessage(
+      'رمز عبور باید حداقل ۶ کاراکتر باشد.'
+    );
+
+    return;
+
+  }
+
+
+  if (password !== password2) {
+
+    showMessage(
+      'تکرار رمز عبور با رمز اصلی یکسان نیست.'
+    );
+
+    return;
+
+  }
+
+
+  const button =
+    get('registerButton');
+
+
+  setButtonLoading(
+    button,
+    true,
+    'در حال ثبت‌نام...'
+  );
+
+
+  try {
+
+    const {
+      data,
+      error
+    } =
+      await supabaseClient.auth.signUp({
+
+        email,
+
+        password
+
+      });
+
+
+    if (error)
+      throw error;
+
+
+    /*
+      اگر تأیید ایمیل فعال باشد،
+      session ممکن است null باشد.
+    */
+
+    if (
+      data?.session
+    ) {
+
+      showMessage(
+        'ثبت‌نام انجام شد. حساب شما باید توسط مدیریت مرکز فعال شود.',
+        'success'
+      );
+
+
+      /*
+        کاربر تازه ثبت‌نام‌شده
+        نباید خودکار وارد برنامه شود.
+      */
+
+      await supabaseClient.auth.signOut();
+
+
+    } else {
+
+      showMessage(
+        'ثبت‌نام انجام شد. در صورت فعال بودن تأیید ایمیل، ایمیل خود را تأیید کنید. سپس مدیریت مرکز دسترسی شما را فعال می‌کند.',
+        'success'
+      );
 
     }
 
 
     /*
-    =====================================================
-    Enter
-    =====================================================
+      بعد از ثبت نام به صفحه ورود برو.
     */
 
-    document.addEventListener(
-        'keydown',
-        event => {
+    setTimeout(
+      () => {
 
-            if (
-                event.key !==
-                'Enter'
-            ) {
-                return;
-            }
+        showLoginMode();
 
 
-            const loginActive =
-                loginSection.classList.contains(
-                    'active'
-                );
+        if (
+          get('loginEmail')
+        ) {
 
-
-            if (loginActive) {
-
-                login();
-
-            } else {
-
-                register();
-
-            }
-
-        }
-    );
-
-
-    /*
-    =====================================================
-    اتصال دکمه‌ها
-    =====================================================
-    */
-
-    loginButton.addEventListener(
-        'click',
-        login
-    );
-
-
-    registerButton.addEventListener(
-        'click',
-        register
-    );
-
-
-    /*
-    =====================================================
-    اگر کاربر از قبل وارد شده
-    =====================================================
-    */
-
-    (async function checkExistingSession() {
-
-        try {
-
-            const {
-                data
-            } =
-                await client.auth.getSession();
-
-
-            if (
-                data &&
-                data.session &&
-                data.session.user
-            ) {
-
-                /*
-                اینجا کاربر وارد شده است.
-                فعلاً او را به برنامه اصلی می‌بریم.
-                */
-
-                console.log(
-                    'Existing Supabase session detected.'
-                );
-
-            }
-
-        } catch (error) {
-
-            console.warn(
-                'Session check failed:',
-                error
-            );
+          get('loginEmail').value =
+            email;
 
         }
 
-    })();
+      },
+      1800
+    );
 
+
+  } catch (error) {
+
+    console.error(
+      'Registration error:',
+      error
+    );
+
+
+    let message =
+      'ثبت‌نام انجام نشد.';
+
+
+    if (
+      error?.message
+        ?.toLowerCase()
+        .includes('already registered')
+    ) {
+
+      message =
+        'این ایمیل قبلاً ثبت شده است.';
+
+    }
+
+
+    if (
+      error?.message &&
+      error.message.length <
+      220
+    ) {
+
+      if (
+        !error.message
+          .toLowerCase()
+          .includes('already registered')
+      ) {
+
+        message =
+          error.message;
+
+      }
+
+    }
+
+
+    showMessage(
+      message
+    );
+
+
+  } finally {
+
+    setButtonLoading(
+      button,
+      false
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   MAGIC LINK
+========================================================= */
+
+async function sendMagicLink() {
+
+  clearMessage();
+
+
+  const email =
+    get('loginEmail')
+      ?.value
+      .trim()
+      .toLowerCase();
+
+
+  if (!email) {
+
+    showMessage(
+      'ابتدا ایمیل خود را وارد کنید.'
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient.auth.signInWithOtp({
+
+        email,
+
+        options: {
+
+          emailRedirectTo:
+            window.location.origin +
+            window.location.pathname
+              .replace(
+                'login.html',
+                'index.html'
+              )
+
+        }
+
+      });
+
+
+    if (error)
+      throw error;
+
+
+    showMessage(
+      'لینک ورود به ایمیل شما ارسال شد.',
+      'success'
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+
+    showMessage(
+      error?.message ||
+      'ارسال لینک ورود انجام نشد.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   PASSWORD RESET
+========================================================= */
+
+async function resetPassword() {
+
+  clearMessage();
+
+
+  const email =
+    get('forgotEmail')
+      ?.value
+      .trim()
+      .toLowerCase();
+
+
+  if (!email) {
+
+    showMessage(
+      'ایمیل خود را وارد کنید.'
+    );
+
+    return;
+
+  }
+
+
+  try {
+
+    const {
+      error
+    } =
+      await supabaseClient.auth
+        .resetPasswordForEmail(
+          email,
+          {
+
+            redirectTo:
+              window.location.origin +
+              window.location.pathname
+                .replace(
+                  'login.html',
+                  'index.html'
+                )
+
+          }
+        );
+
+
+    if (error)
+      throw error;
+
+
+    showMessage(
+      'لینک بازیابی رمز عبور ارسال شد.',
+      'success'
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+
+    showMessage(
+      error?.message ||
+      'ارسال لینک بازیابی انجام نشد.'
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   ENTER KEY
+========================================================= */
+
+document.addEventListener(
+  'keydown',
+  event => {
+
+    if (
+      event.key !== 'Enter'
+    )
+      return;
+
+
+    const loginVisible =
+      get('loginMode')
+        ?.style
+        .display !== 'none';
+
+
+    const registerVisible =
+      get('registerMode')
+        ?.style
+        .display !== 'none';
+
+
+    if (loginVisible) {
+
+      loginUser();
+
+    } else if (
+      registerVisible
+    ) {
+
+      registerUser();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   CHECK EXISTING SESSION
+========================================================= */
+
+(async function checkExistingSession() {
+
+  try {
+
+    const {
+      data
+    } =
+      await supabaseClient.auth.getSession();
+
+
+    if (
+      data?.session
+    ) {
+
+      /*
+        اگر قبلاً وارد شده،
+        مستقیماً به برنامه برو.
+      */
+
+      window.location.replace(
+        'index.html'
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+  }
 
 })();
