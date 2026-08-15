@@ -1,110 +1,80 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta charset="utf-8">
+    <title>ورود - مرکز تخصصی سلامت طیور آدینه</title>
 
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<link
-rel="stylesheet"
-href="Style.css"
->
-
-<title>
-ورود | مرکز تخصصی سلامت طیور آدینه
-</title>
-
+    <link rel="stylesheet" href="Style.css">
 </head>
 
+<body>
 
-<body class="login-page">
+<main class="login-page">
 
+    <section class="login-box">
 
-<div class="login-hero">
+        <img
+            src="IMG_4309.png"
+            class="login-logo"
+            alt="مرکز تخصصی سلامت طیور آدینه"
+        >
 
+        <h1>مرکز تخصصی سلامت طیور آدینه</h1>
 
-<div class="login-bg"></div>
+        <h3>سامانه مدیریت و پایش گله</h3>
 
+        <input
+            id="username"
+            type="text"
+            autocomplete="username"
+            placeholder="نام کاربری"
+        >
 
-<img
-src="IMG_4309.png"
-class="login-logo"
-alt="لوگو"
->
+        <input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+            placeholder="رمز عبور"
+        >
 
+        <div class="login-buttons">
 
-<h1>
-مرکز تخصصی سلامت طیور آدینه
-</h1>
+            <button
+                class="btn btn-primary"
+                type="button"
+                onclick="register()"
+            >
+                ثبت نام
+            </button>
 
+            <button
+                class="btn btn-primary"
+                type="button"
+                onclick="login()"
+            >
+                ورود
+            </button>
 
-<p>
-سامانه پایش و مدیریت سلامت گله‌های طیور
-</p>
+            <button
+                class="btn guest"
+                type="button"
+                onclick="guestLogin()"
+            >
+                ورود مهمان
+            </button>
 
+        </div>
 
-</div>
+        <p id="message"></p>
 
-
-<main class="login-card">
-
-
-<h2>
-ورود به سامانه
-</h2>
-
-
-<input
-id="username"
-placeholder="نام کاربری"
->
-
-
-<input
-id="password"
-type="password"
-placeholder="رمز عبور"
->
-
-
-<button onclick="login()">
-ورود
-</button>
-
-
-<button
-class="secondary"
-onclick="register()"
->
-ثبت نام
-</button>
-
-
-<button
-class="ghost"
-onclick="guestLogin()"
->
-ورود مهمان
-</button>
-
-
-<p
-id="message"
-class="message"
-></p>
-
+    </section>
 
 </main>
-
 
 <script src="login.js"></script>
 
 </body>
-
 </html>
