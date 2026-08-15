@@ -1,120 +1,402 @@
-<!DOCTYPE html>
+<!doctype html>
 
 <html lang="fa" dir="rtl">
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 
-<link rel="stylesheet" href="../Style.css">
-
-</head>
-
-
-<body>
-
-
-<div class="card">
-
-
-<h2>
-📊 گزارشات گله
-</h2>
-
-
-<p>
-گزارش وزن، CV، دان، آب، دارو و واکسن
-</p>
-
-
-</div>
-
-
-</body>
-
-</html>
-<!DOCTYPE html>
-
-<html lang="fa" dir="rtl">
-
-<head>
-
-<meta charset="UTF-8">
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+>
 
 <link rel="stylesheet" href="Style.css">
 
+<title>
+گزارش جامع سلامت و عملکرد
+</title>
+
 </head>
 
 
 <body>
 
 
+<header class="header">
+
+<img src="IMG_4309.png" class="header-logo">
+
+<h1>
+مرکز تخصصی سلامت طیور آدینه
+</h1>
+
+<h3>
+گزارش جامع سلامت و عملکرد
+</h3>
+
+<div class="user-row">
+
+<span id="userBox"></span>
+
+<button class="logout" data-logout>
+خروج
+</button>
+
+</div>
+
+</header>
+
+
+<nav class="menu">
+
+<a href="panel.html">🏠 داشبورد</a>
+<a href="flock.html">🐔 گله‌ها</a>
+<a href="feed.html">🌽 دان</a>
+<a href="water.html">💧 آب</a>
+<a href="vaccine.html">💉 واکسن</a>
+<a href="medicine.html">💊 دارو</a>
+<a href="health.html">🩺 سلامت</a>
+<a href="report.html">📊 گزارش</a>
+
+</nav>
+
+
+<main class="container">
+
+
 <div class="card">
 
+<h2>
+انتخاب گله
+</h2>
 
-<h2>📊 گزارشات</h2>
+
+<select id="flockId"></select>
+
+
+<div class="actions">
+
+<button onclick="renderReport()">
+نمایش گزارش
+</button>
+
+
+<button
+class="secondary"
+onclick="window.print()"
+>
+چاپ / PDF
+</button>
+
+</div>
+
+</div>
 
 
 <div id="report"></div>
 
 
-</div>
-
+</main>
 
 
 <script src="database.js"></script>
 
+<script src="app.js"></script>
 
 
 <script>
 
+function renderReport(){
 
-let modules=[
-
-"flock",
-
-"feed",
-
-"water",
-
-"vaccine",
-
-"medicine"
-
-];
+const id=
+document.getElementById("flockId").value;
 
 
-
-let text="";
-
-
-
-modules.forEach(function(m){
-
-
-let d=loadModule(m);
-
-
-
-if(d){
-
-
-text+=
-
-"<h3>"+m+"</h3>"+
-
-"<pre>"+JSON.stringify(d,null,2)+"</pre>";
-
-
+const flock=
+getFlocks().find(
+function(x){
+return x.id===id;
 }
+);
 
+
+const weights=
+read("weights",[])
+
+.filter(function(x){
+
+return !id || x.flockId===id;
 
 });
 
 
+const feed=
+read("feed",[])
 
-document.getElementById("report").innerHTML=text;
+.filter(function(x){
 
+return !id || x.flockId===id;
+
+});
+
+
+const water=
+read("water",[])
+
+.filter(function(x){
+
+return !id || x.flockId===id;
+
+});
+
+
+const vaccine=
+read("vaccine",[])
+
+.filter(function(x){
+
+return !id || x.flockId===id;
+
+});
+
+
+const medicine=
+read("medicine",[])
+
+.filter(function(x){
+
+return !id || x.flockId===id;
+
+});
+
+
+const lab=
+read("lab",[])
+
+.filter(function(x){
+
+return !id || x.flockId===id;
+
+});
+
+
+const health=
+read("health",[])
+
+.filter(function(x){
+
+return !id || x.flockId===id;
+
+});
+
+
+const latest=
+weights[weights.length-1];
+
+
+const totalFeed=
+feed.reduce(
+function(sum,x){
+return sum+x.amount;
+},
+0
+);
+
+
+const totalWater=
+water.reduce(
+function(sum,x){
+return sum+x.amount;
+},
+0
+);
+
+
+document.getElementById("report").innerHTML=`
+
+<div class="card">
+
+<h2>
+
+${
+flock
+
+?
+
+escapeHTML(
+flock.farm+" / "+flock.hall
+)
+
+:
+
+"گزارش همه گله‌ها"
+
+}
+
+</h2>
+
+
+<div class="results">
+
+
+<div>
+
+ارزیابی وزن
+
+<strong>
+${weights.length}
+</strong>
+
+</div>
+
+
+<div>
+
+آخرین میانگین
+
+<strong>
+${
+latest
+?
+fmt(latest.mean,1)
+:
+"-"
+}
+</strong>
+
+</div>
+
+
+<div>
+
+آخرین CV
+
+<strong>
+${
+latest
+?
+fmt(latest.cv,2)+"%"
+:
+"-"
+}
+</strong>
+
+</div>
+
+
+<div>
+
+یکنواختی ±۱۰٪
+
+<strong>
+${
+latest
+?
+fmt(latest.u10,1)+"%"
+:
+"-"
+}
+</strong>
+
+</div>
+
+
+<div>
+
+دان ثبت‌شده
+
+<strong>
+${fmt(totalFeed,1)}
+kg
+
+</strong>
+
+</div>
+
+
+<div>
+
+آب ثبت‌شده
+
+<strong>
+${fmt(totalWater,1)}
+L
+
+</strong>
+
+</div>
+
+
+<div>
+
+واکسن
+
+<strong>
+${vaccine.length}
+</strong>
+
+</div>
+
+
+<div>
+
+دارو
+
+<strong>
+${medicine.length}
+</strong>
+
+</div>
+
+
+<div>
+
+آزمایش
+
+<strong>
+${lab.length}
+</strong>
+
+</div>
+
+
+<div>
+
+پایش سلامت
+
+<strong>
+${health.length}
+</strong>
+
+</div>
+
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+document.addEventListener(
+
+"DOMContentLoaded",
+
+function(){
+
+fillFlockSelect(
+"flockId",
+true
+);
+
+renderReport();
+
+}
+
+);
 
 </script>
 
