@@ -1,170 +1,271 @@
-let activeUser = localStorage.getItem("activeUser") || "guest";
+const DB_PREFIX="adineh_v2_";
 
+
+function activeUser(){
+
+return localStorage.getItem("activeUser") || "guest";
+
+}
 
 
 function canSave(){
 
-    return activeUser !== "guest";
+return activeUser()!=="guest";
 
 }
 
 
+function dbKey(name){
 
-
-
-function getKey(module){
-
-    return "adineh_" + activeUser + "_" + module;
+return DB_PREFIX+activeUser()+"_"+name;
 
 }
 
 
+function read(name,fallback=[]){
 
+try{
 
+return JSON.parse(
 
-function saveRecord(module,record){
+localStorage.getItem(dbKey(name))
 
+) ?? fallback;
 
-    if(!canSave()){
+}
 
-        alert("ورود مهمان امکان ذخیره ندارد");
+catch(error){
 
-        return;
+console.error(error);
 
-    }
+return fallback;
 
-
-
-    let oldData = loadRecords(module);
-
-
-
-    oldData.push(record);
-
-
-
-    localStorage.setItem(
-
-        getKey(module),
-
-        JSON.stringify(oldData)
-
-    );
-
+}
 
 }
 
 
+function write(name,data){
 
+if(!canSave()){
 
+return false;
 
+}
 
+localStorage.setItem(
 
-function loadRecords(module){
+dbKey(name),
 
+JSON.stringify(data)
 
-    if(!canSave()){
+);
 
-        return [];
-
-    }
-
-
-
-    let data = localStorage.getItem(
-
-        getKey(module)
-
-    );
-
-
-
-    if(data){
-
-        return JSON.parse(data);
-
-    }
-
-
-
-    return [];
+return true;
 
 }
 
 
+function addRecord(name,record){
 
+if(!canSave()){
 
-
-
-
-function deleteRecord(module,index){
-
-
-    let data=loadRecords(module);
-
-
-    data.splice(index,1);
-
-
-    localStorage.setItem(
-
-        getKey(module),
-
-        JSON.stringify(data)
-
-    );
-
+return null;
 
 }
 
 
+const data=read(name,[]);
 
 
+record.id=
+
+record.id ||
+
+(
+
+crypto.randomUUID
+
+?
+
+crypto.randomUUID()
+
+:
+
+String(Date.now()+Math.random())
+
+);
 
 
+record.createdAt=
+
+record.createdAt ||
+
+new Date().toISOString();
 
 
-function showUser(){
+data.push(record);
 
 
-    let box=document.getElementById("userBox");
+write(name,data);
 
 
-
-    if(box){
-
-
-        if(activeUser==="guest"){
-
-            box.innerHTML="👤 ورود مهمان";
-
-        }
-
-        else{
-
-            box.innerHTML="👤 کاربر: "+activeUser;
-
-        }
-
-
-    }
-
+return record;
 
 }
 
 
+function updateRecord(name,id,patch){
+
+const data=read(name,[]);
 
 
+const index=data.findIndex(
 
+function(item){
 
-document.addEventListener(
-
-"DOMContentLoaded",
-
-function(){
-
-showUser();
+return item.id===id;
 
 }
 
 );
+
+
+if(index<0){
+
+return false;
+
+}
+
+
+data[index]={
+
+...data[index],
+
+...patch,
+
+updatedAt:new Date().toISOString()
+
+};
+
+
+return write(name,data);
+
+}
+
+
+function deleteRecord(name,id){
+
+return write(
+
+name,
+
+read(name,[]).filter(
+
+function(item){
+
+return item.id!==id;
+
+}
+
+)
+
+);
+
+}
+
+
+function getFlocks(){
+
+return read("flocks",[]);
+
+}
+
+
+function getSelectedFlock(){
+
+return localStorage.getItem(
+
+"adineh_selected_flock"
+
+) || "";
+
+}
+
+
+function setSelectedFlock(id){
+
+if(id){
+
+localStorage.setItem(
+
+"adineh_selected_flock",
+
+id
+
+);
+
+}
+
+else{
+
+localStorage.removeItem(
+
+"adineh_selected_flock"
+
+);
+
+}
+
+}
+
+
+function selectedFlock(){
+
+return getFlocks().find(
+
+function(item){
+
+return item.id===getSelectedFlock();
+
+}
+
+) || null;
+
+}
+
+
+function todayISO(){
+
+return new Date()
+
+.toISOString()
+
+.slice(0,10);
+
+}
+
+
+function escapeHTML(value){
+
+return String(value ?? "")
+
+.replace(/[&<>"']/g,function(match){
+
+return {
+
+"&":"&amp;",
+
+"<":"&lt;",
+
+">":"&gt;",
+
+'"':"&quot;",
+
+"'":"&#39;"
+
+}[match];
+
+});
+
+}
