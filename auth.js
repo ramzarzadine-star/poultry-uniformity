@@ -11,29 +11,44 @@ Authentication Guard
 
   const client = window.supabaseClient;
 
+
   /*
-  وضعیت اولیه احراز هویت
+  وضعیت اولیه
   */
   window.ADINEH_AUTH = {
+
     ready: false,
+
     user: null,
+
     profile: null
+
   };
 
 
   /*
-  ارسال رویداد آماده شدن
+  اعلام آماده بودن احراز هویت
   */
-  function authReady(user, profile) {
+  function authReady(
+    user,
+    profile
+  ) {
 
     window.ADINEH_AUTH = {
+
       ready: true,
+
       user: user || null,
+
       profile: profile || null
+
     };
 
+
     document.dispatchEvent(
-      new CustomEvent('adineh-auth-ready')
+      new CustomEvent(
+        'adineh-auth-ready'
+      )
     );
 
   }
@@ -45,18 +60,25 @@ Authentication Guard
   function goLogin() {
 
     window.ADINEH_AUTH = {
+
       ready: false,
+
       user: null,
+
       profile: null
+
     };
 
-    window.location.replace('login.html');
+
+    window.location.replace(
+      'login.html'
+    );
 
   }
 
 
   /*
-  بررسی وجود Supabase
+  Supabase موجود نیست
   */
   if (!client) {
 
@@ -72,7 +94,7 @@ Authentication Guard
 
 
   /*
-  دریافت کاربر فعلی
+  دریافت کاربر
   */
   async function getCurrentUser() {
 
@@ -81,12 +103,14 @@ Authentication Guard
       const {
         data,
         error
-      } = await client.auth.getUser();
+      } =
+        await client.auth.getUser();
+
 
       if (error) {
 
         console.error(
-          'getCurrentUser:',
+          'getUser error:',
           error
         );
 
@@ -94,12 +118,15 @@ Authentication Guard
 
       }
 
+
       return data?.user || null;
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error(
-        'getCurrentUser exception:',
+        'getUser exception:',
         error
       );
 
@@ -111,9 +138,11 @@ Authentication Guard
 
 
   /*
-  دریافت Profile
+  دریافت پروفایل
   */
-  async function getCurrentProfile(user) {
+  async function getCurrentProfile(
+    user
+  ) {
 
     if (!user)
       return null;
@@ -124,32 +153,33 @@ Authentication Guard
       const {
         data,
         error
-      } = await client
-        .from('profiles')
-        .select(`
-          id,
-          username,
-          first_name,
-          last_name,
-          phone,
-          company_name,
-          role,
-          status,
-          created_at,
-          updated_at,
-          last_seen_at
-        `)
-        .eq(
-          'id',
-          user.id
-        )
-        .maybeSingle();
+      } =
+        await client
+          .from('profiles')
+          .select(`
+            id,
+            username,
+            first_name,
+            last_name,
+            phone,
+            company_name,
+            role,
+            status,
+            created_at,
+            updated_at,
+            last_seen_at
+          `)
+          .eq(
+            'id',
+            user.id
+          )
+          .maybeSingle();
 
 
       if (error) {
 
         console.error(
-          'getCurrentProfile:',
+          'Profile error:',
           error
         );
 
@@ -160,10 +190,12 @@ Authentication Guard
 
       return data || null;
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
       console.error(
-        'getCurrentProfile exception:',
+        'Profile exception:',
         error
       );
 
@@ -175,166 +207,14 @@ Authentication Guard
 
 
   /*
-  بررسی دسترسی
-  */
-  async function requireActiveUser(
-    options = {}
-  ) {
-
-    const redirect =
-      options.redirect !== false;
-
-
-    const user =
-      await getCurrentUser();
-
-
-    /*
-    کاربر وارد نشده
-    */
-    if (!user) {
-
-      if (redirect)
-        goLogin();
-
-      return null;
-
-    }
-
-
-    /*
-    دریافت پروفایل
-    */
-    const profile =
-      await getCurrentProfile(user);
-
-
-    if (!profile) {
-
-      console.error(
-        'Profile not found for user:',
-        user.id
-      );
-
-      await client.auth.signOut();
-
-      if (redirect)
-        goLogin();
-
-      return null;
-
-    }
-
-
-    /*
-    فقط حساب Active
-    */
-    if (
-      profile.status !== 'active'
-    ) {
-
-      console.warn(
-        'Account is not active:',
-        profile.status
-      );
-
-      await client.auth.signOut();
-
-      if (redirect)
-        goLogin();
-
-      return null;
-
-    }
-
-
-    return {
-      user,
-      profile
-    };
-
-  }
-
-
-  /*
-  بررسی Owner
-  */
-  async function requireOwner() {
-
-    const session =
-      await requireActiveUser();
-
-
-    if (!session)
-      return null;
-
-
-    if (
-      session.profile.role !== 'owner'
-    ) {
-
-      window.location.replace(
-        'index.html'
-      );
-
-      return null;
-
-    }
-
-
-    return session;
-
-  }
-
-
-  /*
-  خروج
-  */
-  async function logout() {
-
-    try {
-
-      await client.auth.signOut();
-
-    } catch (error) {
-
-      console.error(
-        'Logout error:',
-        error
-      );
-
-    }
-
-
-    try {
-
-      sessionStorage.removeItem(
-        'adineh_user_role'
-      );
-
-      sessionStorage.removeItem(
-        'adineh_user_name'
-      );
-
-    } catch (_) {}
-
-
-    window.location.replace(
-      'login.html'
-    );
-
-  }
-
-
-  /*
-  Bootstrap اصلی
+  Bootstrap
   */
   async function bootstrap() {
 
     try {
 
       /*
-      بررسی Session
+      دریافت Session
       */
       const {
         data,
@@ -346,7 +226,7 @@ Authentication Guard
       if (error) {
 
         console.error(
-          'getSession:',
+          'Session error:',
           error
         );
 
@@ -361,6 +241,9 @@ Authentication Guard
         data?.session;
 
 
+      /*
+      کاربر وارد نشده
+      */
       if (!session?.user) {
 
         goLogin();
@@ -379,7 +262,14 @@ Authentication Guard
         );
 
 
+      /*
+      Profile پیدا نشد
+      */
       if (!profile) {
+
+        console.error(
+          'Profile not found.'
+        );
 
         await client.auth.signOut();
 
@@ -397,8 +287,8 @@ Authentication Guard
         profile.status !== 'active'
       ) {
 
-        console.warn(
-          'Inactive account:',
+        console.error(
+          'Account status:',
           profile.status
         );
 
@@ -412,18 +302,19 @@ Authentication Guard
 
 
       /*
-      همه چیز OK
+      همه چیز صحیح است
       */
       authReady(
         session.user,
         profile
       );
 
+    }
 
-    } catch (error) {
+    catch (error) {
 
       console.error(
-        'Authentication bootstrap error:',
+        'Authentication error:',
         error
       );
 
@@ -435,57 +326,31 @@ Authentication Guard
 
 
   /*
-  تغییر وضعیت Session
+  خروج
   */
-  client.auth.onAuthStateChange(
-    async (
-      event,
-      session
-    ) => {
+  async function logout() {
 
-      console.log(
-        'Auth event:',
-        event
-      );
+    try {
 
-
-      if (
-        event === 'SIGNED_OUT'
-      ) {
-
-        window.ADINEH_AUTH = {
-          ready: false,
-          user: null,
-          profile: null
-        };
-
-        return;
-
-      }
-
-
-      if (
-        event === 'SIGNED_IN' ||
-        event === 'TOKEN_REFRESHED'
-      ) {
-
-        /*
-        اگر صفحه هنوز آماده نشده،
-        bootstrap آن را آماده می‌کند.
-        */
-
-        if (
-          !window.ADINEH_AUTH.ready
-        ) {
-
-          await bootstrap();
-
-        }
-
-      }
+      await client.auth.signOut();
 
     }
-  );
+
+    catch (error) {
+
+      console.error(
+        'Logout error:',
+        error
+      );
+
+    }
+
+
+    window.location.replace(
+      'login.html'
+    );
+
+  }
 
 
   /*
@@ -496,10 +361,6 @@ Authentication Guard
     getCurrentUser,
 
     getCurrentProfile,
-
-    requireActiveUser,
-
-    requireOwner,
 
     logout
 
