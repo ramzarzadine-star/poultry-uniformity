@@ -1,114 +1,340 @@
-<!DOCTYPE html>
+<!doctype html>
 
 <html lang="fa" dir="rtl">
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 
-<link rel="stylesheet" href="../Style.css">
-
-</head>
-
-
-<body>
-
-
-<div class="card">
-
-
-<h2>💊 دارو</h2>
-
-
-<input placeholder="نام دارو">
-
-<input placeholder="دوز مصرف">
-
-<input placeholder="مدت مصرف">
-
-
-<button>
-ثبت دارو
-</button>
-
-
-</div>
-
-
-</body>
-
-</html>
-<!DOCTYPE html>
-
-<html lang="fa" dir="rtl">
-
-<head>
-
-<meta charset="UTF-8">
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+>
 
 <link rel="stylesheet" href="Style.css">
 
+<title>
+دارو و درمان
+</title>
+
 </head>
 
 
 <body>
 
 
-<div class="card">
+<header class="header">
 
+<img src="IMG_4309.png" class="header-logo">
 
-<h2>💊 دارو</h2>
+<h1>
+مرکز تخصصی سلامت طیور آدینه
+</h1>
 
+<h3>
+ثبت دارو و درمان
+</h3>
 
-<input id="medicineName" placeholder="نام دارو">
+<div class="user-row">
 
+<span id="userBox"></span>
 
-<input id="dose" placeholder="دوز مصرف">
-
-
-<button onclick="saveMedicine()">
-
-ثبت
-
+<button class="logout" data-logout>
+خروج
 </button>
-
 
 </div>
 
+</header>
+
+
+<nav class="menu">
+
+<a href="panel.html">🏠 داشبورد</a>
+<a href="flock.html">🐔 گله‌ها</a>
+<a href="feed.html">🌽 دان</a>
+<a href="water.html">💧 آب</a>
+<a href="vaccine.html">💉 واکسن</a>
+<a href="medicine.html">💊 دارو</a>
+<a href="health.html">🩺 سلامت</a>
+<a href="report.html">📊 گزارش</a>
+
+</nav>
+
+
+<main class="container">
+
+
+<div class="card">
+
+<div class="notice">
+
+این بخش برای ثبت سوابق درمانی است.
+انتخاب دارو و دوز باید توسط دامپزشک یا مسئول فنی و بر اساس تشخیص، برچسب فرآورده و شرایط گله انجام شود.
+
+</div>
+
+
+<h2>
+ثبت مورد درمانی
+</h2>
+
+
+<select id="flockId"></select>
+
+
+<div class="form-grid">
+
+<input
+id="date"
+type="date"
+>
+
+<input
+id="disease"
+placeholder="تشخیص / مشکل"
+>
+
+<input
+id="medicine"
+placeholder="نام دارو / فرآورده"
+>
+
+<input
+id="dose"
+placeholder="دوز مصرف"
+>
+
+<input
+id="duration"
+placeholder="مدت مصرف"
+>
+
+<input
+id="route"
+placeholder="روش مصرف"
+>
+
+<input
+id="withdrawal"
+placeholder="دوره منع مصرف"
+>
+
+<input
+id="notes"
+placeholder="یادداشت / نتیجه کشت و آنتی‌بیوگرام"
+>
+
+</div>
+
+
+<div class="actions">
+
+<button onclick="saveMedicine()">
+ثبت
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+سوابق درمان
+</h2>
+
+<div id="list"></div>
+
+</div>
+
+
+</main>
 
 
 <script src="database.js"></script>
 
+<script src="app.js"></script>
+
 
 <script>
+
+function render(){
+
+fillFlockSelect("flockId");
+
+const data=
+read("medicine",[])
+.slice()
+.reverse();
+
+
+const list=
+document.getElementById("list");
+
+
+if(!data.length){
+
+list.innerHTML=
+"هنوز مورد درمانی ثبت نشده است.";
+
+return;
+
+}
+
+
+list.innerHTML=data.map(
+
+function(item){
+
+return `
+
+<div class="list-item">
+
+💊
+
+<b>
+${escapeHTML(item.medicine)}
+</b>
+
+
+<div class="meta">
+
+${escapeHTML(item.date)}
+
+|
+
+${escapeHTML(item.disease)}
+
+|
+
+دوز:
+${escapeHTML(item.dose)}
+
+|
+
+مدت:
+${escapeHTML(item.duration)}
+
+</div>
+
+
+<div>
+
+روش:
+${escapeHTML(item.route)}
+
+|
+
+منع مصرف:
+${escapeHTML(item.withdrawal)}
+
+</div>
+
+
+<div>
+
+${escapeHTML(item.notes || "")}
+
+</div>
+
+</div>
+
+`;
+
+}
+
+).join("");
+
+}
 
 
 function saveMedicine(){
 
+if(!requireUser()){
 
-saveModule(
+return;
+
+}
+
+
+const flockId=
+document.getElementById("flockId").value;
+
+
+const medicine=
+document.getElementById("medicine").value.trim();
+
+
+if(!flockId || !medicine){
+
+alert(
+"گله و نام دارو الزامی است."
+);
+
+return;
+
+}
+
+
+addRecord(
 
 "medicine",
 
 {
 
-name:medicineName.value,
+flockId:flockId,
 
-dose:dose.value
+date:
+document.getElementById("date").value ||
+todayISO(),
+
+disease:
+document.getElementById("disease").value.trim(),
+
+medicine:medicine,
+
+dose:
+document.getElementById("dose").value.trim(),
+
+duration:
+document.getElementById("duration").value.trim(),
+
+route:
+document.getElementById("route").value.trim(),
+
+withdrawal:
+document.getElementById("withdrawal").value.trim(),
+
+notes:
+document.getElementById("notes").value.trim()
 
 }
 
 );
 
 
-alert("ثبت شد");
-
+render();
 
 }
 
 
-</script>
+document.addEventListener(
 
+"DOMContentLoaded",
+
+function(){
+
+document.getElementById("date").value=todayISO();
+
+render();
+
+}
+
+);
+
+</script>
 
 </body>
 
