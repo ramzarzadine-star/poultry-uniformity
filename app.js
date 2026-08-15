@@ -6,7 +6,9 @@
   V7
 */
 
-const DB_KEY = 'adineh_poultry_db_v7';
+const DB_KEY =
+  window.ADINEH_DB_KEY ||
+  'adineh_poultry_db_v7'; 
 
 const uid = () =>
   Date.now().toString(36) +
@@ -3117,4 +3119,25 @@ window.addEventListener(
    START
 ========================================================= */
 
-render();
+if (
+  window.ADINEH_AUTH &&
+  window.ADINEH_AUTH.ready
+) {
+
+  render();
+
+} else {
+
+  document.addEventListener(
+    'adineh-auth-ready',
+    () => {
+
+      render();
+
+    },
+    {
+      once: true
+    }
+  );
+
+}
