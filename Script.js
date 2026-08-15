@@ -1,1638 +1,1585 @@
-/* =========================================================
-   ADINEH POULTRY HEALTH CENTER
-   Flock Performance Dashboard
-   Ross 308 Reference
-   ========================================================= */
-
-
 let weightChart = null;
-let weightTrendChart = null;
 let cvChart = null;
 let uniformityChart = null;
 let fcrChart = null;
 
+let currentUser =
+  localStorage.getItem("activeUser") || "guest";
 
-const currentUser =
-    localStorage.getItem("activeUser") || "guest";
+
+/* ===============================
+   Ross 308 - As Hatched
+   7 تا 56 روز
+================================ */
+
+const ROSS_DAYS = [
+  7, 14, 21, 28,
+  35, 42, 49, 56
+];
 
 
-/* =========================================================
-   ROSS 308 AS-HATCHED PERFORMANCE OBJECTIVES
-   Source: Aviagen Ross 308/308 FF Performance Objectives 2022
-   ========================================================= */
+const ROSS_WEIGHT = [
+  213,
+  533,
+  1012,
+  1616,
+  2296,
+  2998,
+  3681,
+  4318
+];
 
-const rossReference = {
 
-    age: [7, 14, 21, 28, 35, 42, 49, 56],
+const ROSS_FCR = [
+  0.780,
+  1.005,
+  1.142,
+  1.269,
+  1.399,
+  1.531,
+  1.663,
+  1.793
+];
 
-    weight: [
-        213,
-        533,
-        1012,
-        1616,
-        2296,
-        2998,
-        3681,
-        4318
-    ],
 
-    fcr: [
-        0.780,
-        1.005,
-        1.142,
-        1.269,
-        1.399,
-        1.531,
-        1.663,
-        1.793
-    ]
+/* حدود مدیریتی */
+
+const MANAGEMENT_CV_LIMIT = 10;
+
+const MANAGEMENT_UNIFORMITY_LIMIT = 68;
+
+
+/* تاریخچه واقعی فارم */
+
+let performanceHistory = {
+
+  weight:
+    Array(ROSS_DAYS.length).fill(null),
+
+  cv:
+    Array(ROSS_DAYS.length).fill(null),
+
+  uniformity:
+    Array(ROSS_DAYS.length).fill(null),
+
+  fcr:
+    Array(ROSS_DAYS.length).fill(null)
 
 };
 
 
-/* =========================================================
-   ROSS MANAGEMENT REFERENCE
-   Ross does NOT publish an age-specific CV curve.
-   These are reference values from Ross management guidance.
-   ========================================================= */
+/* ===============================
+   ابزارها
+================================ */
 
-const rossCVReference = 10;
+function qs(id) {
 
-const rossUniformityReference = 68;
+  return document.getElementById(id);
 
-
-/* =========================================================
-   HISTORY
-   ========================================================= */
-
-let performanceHistory = [];
+}
 
 
-/* =========================================================
-   USER
-   ========================================================= */
+/* ===============================
+   کاربر
+================================ */
 
 function showUser() {
 
-    const box = document.getElementById("userBox");
+  const box = qs("userBox");
 
-    if (!box) return;
+  if (!box) return;
 
-    box.innerHTML =
-        "👤 کاربر فعال: " +
-        (currentUser === "guest" ? "مهمان" : currentUser);
+  box.textContent =
+    "👤 کاربر فعال: " + currentUser;
 
 }
 
 
-/* =========================================================
-   LOGOUT
-   ========================================================= */
+/* ===============================
+   خروج
+================================ */
 
 function logout() {
 
-    localStorage.removeItem("activeUser");
+  localStorage.removeItem("activeUser");
 
-    window.location.href = "login.html";
+  window.location.href =
+    "login.html";
 
 }
 
 
-/* =========================================================
-   PERSIAN NUMBERS
-   ========================================================= */
+/* ===============================
+   اعداد فارسی
+================================ */
 
 function persianNumber(value) {
 
-    if (value === null || value === undefined) {
-        return "";
-    }
+  return String(value ?? "")
+    .replace(/[۰-۹]/g, function(ch) {
 
-    return String(value)
-        .replace(/[۰-۹]/g, function (x) {
-
-            return "۰۱۲۳۴۵۶۷۸۹".indexOf(x);
-
-        })
-        .replace(/[٠-٩]/g, function (x) {
-
-            return "٠١٢٣٤٥٦٧٨٩".indexOf(x);
-
-        });
-
-}
-
-
-/* =========================================================
-   PARSE WEIGHTS
-   ========================================================= */
-
-function parseWeights(text) {
-
-    text = persianNumber(text);
-
-    return text
-        .replace(/،/g, ",")
-        .replace(/؛/g, ",")
-        .replace(/\n/g, " ")
-        .split(/[\s,]+/)
-        .map(Number)
-        .filter(function (x) {
-
-            return Number.isFinite(x) && x > 0;
-
-        });
-
-}
-
-
-/* =========================================================
-   AVERAGE
-   ========================================================= */
-
-function average(arr) {
-
-    if (!arr.length) return 0;
-
-    return arr.reduce(function (sum, value) {
-
-        return sum + value;
-
-    }, 0) / arr.length;
-
-}
-
-
-/* =========================================================
-   SAMPLE STANDARD DEVIATION
-   ========================================================= */
-
-function standardDeviation(arr, mean) {
-
-    if (arr.length < 2) return 0;
-
-    const sum = arr.reduce(function (total, value) {
-
-        return total + Math.pow(value - mean, 2);
-
-    }, 0);
-
-    return Math.sqrt(sum / (arr.length - 1));
-
-}
-
-
-/* =========================================================
-   UNIFORMITY
-   ========================================================= */
-
-function calculateUniformity(arr, mean, percentage) {
-
-    if (!arr.length || mean <= 0) {
-        return 0;
-    }
-
-    const low =
-        mean * (1 - percentage);
-
-    const high =
-        mean * (1 + percentage);
-
-    const inside =
-        arr.filter(function (weight) {
-
-            return weight >= low &&
-                   weight <= high;
-
-        }).length;
-
-    return (inside / arr.length) * 100;
-
-}
-
-
-/* =========================================================
-   FIND ROSS TARGET
-   ========================================================= */
-
-function getRossTarget(age, values) {
-
-    const numericAge = Number(age);
-
-    if (!Number.isFinite(numericAge)) {
-        return null;
-    }
-
-    const index =
-        rossReference.age.indexOf(numericAge);
-
-    if (index === -1) {
-        return null;
-    }
-
-    return values[index];
-
-}
-
-
-/* =========================================================
-   INTERPOLATE ROSS TARGET
-   Allows ages between weekly points.
-   ========================================================= */
-
-function interpolate(age, ages, values) {
-
-    age = Number(age);
-
-    if (!Number.isFinite(age)) {
-        return null;
-    }
-
-    if (age <= ages[0]) {
-        return values[0];
-    }
-
-    if (age >= ages[ages.length - 1]) {
-        return values[values.length - 1];
-    }
-
-    for (let i = 0; i < ages.length - 1; i++) {
-
-        const x1 = ages[i];
-        const x2 = ages[i + 1];
-
-        if (age >= x1 && age <= x2) {
-
-            const y1 = values[i];
-            const y2 = values[i + 1];
-
-            const ratio =
-                (age - x1) /
-                (x2 - x1);
-
-            return y1 +
-                (y2 - y1) * ratio;
-
-        }
-
-    }
-
-    return null;
-
-}
-
-
-/* =========================================================
-   FCR CALCULATION
-   ========================================================= */
-
-function calculateFCR(meanWeight) {
-
-    const directFCR =
-        Number(
-            persianNumber(
-                document.getElementById("actualFCR")?.value
-            )
-        );
-
-    /*
-       If user enters actual FCR, use it.
-    */
-
-    if (
-        Number.isFinite(directFCR) &&
-        directFCR > 0
-    ) {
-
-        return directFCR;
-
-    }
-
-
-    /*
-       Otherwise calculate from cumulative feed.
-       Ross FCR includes initial body weight.
-       Placement weight reference = 44 g.
-    */
-
-    const feed =
-        Number(
-            persianNumber(
-                document.getElementById("feedCumulative")?.value
-            )
-        );
-
-
-    if (
-        !Number.isFinite(feed) ||
-        feed <= 0 ||
-        meanWeight <= 44
-    ) {
-
-        return null;
-
-    }
-
-
-    const gain =
-        meanWeight - 44;
-
-
-    return feed / gain;
-
-}
-
-
-/* =========================================================
-   SAVE DATA
-   ========================================================= */
-
-function saveData() {
-
-    if (currentUser === "guest") {
-        return;
-    }
-
-
-    const data = {
-
-        farm:
-            document.getElementById("farm")?.value || "",
-
-        hall:
-            document.getElementById("hall")?.value || "",
-
-        type:
-            document.getElementById("type")?.value || "",
-
-        age:
-            document.getElementById("age")?.value || "",
-
-        countBird:
-            document.getElementById("countBird")?.value || "",
-
-        date:
-            document.getElementById("date")?.value || "",
-
-        weights:
-            document.getElementById("weightsInput")?.value || "",
-
-        feedCumulative:
-            document.getElementById("feedCumulative")?.value || "",
-
-        actualFCR:
-            document.getElementById("actualFCR")?.value || "",
-
-        performanceHistory:
-            performanceHistory
-
-    };
-
-
-    localStorage.setItem(
-        "adineh_" + currentUser,
-        JSON.stringify(data)
-    );
-
-}
-
-
-/* =========================================================
-   LOAD DATA
-   ========================================================= */
-
-function loadData() {
-
-    if (currentUser === "guest") {
-        return;
-    }
-
-
-    const saved =
-        localStorage.getItem(
-            "adineh_" + currentUser
-        );
-
-
-    if (!saved) {
-        return;
-    }
-
-
-    try {
-
-        const obj =
-            JSON.parse(saved);
-
-
-        setValue("farm", obj.farm);
-        setValue("hall", obj.hall);
-        setValue("type", obj.type);
-        setValue("age", obj.age);
-        setValue("countBird", obj.countBird);
-        setValue("date", obj.date);
-        setValue("weightsInput", obj.weights);
-        setValue("feedCumulative", obj.feedCumulative);
-        setValue("actualFCR", obj.actualFCR);
-
-
-        performanceHistory =
-            Array.isArray(obj.performanceHistory)
-                ? obj.performanceHistory
-                : [];
-
-
-        drawAllCharts();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "خطا در بارگذاری اطلاعات:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   SET VALUE
-   ========================================================= */
-
-function setValue(id, value) {
-
-    const element =
-        document.getElementById(id);
-
-    if (element) {
-
-        element.value =
-            value || "";
-
-    }
-
-}
-
-
-/* =========================================================
-   UPDATE CURRENT AGE RECORD
-   ========================================================= */
-
-function updateHistory(record) {
-
-    const existingIndex =
-        performanceHistory.findIndex(function (item) {
-
-            return Number(item.age) ===
-                   Number(record.age);
-
-        });
-
-
-    if (existingIndex >= 0) {
-
-        performanceHistory[existingIndex] =
-            record;
-
-    }
-
-    else {
-
-        performanceHistory.push(record);
-
-    }
-
-
-    performanceHistory.sort(function (a, b) {
-
-        return Number(a.age) -
-               Number(b.age);
+      return "۰۱۲۳۴۵۶۷۸۹".indexOf(ch);
 
     });
 
+}
 
-    /*
-       Only keep the first 8 weeks.
-    */
 
-    performanceHistory =
-        performanceHistory.filter(function (item) {
+/* ===============================
+   خواندن وزن‌ها
+================================ */
 
-            return Number(item.age) >= 1 &&
-                   Number(item.age) <= 56;
+function parseWeights(text) {
 
-        });
+  const normalized =
+    persianNumber(text)
+      .replace(/[،؛]/g, ",")
+      .replace(/[\n\r\t]+/g, " ");
+
+  return normalized
+    .split(/[\s,]+/)
+    .map(Number)
+    .filter(function(v) {
+
+      return Number.isFinite(v) && v > 0;
+
+    });
 
 }
 
 
-/* =========================================================
-   MAIN CALCULATION
-   ========================================================= */
+/* ===============================
+   میانگین
+================================ */
+
+function average(arr) {
+
+  return arr.reduce(
+    function(sum, value) {
+
+      return sum + value;
+
+    },
+    0
+  ) / arr.length;
+
+}
+
+
+/* ===============================
+   SD
+================================ */
+
+function standardDeviation(arr, mean) {
+
+  if (arr.length < 2) {
+
+    return 0;
+
+  }
+
+  const sum =
+    arr.reduce(
+      function(total, value) {
+
+        return total +
+          Math.pow(value - mean, 2);
+
+      },
+      0
+    );
+
+  return Math.sqrt(
+    sum / (arr.length - 1)
+  );
+
+}
+
+
+/* ===============================
+   Uniformity
+================================ */
+
+function uniformity(arr, mean, percent) {
+
+  const low =
+    mean * (1 - percent);
+
+  const high =
+    mean * (1 + percent);
+
+  return (
+    arr.filter(function(value) {
+
+      return value >= low &&
+             value <= high;
+
+    }).length
+    /
+    arr.length
+  ) * 100;
+
+}
+
+
+/* ===============================
+   پیدا کردن سن
+================================ */
+
+function getDayIndex(age) {
+
+  return ROSS_DAYS.indexOf(
+    Number(age)
+  );
+
+}
+
+
+/* ===============================
+   پیام
+================================ */
+
+function setMessage(text, type = "") {
+
+  const el =
+    qs("calculationMessage");
+
+  if (!el) return;
+
+  el.textContent = text;
+
+  el.className =
+    "calculation-message " + type;
+
+}
+
+
+/* ===============================
+   FCR واقعی
+================================ */
+
+function calculateFCR(
+  meanWeightGrams,
+  cumulativeFeedKg,
+  startingBirds
+) {
+
+  const feed =
+    Number(cumulativeFeedKg);
+
+  const birds =
+    Number(startingBirds);
+
+
+  if (
+    !Number.isFinite(feed) ||
+    feed <= 0 ||
+    !Number.isFinite(birds) ||
+    birds <= 0
+  ) {
+
+    return null;
+
+  }
+
+
+  /*
+    وزن اولیه جوجه:
+    44 گرم
+
+    FCR =
+    دان مصرفی / افزایش وزن تجمعی
+  */
+
+  const initialWeightKg =
+    birds * 0.044;
+
+
+  const currentWeightKg =
+    birds *
+    (meanWeightGrams / 1000);
+
+
+  const weightGainKg =
+    currentWeightKg -
+    initialWeightKg;
+
+
+  if (weightGainKg <= 0) {
+
+    return null;
+
+  }
+
+
+  return feed / weightGainKg;
+
+}
+
+
+/* ===============================
+   FCR تعدیل‌شده با تلفات
+================================ */
+
+function calculateAdjustedFCR(
+  meanWeightGrams,
+  cumulativeFeedKg,
+  startingBirds,
+  mortality
+) {
+
+  const feed =
+    Number(cumulativeFeedKg);
+
+  const birds =
+    Number(startingBirds);
+
+  const dead =
+    Math.max(
+      0,
+      Number(mortality) || 0
+    );
+
+
+  if (
+    !Number.isFinite(feed) ||
+    feed <= 0 ||
+    !Number.isFinite(birds) ||
+    birds <= 0
+  ) {
+
+    return null;
+
+  }
+
+
+  const liveBirds =
+    birds - dead;
+
+
+  if (liveBirds <= 0) {
+
+    return null;
+
+  }
+
+
+  const initialLiveWeightKg =
+    liveBirds * 0.044;
+
+
+  const currentLiveWeightKg =
+    liveBirds *
+    (meanWeightGrams / 1000);
+
+
+  const liveWeightGainKg =
+    currentLiveWeightKg -
+    initialLiveWeightKg;
+
+
+  if (liveWeightGainKg <= 0) {
+
+    return null;
+
+  }
+
+
+  return feed / liveWeightGainKg;
+
+}
+
+
+/* ===============================
+   محاسبه اصلی
+================================ */
 
 function calculate() {
 
-    const weights =
-        parseWeights(
-            document.getElementById(
-                "weightsInput"
-            ).value
-        );
-
-
-    if (weights.length < 2) {
-
-        alert(
-            "حداقل دو وزن معتبر وارد کنید."
-        );
-
-        return;
-
-    }
-
-
-    const age =
-        Number(
-            persianNumber(
-                document.getElementById(
-                    "age"
-                ).value
-            )
-        );
-
-
-    if (
-        !Number.isFinite(age) ||
-        age <= 0
-    ) {
-
-        alert(
-            "سن گله را وارد کنید."
-        );
-
-        return;
-
-    }
-
-
-    if (age > 56) {
-
-        alert(
-            "نمودار مرجع Ross این بخش تا ۸ هفتگی طراحی شده است."
-        );
-
-    }
-
-
-    const mean =
-        average(weights);
-
-
-    const sd =
-        standardDeviation(
-            weights,
-            mean
-        );
-
-
-    const cv =
-        mean > 0
-            ? (sd / mean) * 100
-            : 0;
-
-
-    const u10 =
-        calculateUniformity(
-            weights,
-            mean,
-            0.10
-        );
-
-
-    const u15 =
-        calculateUniformity(
-            weights,
-            mean,
-            0.15
-        );
-
-
-    const fcr =
-        calculateFCR(mean);
-
-
-    const rossWeight =
-        interpolate(
-            age,
-            rossReference.age,
-            rossReference.weight
-        );
-
-
-    const rossFCR =
-        interpolate(
-            age,
-            rossReference.age,
-            rossReference.fcr
-        );
-
-
-    const weightDifference =
-        rossWeight !== null
-            ? mean - rossWeight
-            : null;
-
-
-    const weightDifferencePercent =
-        rossWeight !== null
-            ? ((mean - rossWeight) /
-               rossWeight) * 100
-            : null;
-
-
-    const record = {
-
-        age: age,
-
-        mean: Number(
-            mean.toFixed(1)
-        ),
-
-        sd: Number(
-            sd.toFixed(1)
-        ),
-
-        cv: Number(
-            cv.toFixed(2)
-        ),
-
-        uniformity10: Number(
-            u10.toFixed(1)
-        ),
-
-        uniformity15: Number(
-            u15.toFixed(1)
-        ),
-
-        fcr:
-            fcr !== null
-                ? Number(fcr.toFixed(3))
-                : null,
-
-        rossWeight:
-            rossWeight !== null
-                ? Number(rossWeight.toFixed(1))
-                : null,
-
-        rossFCR:
-            rossFCR !== null
-                ? Number(rossFCR.toFixed(3))
-                : null,
-
-        weightDifference:
-            weightDifference !== null
-                ? Number(
-                    weightDifference.toFixed(1)
-                  )
-                : null,
-
-        weightDifferencePercent:
-            weightDifferencePercent !== null
-                ? Number(
-                    weightDifferencePercent.toFixed(1)
-                  )
-                : null
-
-    };
-
-
-    updateHistory(record);
-
-
-    updateResults(
-        weights,
-        mean,
-        sd,
-        cv,
-        u10,
-        u15,
-        fcr,
-        rossWeight
+  const weights =
+    parseWeights(
+      qs("weightsInput").value
     );
 
 
-    saveData();
-
-
-    drawWeight(weights);
-
-    drawWeightTrend();
-
-    drawCV();
-
-    drawUniformity();
-
-    drawFCR();
-
-
-    updatePerformanceStatus(
-        record
+  const age =
+    Number(
+      qs("age").value
     );
+
+
+  if (weights.length < 2) {
+
+    alert(
+      "حداقل دو وزن معتبر وارد کنید."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !Number.isFinite(age) ||
+    age <= 0
+  ) {
+
+    alert(
+      "سن گله را وارد کنید."
+    );
+
+    return;
+
+  }
+
+
+  const index =
+    getDayIndex(age);
+
+
+  if (index === -1) {
+
+    alert(
+      "برای نمودار استاندارد، سن باید یکی از این موارد باشد:\n۷، ۱۴، ۲۱، ۲۸، ۳۵، ۴۲، ۴۹ یا ۵۶ روز."
+    );
+
+    return;
+
+  }
+
+
+  const mean =
+    average(weights);
+
+
+  const sd =
+    standardDeviation(
+      weights,
+      mean
+    );
+
+
+  const cv =
+    (sd / mean) * 100;
+
+
+  const u10 =
+    uniformity(
+      weights,
+      mean,
+      0.10
+    );
+
+
+  const u15 =
+    uniformity(
+      weights,
+      mean,
+      0.15
+    );
+
+
+  const fcr =
+    calculateFCR(
+      mean,
+      qs("feedCumulative").value,
+      qs("countBird").value
+    );
+
+
+  const adjustedFCR =
+    calculateAdjustedFCR(
+      mean,
+      qs("feedCumulative").value,
+      qs("countBird").value,
+      qs("mortalityCumulative").value
+    );
+
+
+  /* نمایش نتایج */
+
+  qs("sample").textContent =
+    weights.length;
+
+
+  qs("mean").textContent =
+    mean.toFixed(1) + " g";
+
+
+  qs("min").textContent =
+    Math.min(...weights)
+      .toFixed(1) + " g";
+
+
+  qs("max").textContent =
+    Math.max(...weights)
+      .toFixed(1) + " g";
+
+
+  qs("sd").textContent =
+    sd.toFixed(1) + " g";
+
+
+  qs("cv").textContent =
+    cv.toFixed(2) + "%";
+
+
+  qs("u10").textContent =
+    u10.toFixed(1) + "%";
+
+
+  qs("u15").textContent =
+    u15.toFixed(1) + "%";
+
+
+  qs("fcrActual").textContent =
+    fcr === null
+      ? "—"
+      : fcr.toFixed(3);
+
+
+  qs("fcrAdjusted").textContent =
+    adjustedFCR === null
+      ? "—"
+      : adjustedFCR.toFixed(3);
+
+
+  /* ذخیره نقطه واقعی */
+
+  performanceHistory.weight[index] =
+    Number(mean.toFixed(1));
+
+
+  performanceHistory.cv[index] =
+    Number(cv.toFixed(2));
+
+
+  performanceHistory.uniformity[index] =
+    Number(u10.toFixed(1));
+
+
+  performanceHistory.fcr[index] =
+    fcr === null
+      ? null
+      : Number(fcr.toFixed(3));
+
+
+  /* وضعیت عملکرد */
+
+  const weightDiff =
+    (
+      (mean - ROSS_WEIGHT[index])
+      /
+      ROSS_WEIGHT[index]
+    ) * 100;
+
+
+  let status =
+    weightDiff >= 0
+      ? "وزن +" +
+        weightDiff.toFixed(1) +
+        "%"
+      : "وزن " +
+        weightDiff.toFixed(1) +
+        "%";
+
+
+  if (
+    cv >
+    MANAGEMENT_CV_LIMIT
+  ) {
+
+    status +=
+      " | CV بالاتر از حد";
+
+  }
+
+
+  if (
+    u10 <
+    MANAGEMENT_UNIFORMITY_LIMIT
+  ) {
+
+    status +=
+      " | یکنواختی پایین";
+
+  }
+
+
+  if (fcr !== null) {
+
+    const fcrDiff =
+      fcr -
+      ROSS_FCR[index];
+
+
+    status +=
+      " | FCR " +
+      (
+        fcrDiff <= 0
+          ? "بهتر"
+          : "بالاتر"
+      ) +
+      " از Ross";
+
+  }
+
+
+  qs("performanceStatus")
+    .textContent = status;
+
+
+  saveData();
+
+
+  drawAllCharts(weights);
+
+
+  setMessage(
+    "داده روز " +
+    age +
+    " ثبت شد و نقطه واقعی روی نمودارها قرار گرفت.",
+    "success"
+  );
 
 }
 
 
-/* =========================================================
-   UPDATE RESULT CARDS
-   ========================================================= */
+/* ===============================
+   برچسب نمودار
+================================ */
 
-function updateResults(
-    weights,
-    mean,
-    sd,
-    cv,
-    u10,
-    u15,
-    fcr,
-    rossWeight
+function chartLabels() {
+
+  return ROSS_DAYS.map(
+    function(day) {
+
+      return "روز " + day;
+
+    }
+  );
+
+}
+
+
+/* ===============================
+   تنظیمات عمومی Chart
+================================ */
+
+function commonChartOptions(
+  yTitle
 ) {
 
-    setHTML(
-        "sample",
-        weights.length
-    );
+  return {
 
+    responsive: true,
 
-    setHTML(
-        "mean",
-        mean.toFixed(1) + " g"
-    );
+    maintainAspectRatio: false,
 
+    interaction: {
 
-    setHTML(
-        "min",
-        Math.min(...weights) + " g"
-    );
+      mode: "index",
 
+      intersect: false
 
-    setHTML(
-        "max",
-        Math.max(...weights) + " g"
-    );
+    },
 
+    plugins: {
 
-    setHTML(
-        "sd",
-        sd.toFixed(1) + " g"
-    );
+      legend: {
 
+        position: "top",
 
-    setHTML(
-        "cv",
-        cv.toFixed(2) + "%"
-    );
+        labels: {
 
+          usePointStyle: true,
 
-    setHTML(
-        "u10",
-        u10.toFixed(1) + "%"
-    );
+          font: {
 
+            family:
+              "Tahoma, Arial",
 
-    setHTML(
-        "u15",
-        u15.toFixed(1) + "%"
-    );
+            size: 12
 
-
-    setHTML(
-        "fcr",
-        fcr !== null
-            ? fcr.toFixed(3)
-            : "-"
-    );
-
-}
-
-
-/* =========================================================
-   STATUS
-   ========================================================= */
-
-function updatePerformanceStatus(record) {
-
-    const box =
-        document.getElementById(
-            "performanceStatus"
-        );
-
-
-    if (!box) return;
-
-
-    let status = "ثبت شد";
-
-
-    if (
-        record.weightDifferencePercent !== null
-    ) {
-
-        if (
-            record.weightDifferencePercent >= -5
-        ) {
-
-            status =
-                "✓ نزدیک / بالاتر از هدف Ross";
+          }
 
         }
 
-        else if (
-            record.weightDifferencePercent >= -10
-        ) {
+      },
 
-            status =
-                "⚠ پایین‌تر از هدف Ross";
+      tooltip: {
+
+        rtl: true,
+
+        titleAlign: "right",
+
+        bodyAlign: "right"
+
+      }
+
+    },
+
+    scales: {
+
+      x: {
+
+        title: {
+
+          display: true,
+
+          text: "سن گله"
 
         }
 
-        else {
+      },
 
-            status =
-                "⚠ افت محسوس نسبت به Ross";
+      y: {
 
-        }
+        title: {
+
+          display: true,
+
+          text: yTitle
+
+        },
+
+        beginAtZero: false
+
+      }
 
     }
 
-
-    box.innerHTML = status;
-
-}
-
-
-/* =========================================================
-   DISTRIBUTION CHART
-   ========================================================= */
-
-function drawWeight(data) {
-
-    destroyChart("weightChart");
-
-
-    const canvas =
-        document.getElementById(
-            "weightChart"
-        );
-
-
-    if (!canvas) return;
-
-
-    weightChart =
-        new Chart(
-            canvas,
-            {
-
-                type: "bar",
-
-                data: {
-
-                    labels:
-                        data.map(
-                            function (_, index) {
-                                return "نمونه " +
-                                    (index + 1);
-                            }
-                        ),
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "وزن نمونه (g)",
-
-                            data:
-                                data,
-
-                            borderWidth: 1
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    plugins: {
-
-                        legend: {
-                            display: true
-                        }
-
-                    },
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            title: {
-
-                                display: true,
-
-                                text:
-                                    "وزن (گرم)"
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-        );
+  };
 
 }
 
 
-/* =========================================================
-   WEIGHT TREND
-   ========================================================= */
+/* ===============================
+   Dataset
+================================ */
+
+function makeDataset(
+  label,
+  data,
+  type = "actual"
+) {
+
+  const actual =
+    type === "actual";
+
+
+  return {
+
+    label: label,
+
+    data: data,
+
+    borderWidth:
+      actual ? 3 : 2,
+
+    pointRadius:
+      actual ? 5 : 4,
+
+    pointHoverRadius: 7,
+
+    tension: 0.25,
+
+    fill: false,
+
+    spanGaps: false,
+
+    borderDash:
+      actual
+        ? []
+        : [8, 6]
+
+  };
+
+}
+
+
+/* ===============================
+   نمودار وزن
+================================ */
 
 function drawWeightTrend() {
 
-    destroyChart("weightTrendChart");
+  if (weightTrendChart) {
+
+    weightTrendChart.destroy();
+
+  }
 
 
-    const canvas =
-        document.getElementById(
-            "weightTrendChart"
-        );
+  weightTrendChart =
+    new Chart(
+      qs("weightTrendChart"),
+      {
 
+        type: "line",
 
-    if (!canvas) return;
+        data: {
 
+          labels:
+            chartLabels(),
 
-    const actual =
-        performanceHistory;
+          datasets: [
 
+            makeDataset(
+              "وزن واقعی گله (g)",
+              performanceHistory.weight,
+              "actual"
+            ),
 
-    weightTrendChart =
-        new Chart(
-            canvas,
-            {
+            makeDataset(
+              "Ross 308 استاندارد (g)",
+              ROSS_WEIGHT,
+              "reference"
+            )
 
-                type: "line",
+          ]
 
-                data: {
+        },
 
-                    labels:
-                        rossReference.age.map(
-                            function (age) {
-                                return age +
-                                    " روز";
-                            }
-                        ),
+        options:
+          commonChartOptions(
+            "وزن (گرم)"
+          )
 
-                    datasets: [
-
-                        {
-
-                            label:
-                                "وزن واقعی گله",
-
-                            data:
-                                rossReference.age.map(
-                                    function (age) {
-
-                                        const item =
-                                            actual.find(
-                                                function (x) {
-                                                    return Number(x.age) === age;
-                                                }
-                                            );
-
-                                        return item
-                                            ? item.mean
-                                            : null;
-
-                                    }
-                                ),
-
-                            borderWidth: 3,
-
-                            tension: 0.25,
-
-                            spanGaps: true
-
-                        },
-
-                        {
-
-                            label:
-                                "هدف Ross 308",
-
-                            data:
-                                rossReference.weight,
-
-                            borderWidth: 3,
-
-                            borderDash:
-                                [8, 5],
-
-                            tension: 0.25
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    interaction: {
-
-                        mode: "index",
-
-                        intersect: false
-
-                    },
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            title: {
-
-                                display: true,
-
-                                text:
-                                    "وزن (g)"
-
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-        );
+      }
+    );
 
 }
 
 
-/* =========================================================
-   CV CHART
-   ========================================================= */
+/* ===============================
+   نمودار CV
+================================ */
 
 function drawCV() {
 
-    destroyChart("cvChart");
+  if (cvChart) {
+
+    cvChart.destroy();
+
+  }
 
 
-    const canvas =
-        document.getElementById(
-            "cvChart"
-        );
+  cvChart =
+    new Chart(
+      qs("cvChart"),
+      {
 
+        type: "line",
 
-    if (!canvas) return;
+        data: {
 
+          labels:
+            chartLabels(),
 
-    cvChart =
-        new Chart(
-            canvas,
-            {
+          datasets: [
 
-                type: "line",
+            makeDataset(
+              "CV واقعی گله (%)",
+              performanceHistory.cv,
+              "actual"
+            ),
 
-                data: {
+            makeDataset(
+              "حد مدیریتی CV = 10%",
+              Array(
+                ROSS_DAYS.length
+              ).fill(
+                MANAGEMENT_CV_LIMIT
+              ),
+              "reference"
+            )
 
-                    labels:
-                        rossReference.age.map(
-                            function (age) {
-                                return age +
-                                    " روز";
-                            }
-                        ),
+          ]
 
-                    datasets: [
+        },
 
-                        {
+        options: {
 
-                            label:
-                                "CV واقعی",
+          ...commonChartOptions(
+            "CV (%)"
+          ),
 
-                            data:
-                                rossReference.age.map(
-                                    function (age) {
+          scales: {
 
-                                        const item =
-                                            performanceHistory.find(
-                                                function (x) {
-                                                    return Number(x.age) === age;
-                                                }
-                                            );
+            ...commonChartOptions(
+              "CV (%)"
+            ).scales,
 
-                                        return item
-                                            ? item.cv
-                                            : null;
+            y: {
 
-                                    }
-                                ),
+              min: 0,
 
-                            borderWidth: 3,
+              title: {
 
-                            tension: 0.25,
+                display: true,
 
-                            spanGaps: true
+                text: "CV (%)"
 
-                        },
-
-                        {
-
-                            label:
-                                "مرجع مدیریتی Ross = 10%",
-
-                            data:
-                                rossReference.age.map(
-                                    function () {
-                                        return rossCVReference;
-                                    }
-                                ),
-
-                            borderWidth: 2,
-
-                            borderDash:
-                                [8, 5],
-
-                            tension: 0
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: true,
-
-                            title: {
-
-                                display: true,
-
-                                text:
-                                    "CV (%)"
-
-                            }
-
-                        }
-
-                    }
-
-                }
+              }
 
             }
 
-        );
+          }
+
+        }
+
+      }
+    );
 
 }
 
 
-/* =========================================================
-   UNIFORMITY CHART
-   ========================================================= */
+/* ===============================
+   نمودار یکنواختی
+================================ */
 
 function drawUniformity() {
 
-    destroyChart("uniformityChart");
+  if (uniformityChart) {
+
+    uniformityChart.destroy();
+
+  }
 
 
-    const canvas =
-        document.getElementById(
-            "uniformityChart"
-        );
+  uniformityChart =
+    new Chart(
+      qs("uniformityChart"),
+      {
 
+        type: "line",
 
-    if (!canvas) return;
+        data: {
 
+          labels:
+            chartLabels(),
 
-    uniformityChart =
-        new Chart(
-            canvas,
-            {
+          datasets: [
 
-                type: "line",
+            makeDataset(
+              "یکنواختی واقعی ±10% (%)",
+              performanceHistory.uniformity,
+              "actual"
+            ),
 
-                data: {
+            makeDataset(
+              "حد مدیریتی ≥ 68%",
+              Array(
+                ROSS_DAYS.length
+              ).fill(
+                MANAGEMENT_UNIFORMITY_LIMIT
+              ),
+              "reference"
+            )
 
-                    labels:
-                        rossReference.age.map(
-                            function (age) {
-                                return age +
-                                    " روز";
-                            }
-                        ),
+          ]
 
-                    datasets: [
+        },
 
-                        {
+        options: {
 
-                            label:
-                                "یکنواختی واقعی ±10%",
+          ...commonChartOptions(
+            "یکنواختی (%)"
+          ),
 
-                            data:
-                                rossReference.age.map(
-                                    function (age) {
+          scales: {
 
-                                        const item =
-                                            performanceHistory.find(
-                                                function (x) {
-                                                    return Number(x.age) === age;
-                                                }
-                                            );
+            ...commonChartOptions(
+              "یکنواختی (%)"
+            ).scales,
 
-                                        return item
-                                            ? item.uniformity10
-                                            : null;
+            y: {
 
-                                    }
-                                ),
+              min: 0,
 
-                            borderWidth: 3,
+              max: 100,
 
-                            tension: 0.25,
+              title: {
 
-                            spanGaps: true
+                display: true,
 
-                        },
+                text: "یکنواختی (%)"
 
-                        {
-
-                            label:
-                                "مرجع مدیریتی Ross = 68%",
-
-                            data:
-                                rossReference.age.map(
-                                    function () {
-                                        return rossUniformityReference;
-                                    }
-                                ),
-
-                            borderWidth: 2,
-
-                            borderDash:
-                                [8, 5],
-
-                            tension: 0
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            min: 0,
-
-                            max: 100,
-
-                            title: {
-
-                                display: true,
-
-                                text:
-                                    "یکنواختی (%)"
-
-                            }
-
-                        }
-
-                    }
-
-                }
+              }
 
             }
 
-        );
+          }
+
+        }
+
+      }
+    );
 
 }
 
 
-/* =========================================================
-   FCR CHART
-   ========================================================= */
+/* ===============================
+   نمودار FCR
+================================ */
 
 function drawFCR() {
 
-    destroyChart("fcrChart");
+  if (fcrChart) {
+
+    fcrChart.destroy();
+
+  }
 
 
-    const canvas =
-        document.getElementById(
-            "fcrChart"
-        );
+  fcrChart =
+    new Chart(
+      qs("fcrChart"),
+      {
+
+        type: "line",
+
+        data: {
+
+          labels:
+            chartLabels(),
+
+          datasets: [
+
+            makeDataset(
+              "FCR واقعی فارم",
+              performanceHistory.fcr,
+              "actual"
+            ),
+
+            makeDataset(
+              "Ross 308 استاندارد",
+              ROSS_FCR,
+              "reference"
+            )
+
+          ]
+
+        },
+
+        options:
+          commonChartOptions(
+            "FCR"
+          )
+
+      }
+    );
+
+}
 
 
-    if (!canvas) return;
+/* ===============================
+   نمودار توزیع وزن
+================================ */
+
+function drawWeight(data) {
+
+  if (weightChart) {
+
+    weightChart.destroy();
+
+  }
 
 
-    fcrChart =
-        new Chart(
-            canvas,
+  weightChart =
+    new Chart(
+      qs("weightChart"),
+      {
+
+        type: "bar",
+
+        data: {
+
+          labels:
+            data.map(
+              function(_, i) {
+
+                return "نمونه " +
+                  (i + 1);
+
+              }
+            ),
+
+          datasets: [
+
             {
 
-                type: "line",
+              label:
+                "وزن نمونه (g)",
 
-                data: {
+              data: data,
 
-                    labels:
-                        rossReference.age.map(
-                            function (age) {
-                                return age +
-                                    " روز";
-                            }
-                        ),
-
-                    datasets: [
-
-                        {
-
-                            label:
-                                "FCR واقعی",
-
-                            data:
-                                rossReference.age.map(
-                                    function (age) {
-
-                                        const item =
-                                            performanceHistory.find(
-                                                function (x) {
-                                                    return Number(x.age) === age;
-                                                }
-                                            );
-
-                                        return item
-                                            ? item.fcr
-                                            : null;
-
-                                    }
-                                ),
-
-                            borderWidth: 3,
-
-                            tension: 0.25,
-
-                            spanGaps: true
-
-                        },
-
-                        {
-
-                            label:
-                                "هدف Ross 308",
-
-                            data:
-                                rossReference.fcr,
-
-                            borderWidth: 3,
-
-                            borderDash:
-                                [8, 5],
-
-                            tension: 0.25
-
-                        }
-
-                    ]
-
-                },
-
-                options: {
-
-                    responsive: true,
-
-                    maintainAspectRatio: false,
-
-                    scales: {
-
-                        y: {
-
-                            beginAtZero: false,
-
-                            title: {
-
-                                display: true,
-
-                                text:
-                                    "FCR"
-
-                            }
-
-                        }
-
-                    }
-
-                }
+              borderWidth: 1
 
             }
 
-        );
+          ]
 
-}
+        },
 
+        options: {
 
-/* =========================================================
-   DRAW ALL
-   ========================================================= */
+          responsive: true,
 
-function drawAllCharts() {
+          maintainAspectRatio: false,
 
-    drawWeightTrend();
+          plugins: {
 
-    drawCV();
+            legend: {
 
-    drawUniformity();
+              position: "top"
 
-    drawFCR();
-
-}
-
-
-/* =========================================================
-   DESTROY CHART
-   ========================================================= */
-
-function destroyChart(id) {
-
-    const map = {
-
-        weightChart:
-            function () {
-                if (weightChart) {
-                    weightChart.destroy();
-                    weightChart = null;
-                }
-            },
-
-        weightTrendChart:
-            function () {
-                if (weightTrendChart) {
-                    weightTrendChart.destroy();
-                    weightTrendChart = null;
-                }
-            },
-
-        cvChart:
-            function () {
-                if (cvChart) {
-                    cvChart.destroy();
-                    cvChart = null;
-                }
-            },
-
-        uniformityChart:
-            function () {
-                if (uniformityChart) {
-                    uniformityChart.destroy();
-                    uniformityChart = null;
-                }
-            },
-
-        fcrChart:
-            function () {
-                if (fcrChart) {
-                    fcrChart.destroy();
-                    fcrChart = null;
-                }
-            },
-
-        weightChart:
-            function () {
-                if (weightChart) {
-                    weightChart.destroy();
-                    weightChart = null;
-                }
             }
 
-    };
+          },
+
+          scales: {
+
+            y: {
+
+              beginAtZero: true,
+
+              title: {
+
+                display: true,
+
+                text: "وزن (گرم)"
+
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+}
 
 
-    if (map[id]) {
-        map[id]();
+/* ===============================
+   رسم تمام نمودارها
+================================ */
+
+function drawAllCharts(
+  weights = null
+) {
+
+  drawWeightTrend();
+
+  drawCV();
+
+  drawUniformity();
+
+  drawFCR();
+
+
+  if (
+    weights &&
+    weights.length
+  ) {
+
+    drawWeight(weights);
+
+  }
+
+}
+
+
+/* ===============================
+   جدول Ross
+================================ */
+
+function renderRossTable() {
+
+  const body =
+    qs("rossReferenceBody");
+
+
+  if (!body) return;
+
+
+  body.innerHTML =
+    ROSS_DAYS.map(
+      function(day, i) {
+
+        return `
+
+          <tr>
+
+            <td>${day}</td>
+
+            <td>${ROSS_WEIGHT[i]}</td>
+
+            <td>
+              ${ROSS_FCR[i].toFixed(3)}
+            </td>
+
+            <td>
+              ≤ ${MANAGEMENT_CV_LIMIT}%
+            </td>
+
+            <td>
+              ≥ ${MANAGEMENT_UNIFORMITY_LIMIT}%
+            </td>
+
+          </tr>
+
+        `;
+
+      }
+    ).join("");
+
+}
+
+
+/* ===============================
+   ذخیره اطلاعات
+================================ */
+
+function saveData() {
+
+  if (
+    currentUser === "guest"
+  ) {
+
+    return;
+
+  }
+
+
+  const data = {
+
+    farm:
+      qs("farm").value,
+
+    hall:
+      qs("hall").value,
+
+    type:
+      qs("type").value,
+
+    age:
+      qs("age").value,
+
+    countBird:
+      qs("countBird").value,
+
+    date:
+      qs("date").value,
+
+    weights:
+      qs("weightsInput").value,
+
+    feedCumulative:
+      qs("feedCumulative").value,
+
+    mortalityCumulative:
+      qs("mortalityCumulative").value,
+
+    performanceHistory:
+      performanceHistory
+
+  };
+
+
+  localStorage.setItem(
+
+    "adineh_" +
+    currentUser,
+
+    JSON.stringify(data)
+
+  );
+
+}
+
+
+/* ===============================
+   بارگذاری اطلاعات
+================================ */
+
+function loadData() {
+
+  if (
+    currentUser === "guest"
+  ) {
+
+    return;
+
+  }
+
+
+  const raw =
+    localStorage.getItem(
+      "adineh_" +
+      currentUser
+    );
+
+
+  if (!raw) {
+
+    return;
+
+  }
+
+
+  try {
+
+    const obj =
+      JSON.parse(raw);
+
+
+    qs("farm").value =
+      obj.farm || "";
+
+
+    qs("hall").value =
+      obj.hall || "";
+
+
+    qs("type").value =
+      obj.type || "";
+
+
+    qs("age").value =
+      obj.age || "";
+
+
+    qs("countBird").value =
+      obj.countBird || "";
+
+
+    qs("date").value =
+      obj.date || "";
+
+
+    qs("weightsInput").value =
+      obj.weights || "";
+
+
+    qs("feedCumulative").value =
+      obj.feedCumulative || "";
+
+
+    qs("mortalityCumulative").value =
+      obj.mortalityCumulative || "";
+
+
+    if (
+      obj.performanceHistory
+    ) {
+
+      performanceHistory = {
+
+        weight:
+          Array.isArray(
+            obj.performanceHistory.weight
+          )
+            ? obj.performanceHistory.weight
+            : Array(
+                ROSS_DAYS.length
+              ).fill(null),
+
+        cv:
+          Array.isArray(
+            obj.performanceHistory.cv
+          )
+            ? obj.performanceHistory.cv
+            : Array(
+                ROSS_DAYS.length
+              ).fill(null),
+
+        uniformity:
+          Array.isArray(
+            obj.performanceHistory.uniformity
+          )
+            ? obj.performanceHistory.uniformity
+            : Array(
+                ROSS_DAYS.length
+              ).fill(null),
+
+        fcr:
+          Array.isArray(
+            obj.performanceHistory.fcr
+          )
+            ? obj.performanceHistory.fcr
+            : Array(
+                ROSS_DAYS.length
+              ).fill(null)
+
+      };
+
     }
 
-}
+  }
 
+  catch (error) {
 
-/* =========================================================
-   CLEAR CURRENT
-   ========================================================= */
+    console.error(
+      "خطا در بارگذاری داده:",
+      error
+    );
 
-function clearCurrentCalculation() {
-
-    setHTML("sample", "-");
-    setHTML("mean", "-");
-    setHTML("min", "-");
-    setHTML("max", "-");
-    setHTML("sd", "-");
-    setHTML("cv", "-");
-    setHTML("u10", "-");
-    setHTML("u15", "-");
-    setHTML("fcr", "-");
-    setHTML("performanceStatus", "-");
-
-
-    drawWeight([]);
+  }
 
 }
 
 
-/* =========================================================
-   HTML HELPER
-   ========================================================= */
+/* ===============================
+   حذف داده یک سن
+================================ */
 
-function setHTML(id, value) {
+function clearCurrentDay() {
 
-    const element =
-        document.getElementById(id);
+  const age =
+    Number(
+      qs("age").value
+    );
 
-    if (element) {
 
-        element.innerHTML =
-            value;
+  const index =
+    getDayIndex(age);
 
-    }
+
+  if (index === -1) {
+
+    alert(
+      "سن باید یکی از سنین استاندارد ۷ تا ۵۶ روز باشد."
+    );
+
+    return;
+
+  }
+
+
+  performanceHistory.weight[index] =
+    null;
+
+  performanceHistory.cv[index] =
+    null;
+
+  performanceHistory.uniformity[index] =
+    null;
+
+  performanceHistory.fcr[index] =
+    null;
+
+
+  saveData();
+
+  drawAllCharts();
+
+
+  setMessage(
+    "داده روز " +
+    age +
+    " از تاریخچه نمودار حذف شد.",
+    "success"
+  );
 
 }
 
 
-/* =========================================================
-   AUTO SAVE
-   ========================================================= */
+/* ===============================
+   پاک کردن تاریخچه
+================================ */
+
+function clearHistory() {
+
+  if (
+    !confirm(
+      "تمام نقاط واقعی نمودارها حذف شوند؟"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  performanceHistory = {
+
+    weight:
+      Array(
+        ROSS_DAYS.length
+      ).fill(null),
+
+    cv:
+      Array(
+        ROSS_DAYS.length
+      ).fill(null),
+
+    uniformity:
+      Array(
+        ROSS_DAYS.length
+      ).fill(null),
+
+    fcr:
+      Array(
+        ROSS_DAYS.length
+      ).fill(null)
+
+  };
+
+
+  saveData();
+
+  drawAllCharts();
+
+
+  setMessage(
+    "تاریخچه نمودارها پاک شد.",
+    "success"
+  );
+
+}
+
+
+/* ===============================
+   شروع برنامه
+================================ */
 
 document.addEventListener(
-    "input",
-    function () {
+  "DOMContentLoaded",
+  function() {
 
-        saveData();
+    showUser();
 
-    }
-);
+    loadData();
+
+    renderRossTable();
+
+    drawAllCharts();
 
 
-/* =========================================================
-   INITIALIZE
-   ========================================================= */
+    document
+      .querySelectorAll(
+        "input, select, textarea"
+      )
+      .forEach(
+        function(el) {
 
-document.addEventListener(
-    "DOMContentLoaded",
-    function () {
+          el.addEventListener(
+            "input",
+            saveData
+          );
 
-        showUser();
+          el.addEventListener(
+            "change",
+            saveData
+          );
 
-        loadData();
+        }
+      );
 
-        drawAllCharts();
-
-    }
+  }
 );
