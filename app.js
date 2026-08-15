@@ -206,11 +206,13 @@ function calculateStatistics(weights) {
     ) / n;
 
   const variance =
-    values.reduce(
-      (sum, value) =>
-        sum + Math.pow(value - mean, 2),
-      0
-    ) / n;
+  n > 1
+    ? values.reduce(
+        (sum, value) =>
+          sum + Math.pow(value - mean, 2),
+        0
+      ) / (n - 1)
+    : 0;
 
   const sd = Math.sqrt(variance);
 
@@ -2753,8 +2755,8 @@ function calculateWeight() {
               )}٪
 
               ${
-                reference.approx
-                  ? `
+  reference.approximate
+    ? `
                     <br>
                     نزدیک‌ترین سن موجود در جدول
                     برای مقایسه استفاده شده است.
