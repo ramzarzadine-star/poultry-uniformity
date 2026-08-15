@@ -1,0 +1,525 @@
+<!doctype html>
+
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+>
+
+<link rel="stylesheet" href="Style.css">
+
+<title>
+پایش سلامت و آزمایش
+</title>
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+<img src="IMG_4309.png" class="header-logo">
+
+<h1>
+مرکز تخصصی سلامت طیور آدینه
+</h1>
+
+<h3>
+پایش سلامت، تلفات و آزمایش
+</h3>
+
+<div class="user-row">
+
+<span id="userBox"></span>
+
+<button class="logout" data-logout>
+خروج
+</button>
+
+</div>
+
+</header>
+
+
+<nav class="menu">
+
+<a href="panel.html">🏠 داشبورد</a>
+<a href="flock.html">🐔 گله‌ها</a>
+<a href="feed.html">🌽 دان</a>
+<a href="water.html">💧 آب</a>
+<a href="vaccine.html">💉 واکسن</a>
+<a href="medicine.html">💊 دارو</a>
+<a href="health.html">🩺 سلامت</a>
+<a href="report.html">📊 گزارش</a>
+
+</nav>
+
+
+<main class="container">
+
+
+<div class="card">
+
+<h2>
+پایش روزانه سلامت
+</h2>
+
+
+<select id="flockId"></select>
+
+
+<div class="form-grid">
+
+<input
+id="date"
+type="date"
+>
+
+<input
+id="age"
+type="number"
+placeholder="سن (روز)"
+>
+
+<input
+id="alive"
+type="number"
+placeholder="تعداد زنده"
+>
+
+<input
+id="mortality"
+type="number"
+placeholder="تلفات روز"
+>
+
+<input
+id="cull"
+type="number"
+placeholder="حذفی روز"
+>
+
+<input
+id="signs"
+placeholder="علائم بالینی"
+>
+
+<input
+id="notes"
+placeholder="یادداشت مدیریتی"
+>
+
+</div>
+
+
+<div class="actions">
+
+<button onclick="saveHealth()">
+ثبت
+</button>
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<h2>
+آزمایش و پایش تشخیصی
+</h2>
+
+
+<select id="flockIdLab"></select>
+
+
+<div class="form-grid">
+
+<input
+id="labDate"
+type="date"
+>
+
+<input
+id="test"
+placeholder="آزمایش: PCR / ELISA / کشت و..."
+>
+
+<input
+id="agent"
+placeholder="عامل / آنتی‌ژن / آنتی‌بادی"
+>
+
+<input
+id="result"
+placeholder="نتیجه"
+>
+
+<input
+id="ct"
+type="number"
+step="0.01"
+placeholder="Ct"
+>
+
+<input
+id="gmt"
+type="number"
+step="0.01"
+placeholder="GMT"
+>
+
+<input
+id="cvLab"
+type="number"
+step="0.01"
+placeholder="CV%"
+>
+
+<input
+id="labNotes"
+placeholder="یادداشت / آزمایشگاه"
+>
+
+</div>
+
+
+<div class="actions">
+
+<button onclick="saveLab()">
+ثبت آزمایش
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>
+سوابق
+</h2>
+
+<div id="list"></div>
+
+</div>
+
+
+</main>
+
+
+<script src="database.js"></script>
+
+<script src="app.js"></script>
+
+
+<script>
+
+function render(){
+
+fillFlockSelect("flockId");
+
+fillFlockSelect("flockIdLab");
+
+
+const health=
+read("health",[])
+.slice()
+.reverse();
+
+
+const labs=
+read("lab",[])
+.slice()
+.reverse();
+
+
+const list=
+document.getElementById("list");
+
+
+let html="";
+
+
+health.forEach(function(item){
+
+html+=`
+
+<div class="list-item">
+
+🩺
+
+${escapeHTML(item.date)}
+
+|
+
+سن:
+${fmt(item.age,0)}
+
+|
+
+تلفات:
+${fmt(item.mortality,0)}
+
+|
+
+حذفی:
+${fmt(item.cull,0)}
+
+<div>
+
+${escapeHTML(item.signs || "")}
+
+</div>
+
+<div class="meta">
+
+${escapeHTML(item.notes || "")}
+
+</div>
+
+</div>
+
+`;
+
+});
+
+
+labs.forEach(function(item){
+
+html+=`
+
+<div class="list-item">
+
+🧪
+
+${escapeHTML(item.labDate)}
+
+|
+
+${escapeHTML(item.test)}
+
+|
+
+${escapeHTML(item.agent)}
+
+|
+
+نتیجه:
+
+<b>
+${escapeHTML(item.result)}
+</b>
+
+
+<div class="meta">
+
+Ct:
+${item.ct ?? "-"}
+
+|
+
+GMT:
+${item.gmt ?? "-"}
+
+|
+
+CV:
+${item.cvLab ?? "-"}
+
+</div>
+
+
+<div>
+
+${escapeHTML(item.notes || "")}
+
+</div>
+
+</div>
+
+`;
+
+});
+
+
+list.innerHTML=
+html || "هنوز اطلاعاتی ثبت نشده است.";
+
+}
+
+
+function saveHealth(){
+
+if(!requireUser()){
+
+return;
+
+}
+
+
+const flockId=
+document.getElementById("flockId").value;
+
+
+if(!flockId){
+
+alert("گله را انتخاب کنید.");
+
+return;
+
+}
+
+
+addRecord(
+
+"health",
+
+{
+
+flockId:flockId,
+
+date:
+document.getElementById("date").value ||
+todayISO(),
+
+age:
+num(document.getElementById("age").value),
+
+alive:
+num(document.getElementById("alive").value),
+
+mortality:
+num(document.getElementById("mortality").value),
+
+cull:
+num(document.getElementById("cull").value),
+
+signs:
+document.getElementById("signs").value.trim(),
+
+notes:
+document.getElementById("notes").value.trim()
+
+}
+
+);
+
+
+render();
+
+}
+
+
+function saveLab(){
+
+if(!requireUser()){
+
+return;
+
+}
+
+
+const flockId=
+document.getElementById("flockIdLab").value;
+
+
+const test=
+document.getElementById("test").value.trim();
+
+
+if(!flockId || !test){
+
+alert(
+"گله و نام آزمایش الزامی است."
+);
+
+return;
+
+}
+
+
+addRecord(
+
+"lab",
+
+{
+
+flockId:flockId,
+
+labDate:
+document.getElementById("labDate").value ||
+todayISO(),
+
+test:test,
+
+agent:
+document.getElementById("agent").value.trim(),
+
+result:
+document.getElementById("result").value.trim(),
+
+ct:
+document.getElementById("ct").value===""
+?
+null
+:
+num(document.getElementById("ct").value),
+
+gmt:
+document.getElementById("gmt").value===""
+?
+null
+:
+num(document.getElementById("gmt").value),
+
+cvLab:
+document.getElementById("cvLab").value===""
+?
+null
+:
+num(document.getElementById("cvLab").value),
+
+notes:
+document.getElementById("labNotes").value.trim()
+
+}
+
+);
+
+
+render();
+
+}
+
+
+document.addEventListener(
+
+"DOMContentLoaded",
+
+function(){
+
+document.getElementById("date").value=todayISO();
+
+document.getElementById("labDate").value=todayISO();
+
+render();
+
+}
+
+);
+
+</script>
+
+</body>
+
+</html>
