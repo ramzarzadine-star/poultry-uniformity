@@ -1,17 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="fa" dir="rtl">
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
 
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+>
+
+<link
+rel="stylesheet"
+href="Style.css"
+>
 
 <title>
-مدیریت گله
+مدیریت گله‌ها
 </title>
-
-<link rel="stylesheet" href="Style.css">
 
 </head>
 
@@ -21,242 +28,372 @@
 
 <header class="header">
 
-<h1>🐔 مدیریت گله</h1>
+<img
+src="IMG_4309.png"
+class="header-logo"
+alt="لوگو"
+>
 
-<div id="userBox"></div>
+<h1>
+مرکز تخصصی سلامت طیور آدینه
+</h1>
+
+<h3>
+مدیریت گله‌ها
+</h3>
+
+<div class="user-row">
+
+<span id="userBox"></span>
+
+<button
+class="logout"
+data-logout
+>
+خروج
+</button>
+
+</div>
 
 </header>
 
 
+<nav class="menu">
+
+<a href="panel.html">🏠 داشبورد</a>
+
+<a href="flock.html">🐔 مدیریت گله</a>
+
+<a href="feed.html">🌽 مصرف دان</a>
+
+<a href="water.html">💧 مصرف آب</a>
+
+<a href="vaccine.html">💉 واکسیناسیون</a>
+
+<a href="medicine.html">💊 دارو</a>
+
+<a href="health.html">🩺 سلامت</a>
+
+<a href="report.html">📊 گزارش</a>
+
+</nav>
 
 
-<div class="container">
+<main class="container">
 
 
 <div class="card">
 
-
 <h2>
-ثبت اطلاعات گله
+ثبت گله جدید
 </h2>
 
 
-<input id="farm" placeholder="نام فارم">
+<div class="form-grid">
 
 
-<input id="hall" placeholder="نام سالن">
+<input
+id="farm"
+placeholder="نام فارم / مرغدار"
+>
+
+
+<input
+id="hall"
+placeholder="نام سالن"
+>
 
 
 <select id="type">
 
-<option>نوع گله</option>
+<option value="">
+نوع گله
+</option>
 
-<option>گوشتی</option>
+<option>
+گوشتی
+</option>
 
-<option>تخمگذار</option>
+<option>
+تخمگذار
+</option>
 
-<option>مادر</option>
+<option>
+مادر
+</option>
+
+<option>
+پولت
+</option>
 
 </select>
 
 
-
-<input id="age" placeholder="سن گله (روز)">
-
-
-<input id="count" placeholder="تعداد اولیه">
-
-
-<input id="startDate" type="date">
+<input
+id="breed"
+placeholder="سویه / نژاد"
+>
 
 
+<input
+id="initialCount"
+type="number"
+placeholder="تعداد اولیه پرنده"
+>
 
-<button onclick="saveFlock()">
 
-ذخیره گله
-
-</button>
+<input
+id="startDate"
+type="date"
+>
 
 
 </div>
 
 
+<div class="actions">
 
+<button onclick="saveFlock()">
+ثبت گله
+</button>
+
+</div>
+
+</div>
 
 
 <div class="card">
 
-
 <h2>
-لیست گله ها
+گله‌های ثبت‌شده
 </h2>
-
 
 <div id="list"></div>
 
-
 </div>
 
 
-
-</div>
-
-
-
+</main>
 
 
 <script src="database.js"></script>
 
+<script src="app.js"></script>
+
 
 <script>
 
-
 function saveFlock(){
 
+if(!requireUser()){
 
-
-let data={
-
-
-farm:document.getElementById("farm").value,
-
-
-hall:document.getElementById("hall").value,
-
-
-type:document.getElementById("type").value,
-
-
-age:document.getElementById("age").value,
-
-
-count:document.getElementById("count").value,
-
-
-date:document.getElementById("startDate").value
-
-
-};
-
-
-
-
-saveRecord(
-
-"flock",
-
-data
-
-);
-
-
-
-showFlock();
-
+return;
 
 }
 
 
+const farm=
+document.getElementById("farm")
+.value.trim();
 
 
-function showFlock(){
+const hall=
+document.getElementById("hall")
+.value.trim();
 
 
+if(!farm || !hall){
 
-let data=loadRecords("flock");
+alert(
+"نام فارم و سالن الزامی است."
+);
+
+return;
+
+}
 
 
-let html="";
+const record=addRecord(
+
+"flocks",
+
+{
+
+farm:farm,
+
+hall:hall,
+
+type:
+document.getElementById("type").value,
+
+breed:
+document.getElementById("breed").value.trim(),
+
+initialCount:
+num(
+document.getElementById("initialCount").value
+),
+
+startDate:
+document.getElementById("startDate").value ||
+todayISO(),
+
+status:"فعال"
+
+}
+
+);
 
 
+if(record){
 
-data.forEach(function(x,i){
+setSelectedFlock(record.id);
+
+render();
+
+}
+
+}
 
 
-html+=`
+function render(){
 
-<div class="card">
+const data=getFlocks();
 
-<strong>
-${x.farm}
-</strong>
+const list=document.getElementById("list");
 
-<br>
 
-سالن: ${x.hall}
+if(!data.length){
 
-<br>
+list.innerHTML=
+"هنوز گله‌ای ثبت نشده است.";
 
-نوع: ${x.type}
+return;
 
-<br>
+}
 
-سن: ${x.age}
 
-روز
+list.innerHTML=data.map(
 
-<br>
+function(flock){
 
-تعداد: ${x.count}
+return `
 
-<br>
+<div class="list-item">
 
-<button onclick="removeFlock(${i})">
+<b>
+${escapeHTML(flock.farm)}
+—
+${escapeHTML(flock.hall)}
+</b>
 
-حذف
+<div class="meta">
 
+${escapeHTML(flock.type)}
+
+|
+
+${escapeHTML(flock.breed || "")}
+
+|
+
+${fmt(flock.initialCount,0)}
+قطعه
+
+|
+
+شروع:
+${escapeHTML(flock.startDate)}
+
+</div>
+
+
+<div class="actions">
+
+<button
+onclick="selectFlock('${flock.id}')"
+>
+فعال کردن
 </button>
 
+<button
+class="secondary"
+onclick="removeFlock('${flock.id}')"
+>
+حذف
+</button>
+
+</div>
 
 </div>
 
 `;
 
+}
 
-
-});
-
-
-
-document.getElementById("list").innerHTML=html;
-
+).join("");
 
 }
 
 
+function selectFlock(id){
+
+setSelectedFlock(id);
+
+render();
+
+}
 
 
+function removeFlock(id){
 
-function removeFlock(i){
+if(!confirm("این گله حذف شود؟")){
+
+return;
+
+}
 
 
 deleteRecord(
-
-"flock",
-
-i
-
+"flocks",
+id
 );
 
 
-showFlock();
+if(getSelectedFlock()===id){
 
+setSelectedFlock("");
 
 }
 
 
+render();
+
+}
 
 
-window.onload=function(){
+document.addEventListener(
 
-showFlock();
+"DOMContentLoaded",
 
-};
+function(){
 
+const start=
+document.getElementById("startDate");
+
+if(start){
+
+start.value=todayISO();
+
+}
+
+render();
+
+}
+
+);
 
 </script>
-
-
 
 </body>
 
