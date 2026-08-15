@@ -1,261 +1,380 @@
-let weightChart = null;
-let weightTrendChart = null;
-let cvChart = null;
-let uniformityChart = null;
-let fcrChart = null;
+"use strict";
 
 
-/*
- Ross 308 / 308 FF
- As-Hatched Performance Objectives
- Aviagen 2022
-*/
+/* =========================================================
+   کاربر
+========================================================= */
 
-const ROSS_AGE = [
-    7, 14, 21, 28, 35, 42, 49, 56
-];
-
-const ROSS_WEIGHT = [
-    213, 533, 1012, 1616,
-    2296, 2998, 3681, 4318
-];
-
-const ROSS_FCR = [
-    0.780, 1.005, 1.142, 1.269,
-    1.399, 1.531, 1.663, 1.793
-];
-
-const CV_REFERENCE = 10;
-const UNIFORMITY_REFERENCE = 68;
-
-const currentUser =
+let currentUser =
     localStorage.getItem("activeUser") || "guest";
 
 
-function logout() {
+/* =========================================================
+   نمودارها
+========================================================= */
 
-    localStorage.removeItem("activeUser");
+let weightChart = null;
+let cvChart = null;
+let uniformityChart = null;
+let fcrChart = null;
+let weightDistributionChart = null;
 
-    location.href = "login.html";
-}
+
+/* =========================================================
+   اطلاعات تاریخی
+========================================================= */
+
+let flockHistory = [];
 
 
-function toEnglishNumbers(value) {
+/* =========================================================
+   مرجع Ross 308 As-Hatched
+   هفته‌های 1 تا 8
+========================================================= */
+
+const rossAge = [
+    7, 14, 21, 28,
+    35, 42, 49, 56
+];
+
+
+const rossWeight = [
+    213,
+    533,
+    1012,
+    1616,
+    2296,
+    2998,
+    3681,
+    4318
+];
+
+
+const rossFCR = [
+    0.780,
+    1.005,
+    1.142,
+    1.269,
+    1.399,
+    1.531,
+    1.663,
+    1.793
+];
+
+
+/*
+   CV و Uniformity مرجع مدیریتی
+*/
+
+const referenceCV = 10;
+const referenceUniformity = 68;
+
+
+/* =========================================================
+   تبدیل اعداد فارسی
+========================================================= */
+
+function persianNumber(value) {
 
     if (value === null || value === undefined) {
         return "";
     }
 
     return String(value)
-        .replace(/[۰-۹]/g, function(ch) {
-            return "۰۱۲۳۴۵۶۷۸۹".indexOf(ch);
+        .replace(/[۰-۹]/g, function (x) {
+            return "۰۱۲۳۴۵۶۷۸۹".indexOf(x);
         })
-        .replace(/[٠-٩]/g, function(ch) {
-            return "٠١٢٣٤٥٦٧٨٩".indexOf(ch);
+        .replace(/[٠-٩]/g, function (x) {
+            return "٠١٢٣٤٥٦٧٨٩".indexOf(x);
         });
 }
 
 
+/* =========================================================
+   تبدیل وزن‌ها
+========================================================= */
+
 function parseWeights(text) {
 
-    text = toEnglishNumbers(text);
+    text = persianNumber(text);
 
     return text
         .replace(/،/g, ",")
         .replace(/;/g, ",")
         .split(/[\s,]+/)
         .map(Number)
-        .filter(x =>
-            Number.isFinite(x) && x > 0
-        );
+        .filter(function (x) {
+            return Number.isFinite(x) && x > 0;
+        });
 }
 
+
+/* =========================================================
+   میانگین
+========================================================= */
 
 function average(arr) {
 
-    if (!arr.length) return 0;
+    if (!arr.length) {
+        return 0;
+    }
 
-    return arr.reduce(
-        (sum, value) => sum + value,
-        0
-    ) / arr.length;
+    return arr.reduce(function (sum, value) {
+        return sum + value;
+    }, 0) / arr.length;
 }
 
 
+/* =========================================================
+   SD
+========================================================= */
+
 function standardDeviation(arr, mean) {
 
-    if (arr.length < 2) return 0;
+    if (arr.length < 2) {
+        return 0;
+    }
 
     const variance =
-        arr.reduce(
-            (sum, value) =>
-                sum + Math.pow(value - mean, 2),
-            0
-        ) / (arr.length - 1);
+        arr.reduce(function (sum, value) {
+
+            return sum + Math.pow(value - mean, 2);
+
+        }, 0) / (arr.length - 1);
 
     return Math.sqrt(variance);
 }
 
 
-function uniformity(arr, mean, percent) {
+/* =========================================================
+   CV
+========================================================= */
 
-    if (!arr.length || !mean) return 0;
+function calculateCV(sd, mean) {
 
-    const low = mean * (1 - percent);
-    const high = mean * (1 + percent);
-
-    return (
-        arr.filter(
-            x => x >= low && x <= high
-        ).length / arr.length
-    ) * 100;
-}
-
-
-function getWeightRecordsSafe() {
-
-    if (typeof getWeightRecords === "function") {
-        return getWeightRecords();
+    if (!mean) {
+        return 0;
     }
 
-    return [];
+    return (sd / mean) * 100;
 }
 
 
-function getFeedRecordsSafe() {
+/* =========================================================
+   Uniformity
+========================================================= */
 
-    if (typeof getFeedRecords === "function") {
-        return getFeedRecords();
+function calculateUniformity(arr, mean, percentage) {
+
+    if (!arr.length || !mean) {
+        return 0;
     }
 
-    return [];
+    const low = mean * (1 - percentage);
+    const high = mean * (1 + percentage);
+
+    const count = arr.filter(function (weight) {
+
+        return weight >= low && weight <= high;
+
+    }).length;
+
+    return (count / arr.length) * 100;
 }
 
+
+/* =========================================================
+   FCR
+   Ross:
+   cumulative feed / live body weight
+========================================================= */
+
+function calculateFCR(feed, meanWeight) {
+
+    if (!feed || !meanWeight) {
+        return null;
+    }
+
+    return feed / meanWeight;
+}
+
+
+/* =========================================================
+   ذخیره اطلاعات
+========================================================= */
+
+function saveData() {
+
+    if (currentUser === "guest") {
+        return;
+    }
+
+    const data = {
+
+        farm:
+            document.getElementById("farm")?.value || "",
+
+        hall:
+            document.getElementById("hall")?.value || "",
+
+        type:
+            document.getElementById("type")?.value || "",
+
+        age:
+            document.getElementById("age")?.value || "",
+
+        countBird:
+            document.getElementById("countBird")?.value || "",
+
+        date:
+            document.getElementById("date")?.value || "",
+
+        weights:
+            document.getElementById("weightsInput")?.value || "",
+
+        feedAverage:
+            document.getElementById("feedAverage")?.value || "",
+
+        flockHistory:
+            flockHistory
+
+    };
+
+
+    localStorage.setItem(
+        "adineh_" + currentUser,
+        JSON.stringify(data)
+    );
+}
+
+
+/* =========================================================
+   بارگذاری اطلاعات
+========================================================= */
+
+function loadData() {
+
+    if (currentUser === "guest") {
+        return;
+    }
+
+
+    const saved =
+        localStorage.getItem(
+            "adineh_" + currentUser
+        );
+
+
+    if (!saved) {
+        return;
+    }
+
+
+    try {
+
+        const data = JSON.parse(saved);
+
+
+        setValue("farm", data.farm);
+        setValue("hall", data.hall);
+        setValue("type", data.type);
+        setValue("age", data.age);
+        setValue("countBird", data.countBird);
+        setValue("date", data.date);
+        setValue("weightsInput", data.weights);
+        setValue("feedAverage", data.feedAverage);
+
+
+        flockHistory =
+            Array.isArray(data.flockHistory)
+                ? data.flockHistory
+                : [];
+
+
+        redrawAllCharts();
+
+
+    } catch (error) {
+
+        console.error(
+            "خطا در بارگذاری اطلاعات:",
+            error
+        );
+
+    }
+}
+
+
+function setValue(id, value) {
+
+    const element =
+        document.getElementById(id);
+
+    if (element && value !== undefined && value !== null) {
+        element.value = value;
+    }
+}
+
+
+/* =========================================================
+   نمایش کاربر
+========================================================= */
 
 function showUser() {
 
     const box =
         document.getElementById("userBox");
 
-    if (!box) return;
+    if (!box) {
+        return;
+    }
 
-    box.textContent =
+    box.innerHTML =
         "👤 کاربر فعال: " +
-        (currentUser === "guest"
-            ? "مهمان"
-            : currentUser);
+        escapeHTML(currentUser);
 }
 
 
-function getFcrForAge(age, meanWeight) {
+/* =========================================================
+   جلوگیری از HTML Injection
+========================================================= */
 
-    const flock = loadFlock();
+function escapeHTML(value) {
 
-    const placementWeight =
-        Number(flock.placementWeight || 44);
-
-    const birds =
-        Number(flock.countBird || 0);
-
-    const feedRecords =
-        getFeedRecordsSafe();
-
-    const feedToAge =
-        feedRecords
-            .filter(r =>
-                Number(r.age) <= Number(age)
-            )
-            .reduce(
-                (sum,r) =>
-                    sum + Number(r.feedKg || 0),
-                0
-            );
-
-    if (
-        !birds ||
-        !feedToAge ||
-        !meanWeight ||
-        meanWeight <= placementWeight
-    ) {
-        return null;
-    }
-
-    const currentLiveWeight =
-        birds * (meanWeight / 1000);
-
-    const initialLiveWeight =
-        birds * (placementWeight / 1000);
-
-    const weightGain =
-        currentLiveWeight -
-        initialLiveWeight;
-
-    if (weightGain <= 0) {
-        return null;
-    }
-
-    return feedToAge / weightGain;
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 
-function calculateFromWeights(weights, age) {
+/* =========================================================
+   خروج
+========================================================= */
 
-    const mean = average(weights);
+function logout() {
 
-    const sd =
-        standardDeviation(weights, mean);
+    localStorage.removeItem("activeUser");
 
-    const cv =
-        mean > 0
-            ? (sd / mean) * 100
-            : 0;
-
-    const u10 =
-        uniformity(weights, mean, .10);
-
-    const u15 =
-        uniformity(weights, mean, .15);
-
-    return {
-        age: Number(age),
-        sample: weights.length,
-        mean,
-        sd,
-        cv,
-        u10,
-        u15,
-        min: Math.min(...weights),
-        max: Math.max(...weights)
-    };
+    window.location.href = "login.html";
 }
 
 
-function savePerformance(record) {
-
-    addWeightRecord(record);
-
-    const flock =
-        loadFlock();
-
-    flock.lastAge = record.age;
-    flock.lastMean = record.mean;
-    flock.lastCV = record.cv;
-    flock.lastU10 = record.u10;
-    flock.lastU15 = record.u15;
-
-    saveFlock(flock);
-}
-
+/* =========================================================
+   محاسبه اصلی
+========================================================= */
 
 function calculate() {
 
-    const input =
-        document.getElementById("weightsInput");
-
-    if (!input) return;
-
     const weights =
-        parseWeights(input.value);
+        parseWeights(
+            document.getElementById(
+                "weightsInput"
+            ).value
+        );
+
 
     if (weights.length < 2) {
 
@@ -266,452 +385,370 @@ function calculate() {
         return;
     }
 
-    const ageInput =
-        document.getElementById("age");
 
-    const age =
+    const ageValue =
         Number(
-            ageInput?.value || 0
+            persianNumber(
+                document.getElementById("age").value
+            )
         );
 
-    if (!age || age < 1) {
+
+    if (!ageValue || ageValue < 1 || ageValue > 56) {
 
         alert(
-            "سن گله را وارد کنید."
+            "سن گله را بین 1 تا 56 روز وارد کنید."
         );
 
         return;
     }
 
-    const result =
-        calculateFromWeights(
+
+    const mean =
+        average(weights);
+
+
+    const sd =
+        standardDeviation(
             weights,
-            age
+            mean
         );
 
-    renderResult(result);
-
-    savePerformance(result);
-
-    drawAllCharts();
-
-    alert(
-        "ارزیابی گله با موفقیت ثبت شد."
-    );
-}
-
-
-function renderResult(result) {
-
-    const map = {
-        sample: result.sample,
-        mean: result.mean.toFixed(1) + " g",
-        min: result.min.toFixed(0) + " g",
-        max: result.max.toFixed(0) + " g",
-        sd: result.sd.toFixed(1) + " g",
-        cv: result.cv.toFixed(2) + "%",
-        u10: result.u10.toFixed(1) + "%",
-        u15: result.u15.toFixed(1) + "%"
-    };
-
-    Object.keys(map).forEach(id => {
-
-        const el =
-            document.getElementById(id);
-
-        if (el) {
-            el.textContent = map[id];
-        }
-    });
-}
-
-
-function loadLatestResult() {
-
-    const records =
-        getWeightRecordsSafe();
-
-    if (!records.length) return;
-
-    const last =
-        records[records.length - 1];
-
-    renderResult(last);
-
-    updateDashboardStats(last);
-}
-
-
-function updateDashboardStats(last) {
-
-    const age =
-        document.getElementById("dashAge");
-
-    const weight =
-        document.getElementById("dashWeight");
 
     const cv =
-        document.getElementById("dashCV");
+        calculateCV(
+            sd,
+            mean
+        );
 
-    const uniformity =
-        document.getElementById("dashUniformity");
 
-    if (age)
-        age.textContent =
-            Number(last.age) + " روز";
+    const uniformity10 =
+        calculateUniformity(
+            weights,
+            mean,
+            0.10
+        );
 
-    if (weight)
-        weight.textContent =
-            Number(last.mean).toFixed(0) + " g";
 
-    if (cv)
-        cv.textContent =
-            Number(last.cv).toFixed(1) + "%";
+    const uniformity15 =
+        calculateUniformity(
+            weights,
+            mean,
+            0.15
+        );
 
-    if (uniformity)
-        uniformity.textContent =
-            Number(last.u10).toFixed(1) + "%";
+
+    const feed =
+        Number(
+            persianNumber(
+                document.getElementById(
+                    "feedAverage"
+                ).value
+            )
+        );
+
+
+    let fcr = null;
+
+
+    if (feed > 0) {
+
+        fcr =
+            calculateFCR(
+                feed,
+                mean
+            );
+
+    }
+
+
+    /* نمایش نتایج */
+
+    setText(
+        "sample",
+        weights.length
+    );
+
+
+    setText(
+        "mean",
+        mean.toFixed(1)
+    );
+
+
+    setText(
+        "min",
+        Math.min(...weights).toFixed(1)
+    );
+
+
+    setText(
+        "max",
+        Math.max(...weights).toFixed(1)
+    );
+
+
+    setText(
+        "sd",
+        sd.toFixed(1)
+    );
+
+
+    setText(
+        "cv",
+        cv.toFixed(2) + "%"
+    );
+
+
+    setText(
+        "u10",
+        uniformity10.toFixed(1) + "%"
+    );
+
+
+    setText(
+        "u15",
+        uniformity15.toFixed(1) + "%"
+    );
+
+
+    setText(
+        "feedResult",
+        feed > 0
+            ? feed.toFixed(1)
+            : "-"
+    );
+
+
+    setText(
+        "fcr",
+        fcr !== null
+            ? fcr.toFixed(3)
+            : "-"
+    );
+
+
+    /* =====================================================
+       ذخیره نقطه سنی
+    ===================================================== */
+
+    const record = {
+
+        age: ageValue,
+
+        mean:
+            Number(mean.toFixed(1)),
+
+        cv:
+            Number(cv.toFixed(2)),
+
+        uniformity:
+            Number(
+                uniformity10.toFixed(1)
+            ),
+
+        uniformity15:
+            Number(
+                uniformity15.toFixed(1)
+            ),
+
+        feed:
+            feed > 0
+                ? Number(feed.toFixed(1))
+                : null,
+
+        fcr:
+            fcr !== null
+                ? Number(fcr.toFixed(3))
+                : null,
+
+        updatedAt:
+            new Date().toISOString()
+
+    };
+
+
+    /*
+       اگر همان سن قبلاً وجود داشت،
+       همان نقطه را اصلاح کن.
+    */
+
+    const existingIndex =
+        flockHistory.findIndex(
+            function (item) {
+
+                return Number(item.age) === ageValue;
+
+            }
+        );
+
+
+    if (existingIndex >= 0) {
+
+        flockHistory[existingIndex] =
+            record;
+
+    } else {
+
+        flockHistory.push(record);
+
+    }
+
+
+    flockHistory.sort(
+        function (a, b) {
+
+            return Number(a.age) -
+                   Number(b.age);
+
+        }
+    );
+
+
+    saveData();
+
+
+    drawAllCharts(weights);
+
+
+    /*
+       اسکرول نرم به نتایج
+    */
+
+    document
+        .querySelector(".results-grid")
+        ?.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
 }
 
 
-function getChartLabels() {
+/* =========================================================
+   قرار دادن متن
+========================================================= */
 
-    return ROSS_AGE.map(
-        age => "روز " + age
+function setText(id, value) {
+
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+        element.textContent = value;
+    }
+}
+
+
+/* =========================================================
+   ساخت محور 1 تا 56 روز
+========================================================= */
+
+function dayLabels() {
+
+    return Array.from(
+        { length: 56 },
+        function (_, index) {
+
+            return index + 1;
+
+        }
     );
 }
 
 
-function destroyChart(chart) {
+/* =========================================================
+   درون‌یابی استاندارد Ross
+========================================================= */
 
-    if (chart) {
-        chart.destroy();
+function interpolateRossValue(
+    age,
+    ages,
+    values
+) {
+
+    if (age <= ages[0]) {
+        return values[0];
+    }
+
+
+    if (age >= ages[ages.length - 1]) {
+        return values[values.length - 1];
+    }
+
+
+    for (
+        let i = 0;
+        i < ages.length - 1;
+        i++
+    ) {
+
+        const x1 = ages[i];
+        const x2 = ages[i + 1];
+
+        const y1 = values[i];
+        const y2 = values[i + 1];
+
+
+        if (age >= x1 && age <= x2) {
+
+            const ratio =
+                (age - x1) /
+                (x2 - x1);
+
+            return (
+                y1 +
+                (y2 - y1) * ratio
+            );
+        }
     }
 
     return null;
 }
 
 
-function makeChart(id, config) {
+/* =========================================================
+   ساخت خط Ross وزن
+========================================================= */
 
-    const canvas =
-        document.getElementById(id);
+function buildRossWeightSeries() {
 
-    if (!canvas) return null;
+    return dayLabels().map(
+        function (day) {
 
-    return new Chart(
-        canvas.getContext("2d"),
-        config
+            return interpolateRossValue(
+                day,
+                rossAge,
+                rossWeight
+            );
+
+        }
     );
 }
 
 
-function actualByAge(records, field) {
+/* =========================================================
+   ساخت خط Ross FCR
+========================================================= */
 
-    return ROSS_AGE.map(age => {
+function buildRossFCRSeries() {
 
-        const found =
-            records.find(
-                r => Number(r.age) === age
+    return dayLabels().map(
+        function (day) {
+
+            return interpolateRossValue(
+                day,
+                rossAge,
+                rossFCR
             );
 
-        return found
-            ? Number(found[field])
-            : null;
-    });
+        }
+    );
 }
 
 
-function drawWeightTrend() {
-
-    weightTrendChart =
-        destroyChart(weightTrendChart);
-
-    const records =
-        getWeightRecordsSafe();
-
-    weightTrendChart =
-        makeChart(
-            "weightTrendChart",
-            {
-                type: "line",
-
-                data: {
-
-                    labels: getChartLabels(),
-
-                    datasets: [
-
-                        {
-                            label: "وزن واقعی گله",
-                            data: actualByAge(
-                                records,
-                                "mean"
-                            ),
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            tension: .25,
-                            spanGaps: true
-                        },
-
-                        {
-                            label: "Ross 308",
-                            data: ROSS_WEIGHT,
-                            borderWidth: 3,
-                            borderDash: [8,5],
-                            pointRadius: 4,
-                            tension: .2
-                        }
-
-                    ]
-                },
-
-                options: chartOptions(
-                    "وزن (گرم)"
-                )
-            }
-        );
-}
-
-
-function drawCV() {
-
-    cvChart =
-        destroyChart(cvChart);
-
-    const records =
-        getWeightRecordsSafe();
-
-    cvChart =
-        makeChart(
-            "cvChart",
-            {
-                type: "line",
-
-                data: {
-
-                    labels: getChartLabels(),
-
-                    datasets: [
-
-                        {
-                            label: "CV واقعی",
-                            data: actualByAge(
-                                records,
-                                "cv"
-                            ),
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            tension: .25,
-                            spanGaps: true
-                        },
-
-                        {
-                            label: "مرجع مدیریتی CV = 10%",
-                            data: ROSS_AGE.map(
-                                () => CV_REFERENCE
-                            ),
-                            borderWidth: 2,
-                            borderDash: [8,5],
-                            pointRadius: 0
-                        }
-
-                    ]
-                },
-
-                options: chartOptions(
-                    "CV (%)"
-                )
-            }
-        );
-}
-
-
-function drawUniformity() {
-
-    uniformityChart =
-        destroyChart(uniformityChart);
-
-    const records =
-        getWeightRecordsSafe();
-
-    uniformityChart =
-        makeChart(
-            "uniformityChart",
-            {
-                type: "line",
-
-                data: {
-
-                    labels: getChartLabels(),
-
-                    datasets: [
-
-                        {
-                            label: "یکنواختی واقعی ±10%",
-                            data: actualByAge(
-                                records,
-                                "u10"
-                            ),
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            tension: .25,
-                            spanGaps: true
-                        },
-
-                        {
-                            label: "مرجع مدیریتی 68%",
-                            data: ROSS_AGE.map(
-                                () => UNIFORMITY_REFERENCE
-                            ),
-                            borderWidth: 2,
-                            borderDash: [8,5],
-                            pointRadius: 0
-                        }
-
-                    ]
-                },
-
-                options: {
-                    ...chartOptions(
-                        "یکنواختی (%)"
-                    ),
-                    scales: {
-                        y: {
-                            min: 0,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: "درصد"
-                            }
-                        }
-                    }
-                }
-            }
-        );
-}
-
-
-function drawFCR() {
-
-    fcrChart =
-        destroyChart(fcrChart);
-
-    const records =
-        getWeightRecordsSafe();
-
-    const actual =
-        ROSS_AGE.map(age => {
-
-            const record =
-                records.find(
-                    r => Number(r.age) === age
-                );
-
-            if (!record) return null;
-
-            const fcr =
-                getFcrForAge(
-                    age,
-                    Number(record.mean)
-                );
-
-            return fcr === null
-                ? null
-                : Number(fcr.toFixed(3));
-        });
-
-    fcrChart =
-        makeChart(
-            "fcrChart",
-            {
-                type: "line",
-
-                data: {
-
-                    labels: getChartLabels(),
-
-                    datasets: [
-
-                        {
-                            label: "FCR واقعی گله",
-                            data: actual,
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            tension: .25,
-                            spanGaps: true
-                        },
-
-                        {
-                            label: "هدف Ross 308",
-                            data: ROSS_FCR,
-                            borderWidth: 3,
-                            borderDash: [8,5],
-                            pointRadius: 4,
-                            tension: .2
-                        }
-
-                    ]
-                },
-
-                options: chartOptions(
-                    "FCR"
-                )
-            }
-        );
-}
-
-
-function drawWeightDistribution() {
-
-    weightChart =
-        destroyChart(weightChart);
-
-    const records =
-        getWeightRecordsSafe();
-
-    if (!records.length) return;
-
-    const latest =
-        records[records.length - 1];
-
-    const weights =
-        latest.weights || [];
-
-    if (!weights.length) return;
-
-    weightChart =
-        makeChart(
-            "weightChart",
-            {
-                type: "bar",
-
-                data: {
-
-                    labels:
-                        weights.map(
-                            (_,i) =>
-                                "نمونه " + (i + 1)
-                        ),
-
-                    datasets: [
-
-                        {
-                            label: "وزن نمونه",
-                            data: weights,
-                            borderWidth: 1
-                        }
-
-                    ]
-                },
-
-                options: chartOptions(
-                    "وزن (گرم)"
-                )
-            }
-        );
-}
-
+/* =========================================================
+   تنظیمات عمومی نمودار
+========================================================= */
 
 function chartOptions(yTitle) {
 
@@ -729,16 +766,35 @@ function chartOptions(yTitle) {
         plugins: {
 
             legend: {
+                display: true,
                 position: "top",
                 rtl: true,
                 labels: {
                     usePointStyle: true,
-                    padding: 14
+                    padding: 16
                 }
             },
 
             tooltip: {
-                rtl: true
+
+                rtl: true,
+
+                callbacks: {
+
+                    title: function (items) {
+
+                        if (!items.length) {
+                            return "";
+                        }
+
+                        return (
+                            "روز " +
+                            items[0].label
+                        );
+                    }
+
+                }
+
             }
 
         },
@@ -746,97 +802,643 @@ function chartOptions(yTitle) {
         scales: {
 
             x: {
+
+                title: {
+                    display: true,
+                    text: "سن گله (روز)"
+                },
+
                 ticks: {
-                    maxRotation: 35,
-                    minRotation: 0
+                    maxTicksLimit: 8
                 }
+
             },
 
             y: {
-                beginAtZero: false,
+
+                beginAtZero: true,
+
                 title: {
                     display: true,
                     text: yTitle
                 }
+
             }
 
         }
+
     };
 }
 
 
-function drawAllCharts() {
+/* =========================================================
+   مقادیر واقعی روی محور 56 روز
+========================================================= */
 
-    drawWeightTrend();
-    drawCV();
-    drawUniformity();
-    drawFCR();
-    drawWeightDistribution();
+function historySeries(property) {
+
+    const values =
+        Array(56).fill(null);
+
+
+    flockHistory.forEach(
+        function (item) {
+
+            const age =
+                Number(item.age);
+
+
+            if (
+                age >= 1 &&
+                age <= 56 &&
+                item[property] !== null &&
+                item[property] !== undefined
+            ) {
+
+                values[age - 1] =
+                    Number(item[property]);
+
+            }
+
+        }
+    );
+
+
+    return values;
 }
 
 
-function saveFormAutomatically() {
+/* =========================================================
+   مقایسه وزن
+========================================================= */
 
-    const fields = [
-        "farm",
-        "hall",
-        "type",
-        "age",
-        "countBird",
-        "date",
-        "placementWeight"
-    ];
+function drawWeightChart() {
 
-    const data = {};
+    const canvas =
+        document.getElementById(
+            "weightChart"
+        );
 
-    fields.forEach(id => {
 
-        const el =
-            document.getElementById(id);
+    if (!canvas) {
+        return;
+    }
 
-        if (el) {
-            data[id] = el.value;
-        }
-    });
 
-    if (Object.keys(data).length) {
-        saveFlock(data);
+    if (weightChart) {
+        weightChart.destroy();
+    }
+
+
+    weightChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: dayLabels(),
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "وزن واقعی گله",
+
+                            data:
+                                historySeries(
+                                    "mean"
+                                ),
+
+                            borderWidth: 3,
+
+                            pointRadius: 5,
+
+                            pointHoverRadius: 7,
+
+                            spanGaps: true,
+
+                            tension: 0.25
+
+                        },
+
+                        {
+
+                            label:
+                                "Ross 308",
+
+                            data:
+                                buildRossWeightSeries(),
+
+                            borderWidth: 2,
+
+                            borderDash: [
+                                7,
+                                5
+                            ],
+
+                            pointRadius: 0,
+
+                            tension: 0.25
+
+                        }
+
+                    ]
+
+                },
+
+                options:
+                    chartOptions(
+                        "وزن (گرم)"
+                    )
+
+            }
+        );
+}
+
+
+/* =========================================================
+   نمودار CV
+========================================================= */
+
+function drawCVChart() {
+
+    const canvas =
+        document.getElementById(
+            "cvChart"
+        );
+
+
+    if (!canvas) {
+        return;
+    }
+
+
+    if (cvChart) {
+        cvChart.destroy();
+    }
+
+
+    cvChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: dayLabels(),
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "CV واقعی گله",
+
+                            data:
+                                historySeries(
+                                    "cv"
+                                ),
+
+                            borderWidth: 3,
+
+                            pointRadius: 5,
+
+                            spanGaps: true,
+
+                            tension: 0.25
+
+                        },
+
+                        {
+
+                            label:
+                                "مرجع مدیریتی 10%",
+
+                            data:
+                                Array(56)
+                                    .fill(referenceCV),
+
+                            borderWidth: 2,
+
+                            borderDash: [
+                                7,
+                                5
+                            ],
+
+                            pointRadius: 0,
+
+                            tension: 0
+
+                        }
+
+                    ]
+
+                },
+
+                options:
+                    chartOptions(
+                        "CV (%)"
+                    )
+
+            }
+        );
+}
+
+
+/* =========================================================
+   نمودار Uniformity
+========================================================= */
+
+function drawUniformityChart() {
+
+    const canvas =
+        document.getElementById(
+            "uniformityChart"
+        );
+
+
+    if (!canvas) {
+        return;
+    }
+
+
+    if (uniformityChart) {
+        uniformityChart.destroy();
+    }
+
+
+    uniformityChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: dayLabels(),
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "یکنواختی واقعی ±10%",
+
+                            data:
+                                historySeries(
+                                    "uniformity"
+                                ),
+
+                            borderWidth: 3,
+
+                            pointRadius: 5,
+
+                            spanGaps: true,
+
+                            tension: 0.25
+
+                        },
+
+                        {
+
+                            label:
+                                "مرجع 68%",
+
+                            data:
+                                Array(56)
+                                    .fill(
+                                        referenceUniformity
+                                    ),
+
+                            borderWidth: 2,
+
+                            borderDash: [
+                                7,
+                                5
+                            ],
+
+                            pointRadius: 0,
+
+                            tension: 0
+
+                        }
+
+                    ]
+
+                },
+
+                options:
+                    chartOptions(
+                        "یکنواختی (%)"
+                    )
+
+            }
+        );
+}
+
+
+/* =========================================================
+   نمودار FCR
+========================================================= */
+
+function drawFCRChart() {
+
+    const canvas =
+        document.getElementById(
+            "fcrChart"
+        );
+
+
+    if (!canvas) {
+        return;
+    }
+
+
+    if (fcrChart) {
+        fcrChart.destroy();
+    }
+
+
+    fcrChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "line",
+
+                data: {
+
+                    labels: dayLabels(),
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "FCR واقعی گله",
+
+                            data:
+                                historySeries(
+                                    "fcr"
+                                ),
+
+                            borderWidth: 3,
+
+                            pointRadius: 5,
+
+                            spanGaps: true,
+
+                            tension: 0.25
+
+                        },
+
+                        {
+
+                            label:
+                                "Ross 308",
+
+                            data:
+                                buildRossFCRSeries(),
+
+                            borderWidth: 2,
+
+                            borderDash: [
+                                7,
+                                5
+                            ],
+
+                            pointRadius: 0,
+
+                            tension: 0.25
+
+                        }
+
+                    ]
+
+                },
+
+                options:
+                    chartOptions(
+                        "FCR"
+                    )
+
+            }
+        );
+}
+
+
+/* =========================================================
+   نمودار توزیع وزن
+========================================================= */
+
+function drawWeightDistribution(
+    weights
+) {
+
+    const canvas =
+        document.getElementById(
+            "weightDistributionChart"
+        );
+
+
+    if (!canvas) {
+        return;
+    }
+
+
+    if (weightDistributionChart) {
+        weightDistributionChart.destroy();
+    }
+
+
+    if (
+        !weights ||
+        !weights.length
+    ) {
+        return;
+    }
+
+
+    const sorted =
+        [...weights].sort(
+            function (a, b) {
+                return a - b;
+            }
+        );
+
+
+    const labels =
+        sorted.map(
+            function (_, index) {
+                return "نمونه " + (index + 1);
+            }
+        );
+
+
+    weightDistributionChart =
+        new Chart(
+            canvas,
+            {
+
+                type: "bar",
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+
+                        {
+
+                            label:
+                                "وزن نمونه (g)",
+
+                            data: sorted,
+
+                            borderWidth: 1
+
+                        }
+
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+                            rtl: true
+                        }
+
+                    },
+
+                    scales: {
+
+                        x: {
+
+                            ticks: {
+                                maxTicksLimit: 12
+                            }
+
+                        },
+
+                        y: {
+
+                            beginAtZero: true,
+
+                            title: {
+
+                                display: true,
+
+                                text:
+                                    "وزن (گرم)"
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+}
+
+
+/* =========================================================
+   رسم همه نمودارها
+========================================================= */
+
+function drawAllCharts(
+    currentWeights
+) {
+
+    drawWeightChart();
+
+    drawCVChart();
+
+    drawUniformityChart();
+
+    drawFCRChart();
+
+
+    if (
+        currentWeights &&
+        currentWeights.length
+    ) {
+
+        drawWeightDistribution(
+            currentWeights
+        );
+
     }
 }
 
 
-function loadForm() {
+/* =========================================================
+   رسم مجدد از اطلاعات ذخیره‌شده
+========================================================= */
 
-    const data =
-        loadFlock();
+function redrawAllCharts() {
 
-    Object.keys(data).forEach(id => {
+    drawWeightChart();
 
-        const el =
-            document.getElementById(id);
+    drawCVChart();
 
-        if (el && data[id] !== undefined) {
-            el.value = data[id];
-        }
-    });
+    drawUniformityChart();
+
+    drawFCRChart();
 }
 
 
+/* =========================================================
+   ذخیره خودکار فرم
+========================================================= */
+
+document.addEventListener(
+    "input",
+    function () {
+        saveData();
+    }
+);
+
+
+/* =========================================================
+   شروع برنامه
+========================================================= */
+
 document.addEventListener(
     "DOMContentLoaded",
-    function() {
+    function () {
 
         showUser();
 
-        loadForm();
+        loadData();
 
-        loadLatestResult();
+        /*
+           اگر داده‌ای ذخیره شده باشد،
+           نمودارها نمایش داده می‌شوند.
+        */
 
-        drawAllCharts();
-
-        document.addEventListener(
-            "input",
-            saveFormAutomatically
+        setTimeout(
+            function () {
+                redrawAllCharts();
+            },
+            100
         );
+
     }
 );
