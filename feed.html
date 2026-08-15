@@ -1,14 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="fa" dir="rtl">
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+>
 
 <link rel="stylesheet" href="Style.css">
 
 <title>
-مصرف دان
+پایش مصرف دان
 </title>
 
 </head>
@@ -19,41 +25,94 @@
 
 <header class="header">
 
+<img src="IMG_4309.png" class="header-logo">
+
 <h1>
-🌽 مصرف دان
+مرکز تخصصی سلامت طیور آدینه
 </h1>
 
-<div id="userBox"></div>
+<h3>
+پایش مصرف دان
+</h3>
+
+<div class="user-row">
+
+<span id="userBox"></span>
+
+<button class="logout" data-logout>
+خروج
+</button>
+
+</div>
 
 </header>
 
 
+<nav class="menu">
 
-<div class="container">
+<a href="panel.html">🏠 داشبورد</a>
+<a href="flock.html">🐔 گله‌ها</a>
+<a href="feed.html">🌽 دان</a>
+<a href="water.html">💧 آب</a>
+<a href="vaccine.html">💉 واکسن</a>
+<a href="medicine.html">💊 دارو</a>
+<a href="health.html">🩺 سلامت</a>
+<a href="report.html">📊 گزارش</a>
+
+</nav>
+
+
+<main class="container">
 
 
 <div class="card">
 
-
-<input id="feedDate" type="date">
-
-
-<input id="feedAmount" placeholder="مقدار دان (کیلوگرم)">
+<h2>
+ثبت مصرف دان
+</h2>
 
 
-<input id="birdCount" placeholder="تعداد پرنده">
+<select id="flockId"></select>
 
 
-<button onclick="saveFeed()">
+<div class="form-grid">
 
-ثبت مصرف
+<input
+id="date"
+type="date"
+>
 
-</button>
+<input
+id="amount"
+type="number"
+step="0.01"
+placeholder="مصرف دان (کیلوگرم)"
+>
 
+<input
+id="birds"
+type="number"
+placeholder="تعداد پرنده زنده"
+>
+
+<input
+id="age"
+type="number"
+placeholder="سن گله (روز)"
+>
 
 </div>
 
 
+<div class="actions">
+
+<button onclick="saveFeed()">
+ثبت
+</button>
+
+</div>
+
+</div>
 
 
 <div class="card">
@@ -62,120 +121,161 @@
 سوابق مصرف دان
 </h2>
 
-<div id="feedList"></div>
-
-
-</div>
-
-
+<div id="list"></div>
 
 </div>
 
+
+</main>
 
 
 <script src="database.js"></script>
 
+<script src="app.js"></script>
+
 
 <script>
+
+function render(){
+
+fillFlockSelect("flockId");
+
+const data=
+read("feed",[])
+.slice()
+.reverse();
+
+const list=
+document.getElementById("list");
+
+
+if(!data.length){
+
+list.innerHTML=
+"هنوز اطلاعاتی ثبت نشده است.";
+
+return;
+
+}
+
+
+list.innerHTML=data.map(
+
+function(item){
+
+return `
+
+<div class="list-item">
+
+📅 ${escapeHTML(item.date)}
+
+|
+
+${fmt(item.amount,1)}
+کیلوگرم
+
+|
+
+${fmt(item.birds,0)}
+پرنده
+
+|
+
+<b>
+${fmt(item.perBird,1)}
+گرم/پرنده
+</b>
+
+</div>
+
+`;
+
+}
+
+).join("");
+
+}
 
 
 function saveFeed(){
 
+if(!requireUser()){
+
+return;
+
+}
 
 
-let data={
+const flockId=
+document.getElementById("flockId").value;
 
 
-date:feedDate.value,
+const amount=
+num(document.getElementById("amount").value);
 
 
-amount:Number(feedAmount.value),
+const birds=
+num(document.getElementById("birds").value);
 
 
-birds:Number(birdCount.value),
+if(!flockId || amount<=0 || birds<=0){
+
+alert(
+"گله، مقدار دان و تعداد پرنده را صحیح وارد کنید."
+);
+
+return;
+
+}
 
 
-perBird:(Number(feedAmount.value)*1000)/Number(birdCount.value)
-
-
-};
-
-
-
-saveRecord(
+addRecord(
 
 "feed",
 
-data
+{
+
+flockId:flockId,
+
+date:
+document.getElementById("date").value ||
+todayISO(),
+
+amount:amount,
+
+birds:birds,
+
+age:
+num(document.getElementById("age").value),
+
+perBird:
+amount*1000/birds
+
+}
 
 );
 
 
-
-showFeed();
-
+render();
 
 }
 
 
+document.addEventListener(
 
+"DOMContentLoaded",
 
-function showFeed(){
+function(){
 
+document.getElementById("date").value=todayISO();
 
-let data=loadRecords("feed");
-
-
-let html="";
-
-
-
-data.forEach((x,i)=>{
-
-
-html+=`
-
-<p>
-
-📅 ${x.date}
-
-<br>
-
-دان: ${x.amount} کیلو
-
-<br>
-
-مصرف سرانه: ${x.perBird.toFixed(1)} گرم
-
-</p>
-
-<hr>
-
-
-`;
-
-
-});
-
-
-
-document.getElementById("feedList").innerHTML=html;
-
+render();
 
 }
 
-
-
-
-window.onload=function(){
-
-showFeed();
-
-};
-
+);
 
 </script>
-
 
 
 </body>
