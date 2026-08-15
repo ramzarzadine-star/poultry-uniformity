@@ -1,14 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
+
 <html lang="fa" dir="rtl">
 
 <head>
 
-<meta charset="UTF-8">
+<meta charset="utf-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1"
+>
 
 <link rel="stylesheet" href="Style.css">
 
 <title>
-مصرف آب
+پایش مصرف آب
 </title>
 
 </head>
@@ -19,184 +25,254 @@
 
 <header class="header">
 
+<img src="IMG_4309.png" class="header-logo">
+
 <h1>
-💧 مصرف آب
+مرکز تخصصی سلامت طیور آدینه
 </h1>
 
-<div id="userBox"></div>
+<h3>
+پایش مصرف آب
+</h3>
+
+<div class="user-row">
+
+<span id="userBox"></span>
+
+<button class="logout" data-logout>
+خروج
+</button>
+
+</div>
 
 </header>
 
 
+<nav class="menu">
 
-<div class="container">
+<a href="panel.html">🏠 داشبورد</a>
+<a href="flock.html">🐔 گله‌ها</a>
+<a href="feed.html">🌽 دان</a>
+<a href="water.html">💧 آب</a>
+<a href="vaccine.html">💉 واکسن</a>
+<a href="medicine.html">💊 دارو</a>
+<a href="health.html">🩺 سلامت</a>
+<a href="report.html">📊 گزارش</a>
+
+</nav>
+
+
+<main class="container">
 
 
 <div class="card">
-
 
 <h2>
 ثبت مصرف آب
 </h2>
 
 
-<input id="waterDate" type="date">
+<select id="flockId"></select>
 
 
-<input id="waterAmount" placeholder="مقدار آب (لیتر)">
+<div class="form-grid">
 
+<input id="date" type="date">
 
-<input id="waterBird" placeholder="تعداد پرنده">
+<input
+id="amount"
+type="number"
+step="0.1"
+placeholder="مصرف آب (لیتر)"
+>
 
+<input
+id="birds"
+type="number"
+placeholder="تعداد پرنده زنده"
+>
 
-
-<button onclick="saveWater()">
-
-ثبت مصرف
-
-</button>
-
+<input
+id="age"
+type="number"
+placeholder="سن گله (روز)"
+>
 
 </div>
 
 
+<div class="actions">
 
+<button onclick="saveWater()">
+ثبت
+</button>
+
+</div>
+
+</div>
 
 
 <div class="card">
 
-
 <h2>
-سوابق آب
+سوابق مصرف آب
 </h2>
 
-
-<div id="waterList"></div>
-
+<div id="list"></div>
 
 </div>
 
 
-</div>
-
-
+</main>
 
 
 <script src="database.js"></script>
 
+<script src="app.js"></script>
+
 
 <script>
 
+function render(){
 
-function saveWater(){
+fillFlockSelect("flockId");
 
+const data=
+read("water",[])
+.slice()
+.reverse();
 
-let data={
-
-
-date:waterDate.value,
-
-
-amount:Number(waterAmount.value),
-
-
-birds:Number(waterBird.value),
+const list=
+document.getElementById("list");
 
 
-perBird:
+if(!data.length){
 
-(Number(waterAmount.value)*1000)
+list.innerHTML=
+"هنوز اطلاعاتی ثبت نشده است.";
 
-/
-
-Number(waterBird.value)
-
-
-};
-
-
-
-saveRecord(
-
-"water",
-
-data
-
-);
-
-
-
-showWater();
-
+return;
 
 }
 
 
+list.innerHTML=data.map(
 
+function(item){
 
+return `
 
+<div class="list-item">
 
+📅 ${escapeHTML(item.date)}
 
-function showWater(){
+|
 
+${fmt(item.amount,1)}
+لیتر
 
-let data=loadRecords("water");
+|
 
+${fmt(item.birds,0)}
+پرنده
 
-let html="";
+|
 
-
-
-data.forEach(function(x){
-
-
-html+=`
-
-<div class="card">
-
-📅 ${x.date}
-
-<br>
-
-آب: ${x.amount} لیتر
-
-<br>
-
-مصرف سرانه:
-
-${x.perBird.toFixed(1)}
-
-میلی لیتر
+<b>
+${fmt(item.perBird,2)}
+ml/پرنده
+</b>
 
 </div>
 
 `;
 
+}
 
-
-});
-
-
-
-document.getElementById("waterList").innerHTML=html;
-
+).join("");
 
 }
 
 
+function saveWater(){
+
+if(!requireUser()){
+
+return;
+
+}
 
 
+const flockId=
+document.getElementById("flockId").value;
 
-window.onload=function(){
 
-showWater();
+const amount=
+num(document.getElementById("amount").value);
 
-};
 
+const birds=
+num(document.getElementById("birds").value);
+
+
+if(!flockId || amount<=0 || birds<=0){
+
+alert(
+"گله، مقدار آب و تعداد پرنده را صحیح وارد کنید."
+);
+
+return;
+
+}
+
+
+addRecord(
+
+"water",
+
+{
+
+flockId:flockId,
+
+date:
+document.getElementById("date").value ||
+todayISO(),
+
+amount:amount,
+
+birds:birds,
+
+age:
+num(document.getElementById("age").value),
+
+perBird:
+amount*1000/birds
+
+}
+
+);
+
+
+render();
+
+}
+
+
+document.addEventListener(
+
+"DOMContentLoaded",
+
+function(){
+
+document.getElementById("date").value=todayISO();
+
+render();
+
+}
+
+);
 
 </script>
-
-
 
 </body>
 
