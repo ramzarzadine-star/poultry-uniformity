@@ -2,24 +2,25 @@
 <html lang="fa" dir="rtl">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <meta name="theme-color" content="#087f5b">
+<meta charset="UTF-8">
 
-    <title>مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه</title>
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <link rel="stylesheet" href="Style.css">
+<title>مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه</title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="Style.css">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
 </head>
 
 <body>
 
-<!-- ================= HEADER ================= -->
-
-<<header class="header">
+<header class="header">
 
     <img
         src="IMG_4309.png"
@@ -27,385 +28,220 @@
         alt="مرکز تخصصی سلامت طیور آدینه"
     >
 
-    <h1>
-        🐔 مدیریت گله طیور
-    </h1>
+    <h1>🐔 مدیریت گله طیور</h1>
 
-    <h3>
-        مرکز تخصصی سلامت طیور آدینه
-    </h3>
+    <h3>مرکز تخصصی سلامت طیور آدینه</h3>
 
     <div id="userBox"></div>
 
     <button
         type="button"
-        onclick="logout()"
         class="logout"
+        onclick="logout()"
     >
         خروج ↪️
     </button>
 
 </header>
-<!-- ================= NAVIGATION ================= -->
 
-<nav class="app-nav">
 
-    <div class="nav-scroll">
+<nav class="menu">
 
-        <a href="panel.html" class="nav-item active">
-            <span>🏠</span>
-            <span>داشبورد</span>
-        </a>
+    <a class="active" href="panel.html">🏠 داشبورد</a>
 
-        <a href="flock.html" class="nav-item">
-            <span>🐔</span>
-            <span>مدیریت گله</span>
-        </a>
+    <a href="flock.html">🐔 مدیریت گله</a>
 
-        <a href="feed.html" class="nav-item">
-            <span>🌽</span>
-            <span>مصرف دان</span>
-        </a>
+    <a href="feed.html">🌽 مصرف دان</a>
 
-        <a href="water.html" class="nav-item">
-            <span>💧</span>
-            <span>مصرف آب</span>
-        </a>
+    <a href="water.html">💧 مصرف آب</a>
 
-        <a href="vaccine.html" class="nav-item">
-            <span>💉</span>
-            <span>واکسیناسیون</span>
-        </a>
+    <a href="vaccine.html">💉 واکسیناسیون</a>
 
-        <a href="medicine.html" class="nav-item">
-            <span>💊</span>
-            <span>دارو</span>
-        </a>
+    <a href="medicine.html">💊 دارو</a>
 
-        <a href="report.html" class="nav-item">
-            <span>📊</span>
-            <span>گزارشات</span>
-        </a>
-
-    </div>
+    <a href="report.html">📊 گزارشات</a>
 
 </nav>
 
 
-<!-- ================= MAIN ================= -->
+<main class="container">
 
-<main class="main-container">
 
-    <!-- اطلاعات گله -->
+<section class="hero-grid">
 
-    <section class="dashboard-card">
+    <div class="stat-card">
+        <span class="label">سن گله</span>
+        <strong class="value" id="dashAge">-</strong>
+    </div>
 
-        <div class="section-title">
+    <div class="stat-card">
+        <span class="label">میانگین وزن</span>
+        <strong class="value" id="dashWeight">-</strong>
+    </div>
 
-            <div class="section-icon">
-                🐔
-            </div>
+    <div class="stat-card">
+        <span class="label">CV</span>
+        <strong class="value" id="dashCV">-</strong>
+    </div>
 
-            <div>
-                <h2>اطلاعات گله</h2>
-                <p>مشخصات پایه گله را ثبت کنید</p>
-            </div>
+    <div class="stat-card">
+        <span class="label">یکنواختی ±10%</span>
+        <strong class="value" id="dashUniformity">-</strong>
+    </div>
 
+</section>
+
+
+<section class="card">
+
+    <h2>دسترسی سریع</h2>
+
+    <div class="dashboard-actions">
+
+        <a href="flock.html">🐔 مدیریت گله</a>
+
+        <a href="feed.html">🌽 مصرف دان</a>
+
+        <a href="water.html">💧 مصرف آب</a>
+
+        <a href="vaccine.html">💉 واکسیناسیون</a>
+
+        <a href="medicine.html">💊 دارو</a>
+
+        <a href="report.html">📊 گزارش کامل</a>
+
+    </div>
+
+</section>
+
+
+<section class="card">
+
+    <h2>آخرین ارزیابی گله</h2>
+
+    <div class="results">
+
+        <div>
+            تعداد نمونه
+            <strong id="sample">-</strong>
         </div>
 
-
-        <div class="form-grid">
-
-            <div class="input-group">
-
-                <label for="farm">
-                    نام فارم / مرغدار
-                </label>
-
-                <input
-                    id="farm"
-                    type="text"
-                    placeholder="مثلاً فارم آدینه">
-
-            </div>
-
-
-            <div class="input-group">
-
-                <label for="hall">
-                    نام سالن
-                </label>
-
-                <input
-                    id="hall"
-                    type="text"
-                    placeholder="مثلاً سالن ۱">
-
-            </div>
-
-
-            <div class="input-group">
-
-                <label for="type">
-                    نوع گله
-                </label>
-
-                <select id="type">
-
-                    <option value="">
-                        انتخاب نوع گله
-                    </option>
-
-                    <option value="گوشتی">
-                        گوشتی
-                    </option>
-
-                    <option value="تخمگذار">
-                        تخمگذار
-                    </option>
-
-                    <option value="مادر">
-                        مادر
-                    </option>
-
-                </select>
-
-            </div>
-
-
-            <div class="input-group">
-
-                <label for="age">
-                    سن گله
-                </label>
-
-                <input
-                    id="age"
-                    type="number"
-                    min="1"
-                    placeholder="سن گله (روز)">
-
-            </div>
-
-
-            <div class="input-group">
-
-                <label for="countBird">
-                    تعداد پرنده
-                </label>
-
-                <input
-                    id="countBird"
-                    type="number"
-                    min="1"
-                    placeholder="تعداد پرنده">
-
-            </div>
-
-
-            <div class="input-group">
-
-                <label for="date">
-                    تاریخ ثبت
-                </label>
-
-                <input
-                    id="date"
-                    type="date">
-
-            </div>
-
+        <div>
+            میانگین وزن
+            <strong id="mean">-</strong>
         </div>
 
-    </section>
-
-
-    <!-- ورود وزن -->
-
-    <section class="dashboard-card">
-
-        <div class="section-title">
-
-            <div class="section-icon">
-                ⚖️
-            </div>
-
-            <div>
-                <h2>ثبت وزن گله</h2>
-                <p>وزن نمونه‌ها را وارد کنید</p>
-            </div>
-
+        <div>
+            SD
+            <strong id="sd">-</strong>
         </div>
 
-
-        <textarea
-            id="weightsInput"
-            class="weights-input"
-            placeholder="مثال:
-185
-192
-201
-197
-205
-188
-210"></textarea>
-
-
-        <button
-            type="button"
-            onclick="calculate()"
-            class="calculate-btn">
-
-            <span>محاسبه و تحلیل</span>
-            <span>📊</span>
-
-        </button>
-
-    </section>
-
-
-    <!-- نتایج -->
-
-    <section class="dashboard-card">
-
-        <div class="section-title">
-
-            <div class="section-icon">
-                📋
-            </div>
-
-            <div>
-                <h2>نتایج ارزیابی</h2>
-                <p>شاخص‌های اصلی یکنواختی گله</p>
-            </div>
-
+        <div>
+            CV
+            <strong id="cv">-</strong>
         </div>
 
-
-        <div class="results-grid">
-
-            <div class="result-box">
-                <span>تعداد نمونه</span>
-                <strong id="sample">-</strong>
-            </div>
-
-            <div class="result-box">
-                <span>میانگین وزن</span>
-                <strong id="mean">-</strong>
-            </div>
-
-            <div class="result-box">
-                <span>حداقل وزن</span>
-                <strong id="min">-</strong>
-            </div>
-
-            <div class="result-box">
-                <span>حداکثر وزن</span>
-                <strong id="max">-</strong>
-            </div>
-
-            <div class="result-box">
-                <span>SD</span>
-                <strong id="sd">-</strong>
-            </div>
-
-            <div class="result-box">
-                <span>CV</span>
-                <strong id="cv">-</strong>
-            </div>
-
-            <div class="result-box highlight">
-                <span>یکنواختی ±10%</span>
-                <strong id="u10">-</strong>
-            </div>
-
-            <div class="result-box highlight">
-                <span>یکنواختی ±15%</span>
-                <strong id="u15">-</strong>
-            </div>
-
+        <div>
+            یکنواختی ±10%
+            <strong id="u10">-</strong>
         </div>
 
-    </section>
-
-
-    <!-- نمودار وزن -->
-
-    <section class="dashboard-card chart-card">
-
-        <div class="section-title">
-
-            <div class="section-icon">
-                ⚖️
-            </div>
-
-            <div>
-                <h2>توزیع وزن نمونه‌ها</h2>
-                <p>نمایش وزن تک‌تک نمونه‌های ثبت‌شده</p>
-            </div>
-
+        <div>
+            یکنواختی ±15%
+            <strong id="u15">-</strong>
         </div>
 
-        <div class="chart-container">
-            <canvas id="weightChart"></canvas>
+        <div>
+            حداقل وزن
+            <strong id="min">-</strong>
         </div>
 
-    </section>
-
-
-    <!-- روند وزن -->
-
-    <section class="dashboard-card chart-card">
-
-        <div class="section-title">
-
-            <div class="section-icon">
-                📈
-            </div>
-
-            <div>
-                <h2>روند میانگین وزن</h2>
-                <p>مقایسه عملکرد گله با استاندارد Ross 308</p>
-            </div>
-
+        <div>
+            حداکثر وزن
+            <strong id="max">-</strong>
         </div>
 
-        <div class="chart-container">
-            <canvas id="weightTrendChart"></canvas>
-        </div>
+    </div>
 
-    </section>
+</section>
 
 
-    <!-- CV -->
+<section class="card chart-card">
 
-    <section class="dashboard-card chart-card">
+    <h2>مقایسه میانگین وزن با استاندارد Ross 308</h2>
 
-        <div class="section-title">
+    <p class="card-subtitle">
+        وزن واقعی گله در برابر خط مرجع Ross 308 As-Hatched
+    </p>
 
-            <div class="section-icon">
-                📉
-            </div>
+    <div class="chart-wrap">
+        <canvas id="weightTrendChart"></canvas>
+    </div>
 
-            <div>
-                <h2>روند CV</h2>
-                <p>مقایسه ضریب تغییرات گله با مرجع مدیریتی</p>
-            </div>
+</section>
 
-        </div>
 
-        <div class="chart-container">
-            <canvas id="cvChart"></canvas>
-        </div>
+<section class="card chart-card">
 
-    </section>
+    <h2>ضریب تغییرات CV%</h2>
+
+    <p class="card-subtitle">
+        خط مرجع مدیریتی CV = 10%
+    </p>
+
+    <div class="chart-wrap">
+        <canvas id="cvChart"></canvas>
+    </div>
+
+</section>
+
+
+<section class="card chart-card">
+
+    <h2>یکنواختی گله ±10%</h2>
+
+    <p class="card-subtitle">
+        خط مرجع مدیریتی Uniformity = 68%
+    </p>
+
+    <div class="chart-wrap">
+        <canvas id="uniformityChart"></canvas>
+    </div>
+
+</section>
+
+
+<section class="card chart-card">
+
+    <h2>ضریب تبدیل غذایی FCR</h2>
+
+    <p class="card-subtitle">
+        مقایسه FCR واقعی گله با هدف Ross 308 As-Hatched
+    </p>
+
+    <div class="chart-wrap">
+        <canvas id="fcrChart"></canvas>
+    </div>
+
+</section>
+
+
+<section class="card chart-card">
+
+    <h2>توزیع وزن نمونه‌ها</h2>
+
+    <div class="chart-wrap">
+        <canvas id="weightChart"></canvas>
+    </div>
+
+</section>
 
 
 </main>
 
 
+<script src="database.js"></script>
 <script src="Script.js"></script>
 
 </body>
-
 </html>
