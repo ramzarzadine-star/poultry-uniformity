@@ -1,24 +1,20 @@
-/* =========================================================
-   تنظیمات پایه
-========================================================= */
+/* =====================================================
+   ADINEH POULTRY HEALTH CENTER
+   PROFESSIONAL RESPONSIVE UI
+===================================================== */
 
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-
 html {
+    direction: rtl;
     scroll-behavior: smooth;
 }
 
-
 body {
-    margin: 0;
-
-    padding: 0;
-
-    direction: rtl;
-
     font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -27,11 +23,8 @@ body {
         Arial,
         sans-serif;
 
-    background:
-        #f1f6f4;
-
-    color:
-        #16352d;
+    background: #f1f6f4;
+    color: #123b31;
 
     min-height: 100vh;
 
@@ -39,39 +32,32 @@ body {
 }
 
 
-/* =========================================================
-   هدر
-========================================================= */
+/* =====================================================
+   HEADER
+===================================================== */
 
-.app-header {
+.dashboard-header {
 
     position: relative;
 
     width: 100%;
 
-    min-height: 245px;
+    min-height: 270px;
 
     overflow: hidden;
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(0, 105, 75, 0.96),
-            rgba(0, 139, 98, 0.88)
-        );
+    background: #f5f8f7;
 
-    border-radius:
-        0 0 38px 38px;
+    border-radius: 0 0 38px 38px;
 
     box-shadow:
-        0 14px 35px
-        rgba(0, 70, 50, 0.15);
+        0 10px 35px rgba(0, 70, 50, 0.12);
+
+    isolation: isolate;
 }
 
 
-/* =========================================================
-   تصویر فارم
-========================================================= */
+/* تصویر فارم */
 
 .header-background {
 
@@ -81,69 +67,55 @@ body {
 
     background-image:
         linear-gradient(
-            rgba(0, 80, 58, 0.34),
-            rgba(0, 80, 58, 0.42)
+            rgba(244, 248, 247, 0.62),
+            rgba(244, 248, 247, 0.62)
         ),
         url("IMG_4317.jpeg");
 
     background-size: cover;
 
-    background-position:
-        center center;
+    background-position: center center;
 
-    opacity: 0.34;
+    filter: blur(1px);
 
-    filter:
-        blur(0.8px);
+    transform: scale(1.015);
 
-    transform:
-        scale(1.03);
+    opacity: 0.52;
 
-    z-index: 0;
+    z-index: -2;
 }
 
 
-/* =========================================================
-   محتوای هدر
-========================================================= */
+/* لایه نرم روی عکس */
+
+.dashboard-header::after {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.78),
+            rgba(255,255,255,0.48)
+        );
+
+    z-index: -1;
+}
+
 
 .header-content {
 
+    width: min(1180px, 94%);
+
+    min-height: 270px;
+
+    margin: auto;
+
     position: relative;
-
-    z-index: 2;
-
-    min-height: 245px;
-
-    width: 100%;
-
-    max-width: 1200px;
-
-    margin: 0 auto;
-
-    padding:
-        28px 28px 25px;
-
-    display: grid;
-
-    grid-template-columns:
-        110px 1fr 125px;
-
-    align-items: center;
-
-    gap: 22px;
-}
-
-
-/* =========================================================
-   لوگو
-========================================================= */
-
-.header-logo {
-
-    width: 86px;
-
-    height: 86px;
 
     display: flex;
 
@@ -151,89 +123,93 @@ body {
 
     justify-content: center;
 
-    background:
-        rgba(255, 255, 255, 0.94);
-
-    border-radius:
-        22px;
-
-    padding: 9px;
-
-    box-shadow:
-        0 8px 25px
-        rgba(0, 0, 0, 0.16);
+    padding: 35px 110px;
 }
 
 
-.header-logo img {
+/* =====================================================
+   LOGO
+===================================================== */
 
-    width: 100%;
+.brand-logo {
 
-    height: 100%;
+    position: absolute;
+
+    right: 22px;
+
+    top: 24px;
+
+    width: 78px;
+
+    height: 78px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    z-index: 5;
+}
+
+.brand-logo img {
+
+    width: 70px;
+
+    height: 70px;
 
     object-fit: contain;
 
-    border-radius: 15px;
+    display: block;
+
+    border-radius: 50%;
+
+    filter:
+        drop-shadow(0 5px 10px rgba(0,0,0,0.16));
 }
 
 
-/* =========================================================
-   عنوان
-========================================================= */
+/* =====================================================
+   HEADER TEXT
+===================================================== */
 
-.header-title {
+.brand-text {
 
     text-align: center;
 
-    color: white;
+    max-width: 760px;
 
-    min-width: 0;
+    width: 100%;
+
+    padding-top: 12px;
 }
 
+.brand-text h1 {
 
-.header-title h1 {
+    font-size: clamp(30px, 5vw, 58px);
 
-    margin:
-        0 0 12px;
+    line-height: 1.25;
 
-    font-size:
-        clamp(27px, 5vw, 48px);
+    font-weight: 900;
 
-    font-weight:
-        800;
+    color: #103d32;
 
-    line-height:
-        1.25;
-
-    text-shadow:
-        0 3px 12px
-        rgba(0, 0, 0, 0.22);
+    margin-bottom: 14px;
 }
 
+.brand-text h2 {
 
-.header-title p {
+    font-size: clamp(17px, 2.8vw, 28px);
 
-    margin:
-        0 0 14px;
+    line-height: 1.6;
 
-    font-size:
-        clamp(17px, 3vw, 25px);
+    font-weight: 600;
 
-    font-weight:
-        600;
+    color: #17624e;
 
-    line-height:
-        1.5;
-
-    text-shadow:
-        0 2px 8px
-        rgba(0, 0, 0, 0.2);
+    margin-bottom: 15px;
 }
 
-
-/* =========================================================
-   کاربر
-========================================================= */
 
 .user-box {
 
@@ -243,61 +219,50 @@ body {
 
     justify-content: center;
 
-    min-height: 38px;
+    min-height: 40px;
 
-    padding:
-        8px 17px;
+    padding: 8px 18px;
 
-    border-radius:
-        999px;
+    border-radius: 50px;
 
-    background:
-        rgba(255,255,255,0.17);
+    background: rgba(255,255,255,0.72);
 
-    border:
-        1px solid
-        rgba(255,255,255,0.24);
+    border: 1px solid rgba(20,90,70,0.10);
 
-    backdrop-filter:
-        blur(8px);
+    color: #315a50;
 
-    font-size:
-        14px;
+    font-size: 15px;
 
-    color:
-        white;
+    backdrop-filter: blur(8px);
+
+    box-shadow:
+        0 4px 15px rgba(0,0,0,0.05);
 }
 
 
-/* =========================================================
-   دکمه خروج
-========================================================= */
+/* =====================================================
+   LOGOUT
+===================================================== */
 
-.logout-btn {
+.logout-button {
 
-    border: 0;
+    position: absolute;
+
+    left: 22px;
+
+    top: 28px;
+
+    border: none;
 
     cursor: pointer;
 
-    min-height: 58px;
+    min-width: 112px;
 
-    padding:
-        0 18px;
+    height: 48px;
 
-    border-radius:
-        20px;
+    padding: 0 17px;
 
-    background:
-        rgba(137, 0, 35, 0.92);
-
-    color:
-        white;
-
-    font-size:
-        18px;
-
-    font-weight:
-        700;
+    border-radius: 16px;
 
     display: flex;
 
@@ -307,184 +272,276 @@ body {
 
     gap: 9px;
 
-    box-shadow:
-        0 8px 22px
-        rgba(70, 0, 20, 0.22);
+    background: #9f183c;
 
-    transition:
-        transform .2s ease,
-        box-shadow .2s ease,
-        background .2s ease;
-}
+    color: white;
 
+    font-size: 17px;
 
-.logout-btn span {
-    font-size: 23px;
-}
-
-
-.logout-btn:hover {
-
-    transform:
-        translateY(-2px);
+    font-weight: 800;
 
     box-shadow:
-        0 12px 28px
-        rgba(70, 0, 20, 0.28);
+        0 8px 20px rgba(159,24,60,0.22);
 
-    background:
-        #a60032;
+    transition: 0.2s ease;
+}
+
+.logout-button:hover {
+
+    transform: translateY(-2px);
+
+    background: #8b1233;
+}
+
+.logout-button:active {
+
+    transform: scale(0.97);
+}
+
+.logout-icon {
+
+    font-size: 22px;
 }
 
 
-.logout-btn:active {
+/* =====================================================
+   NAVIGATION
+===================================================== */
 
-    transform:
-        scale(0.97);
-}
-
-
-/* =========================================================
-   منو
-========================================================= */
-
-.main-menu {
+.main-navigation {
 
     width: 100%;
 
-    max-width: 1200px;
+    background: rgba(255,255,255,0.96);
 
-    margin:
-        20px auto;
+    border-bottom:
+        1px solid #dfe9e5;
 
-    padding:
-        0 18px;
+    box-shadow:
+        0 5px 20px rgba(0,0,0,0.05);
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 100;
+}
+
+
+.navigation-inner {
+
+    width: min(1200px, 96%);
+
+    margin: auto;
 
     display: flex;
 
-    gap: 10px;
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 9px 0;
 
     overflow-x: auto;
 
     scrollbar-width: none;
 }
 
-
-.main-menu::-webkit-scrollbar {
+.navigation-inner::-webkit-scrollbar {
     display: none;
 }
 
 
-.main-menu a {
+.nav-item {
 
-    flex:
-        0 0 auto;
+    flex: 0 0 auto;
 
     text-decoration: none;
 
-    color:
-        #08754d;
+    color: #12684f;
 
-    background:
-        white;
+    background: #eef8f4;
 
-    border:
-        1px solid
-        #dcebe5;
+    border: 1px solid #dceee7;
 
-    padding:
-        14px 22px;
+    border-radius: 15px;
 
-    border-radius:
-        18px;
+    min-height: 46px;
 
-    font-size:
-        15px;
+    padding: 8px 15px;
 
-    font-weight:
-        700;
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 7px;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    transition: 0.2s ease;
+}
+
+.nav-item:hover {
+
+    background: #dff2eb;
+
+    transform: translateY(-1px);
+}
+
+.nav-item.active {
+
+    color: white;
+
+    background: #087f5b;
+
+    border-color: #087f5b;
 
     box-shadow:
-        0 5px 16px
-        rgba(0, 60, 40, 0.07);
+        0 5px 14px rgba(8,127,91,0.18);
+}
 
-    transition:
-        .2s ease;
+.nav-icon {
+
+    font-size: 18px;
 }
 
 
-.main-menu a:hover {
+/* =====================================================
+   MAIN
+===================================================== */
 
-    transform:
-        translateY(-2px);
+.dashboard-container {
 
-    background:
-        #edf8f3;
+    width: min(1050px, 94%);
+
+    margin: 28px auto 70px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 22px;
 }
 
 
-.main-menu a.active {
+/* =====================================================
+   SECTION TITLE
+===================================================== */
 
-    background:
-        #007a4e;
+.section-title {
 
-    color:
-        white;
+    font-size: 23px;
 
-    border-color:
-        #007a4e;
+    font-weight: 900;
+
+    color: #087f5b;
+
+    margin-bottom: 12px;
+
+    padding-right: 5px;
 }
 
 
-/* =========================================================
-   کانتینر
-========================================================= */
+/* =====================================================
+   QUICK ACCESS
+===================================================== */
 
-.container {
+.quick-section {
 
-    width: 100%;
+    background: rgba(255,255,255,0.88);
 
-    max-width: 1100px;
+    border-radius: 26px;
 
-    margin:
-        0 auto;
-
-    padding:
-        10px 18px 60px;
-}
-
-
-/* =========================================================
-   کارت
-========================================================= */
-
-.card {
-
-    position: relative;
-
-    background:
-        rgba(255,255,255,0.97);
-
-    border-radius:
-        28px;
-
-    padding:
-        26px;
-
-    margin:
-        0 0 22px;
+    padding: 22px;
 
     box-shadow:
-        0 10px 30px
-        rgba(0, 60, 40, 0.08);
-
-    border:
-        1px solid
-        rgba(0, 110, 75, 0.07);
+        0 8px 25px rgba(20,70,55,0.08);
 }
 
 
-.card-title {
+.quick-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 12px;
+}
+
+
+.quick-card {
+
+    min-height: 70px;
+
+    padding: 12px;
+
+    border-radius: 18px;
+
+    background: #087f5b;
+
+    color: white;
+
+    text-decoration: none;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    font-size: 17px;
+
+    font-weight: 800;
+
+    box-shadow:
+        0 6px 15px rgba(8,127,91,0.14);
+
+    transition: 0.2s ease;
+}
+
+.quick-card:hover {
+
+    background: #066c4e;
+
+    transform: translateY(-2px);
+}
+
+.quick-icon {
+    font-size: 22px;
+}
+
+
+/* =====================================================
+   CARD
+===================================================== */
+
+.dashboard-card {
+
+    background: rgba(255,255,255,0.96);
+
+    border-radius: 28px;
+
+    padding: 28px;
+
+    border: 1px solid #e2ece8;
+
+    box-shadow:
+        0 10px 28px rgba(30,70,60,0.07);
+}
+
+
+.card-header {
 
     display: flex;
 
@@ -494,770 +551,533 @@ body {
 
     gap: 15px;
 
-    margin-bottom:
-        22px;
+    margin-bottom: 25px;
 
-    border-bottom:
-        1px solid
-        #e5efeb;
+    border-bottom: 1px solid #e8efec;
 
-    padding-bottom:
-        14px;
+    padding-bottom: 18px;
+}
+
+.card-small-title {
+
+    display: block;
+
+    color: #789087;
+
+    font-size: 13px;
+
+    margin-bottom: 5px;
+}
+
+.card-header h2 {
+
+    color: #087f5b;
+
+    font-size: clamp(21px, 4vw, 28px);
+
+    font-weight: 900;
+}
+
+.card-header-icon {
+
+    width: 48px;
+
+    height: 48px;
+
+    flex: 0 0 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 15px;
+
+    background: #eef8f4;
+
+    font-size: 23px;
 }
 
 
-.card-title h2 {
-
-    margin: 0;
-
-    color:
-        #007b4e;
-
-    font-size:
-        clamp(20px, 4vw, 28px);
-
-    font-weight:
-        800;
-}
-
-
-.card-title span {
-
-    font-size:
-        26px;
-}
-
-
-/* =========================================================
-   فرم
-========================================================= */
+/* =====================================================
+   FORMS
+===================================================== */
 
 .form-grid {
 
     display: grid;
 
     grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        repeat(2, minmax(0,1fr));
 
-    gap: 16px;
+    gap: 17px;
 }
 
 
-input,
-select,
-textarea {
-
-    width: 100%;
-
-    border:
-        2px solid
-        #d5e0dc;
-
-    background:
-        #fff;
-
-    color:
-        #18382f;
-
-    border-radius:
-        17px;
-
-    padding:
-        16px 18px;
-
-    font-family:
-        inherit;
-
-    font-size:
-        16px;
-
-    outline:
-        none;
-
-    transition:
-        border-color .2s ease,
-        box-shadow .2s ease;
-}
-
-
-input:focus,
-select:focus,
-textarea:focus {
-
-    border-color:
-        #008158;
-
-    box-shadow:
-        0 0 0 4px
-        rgba(0,129,88,0.08);
-}
-
-
-input::placeholder,
-textarea::placeholder {
-
-    color:
-        #a3aaa7;
-
-    opacity:
-        1;
-}
-
-
-textarea {
-
-    min-height:
-        145px;
-
-    resize:
-        vertical;
-
-    line-height:
-        1.8;
-}
-
-
-/* =========================================================
-   ورودی دان
-========================================================= */
-
-.feed-input-box {
-
-    margin-top:
-        20px;
-
-    padding:
-        20px;
-
-    background:
-        #f4faf7;
-
-    border:
-        1px solid
-        #dceee7;
-
-    border-radius:
-        20px;
-}
-
-
-.input-label {
-
-    display: block;
-
-    margin-bottom:
-        9px;
-
-    color:
-        #26715a;
-
-    font-weight:
-        700;
-
-    font-size:
-        15px;
-}
-
-
-.input-with-unit {
+.input-group {
 
     display: flex;
 
-    align-items: center;
+    flex-direction: column;
 
-    gap: 10px;
+    gap: 8px;
 }
 
+.input-group label {
 
-.input-with-unit input {
+    color: #30584d;
 
-    flex:
-        1;
+    font-size: 14px;
+
+    font-weight: 700;
 }
 
-
-.input-with-unit span {
-
-    white-space:
-        nowrap;
-
-    color:
-        #537267;
-
-    font-size:
-        14px;
-
-    font-weight:
-        600;
-}
-
-
-.feed-input-box small {
-
-    display: block;
-
-    margin-top:
-        9px;
-
-    color:
-        #758b83;
-
-    line-height:
-        1.7;
-}
-
-
-/* =========================================================
-   دکمه محاسبه
-========================================================= */
-
-.calculate-btn {
+.input-group input,
+.input-group select,
+.input-group textarea {
 
     width: 100%;
 
-    border: 0;
+    border: 2px solid #d5e1dc;
 
-    margin-top:
-        20px;
+    background: #fbfdfc;
 
-    min-height:
-        58px;
+    border-radius: 17px;
 
-    border-radius:
-        18px;
+    color: #183f35;
+
+    font-family: inherit;
+
+    font-size: 16px;
+
+    outline: none;
+
+    transition: 0.2s ease;
+}
+
+.input-group input,
+.input-group select {
+
+    height: 58px;
+
+    padding: 0 17px;
+}
+
+.input-group textarea {
+
+    min-height: 125px;
+
+    padding: 15px;
+
+    resize: vertical;
+
+    line-height: 1.9;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+
+    border-color: #087f5b;
+
+    box-shadow:
+        0 0 0 4px rgba(8,127,91,0.09);
+
+    background: white;
+}
+
+.input-group small {
+
+    color: #7c8e88;
+
+    font-size: 12px;
+}
+
+
+/* =====================================================
+   FCR
+===================================================== */
+
+.fcr-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 250px;
+
+    gap: 18px;
+
+    align-items: stretch;
+}
+
+
+.fcr-result {
+
+    border-radius: 20px;
 
     background:
         linear-gradient(
             135deg,
-            #007a4d,
-            #009a67
+            #087f5b,
+            #099268
         );
 
-    color:
-        white;
+    color: white;
 
-    font-family:
-        inherit;
+    display: flex;
 
-    font-size:
-        18px;
+    flex-direction: column;
 
-    font-weight:
-        800;
+    align-items: center;
 
-    cursor:
-        pointer;
+    justify-content: center;
+
+    min-height: 125px;
 
     box-shadow:
-        0 9px 22px
-        rgba(0, 122, 77, 0.20);
+        0 8px 20px rgba(8,127,91,0.18);
+}
 
-    transition:
-        .2s ease;
+.fcr-result span {
+
+    font-size: 15px;
+
+    opacity: .9;
+
+    margin-bottom: 5px;
+}
+
+.fcr-result strong {
+
+    font-size: 39px;
+
+    font-weight: 900;
 }
 
 
-.calculate-btn:hover {
+/* =====================================================
+   BUTTON
+===================================================== */
 
-    transform:
-        translateY(-2px);
+.primary-action {
+
+    margin-top: 18px;
+
+    width: 100%;
+
+    min-height: 55px;
+
+    border: none;
+
+    border-radius: 16px;
+
+    background: #087f5b;
+
+    color: white;
+
+    font-family: inherit;
+
+    font-size: 17px;
+
+    font-weight: 800;
+
+    cursor: pointer;
 
     box-shadow:
-        0 13px 28px
-        rgba(0, 122, 77, 0.25);
+        0 7px 18px rgba(8,127,91,0.16);
+
+    transition: .2s ease;
+}
+
+.primary-action:hover {
+
+    background: #066c4e;
+
+    transform: translateY(-1px);
+}
+
+.primary-action:active {
+
+    transform: scale(.99);
 }
 
 
-.calculate-btn:active {
-
-    transform:
-        scale(0.985);
-}
-
-
-/* =========================================================
-   نتایج
-========================================================= */
+/* =====================================================
+   RESULTS
+===================================================== */
 
 .results-grid {
 
     display: grid;
 
     grid-template-columns:
-        repeat(5, minmax(0, 1fr));
+        repeat(3, minmax(0,1fr));
 
     gap: 13px;
 }
 
-
 .result-box {
 
-    min-height:
-        105px;
+    min-height: 100px;
 
-    border-radius:
-        20px;
+    padding: 16px;
 
-    padding:
-        17px;
+    border-radius: 18px;
 
-    background:
-        #f4faf7;
+    background: #f4f9f7;
 
-    border:
-        1px solid
-        #dceee7;
+    border: 1px solid #e0ece7;
 
     display: flex;
 
     flex-direction: column;
 
-    justify-content: center;
-
     align-items: center;
 
+    justify-content: center;
+
     text-align: center;
-
-    gap: 6px;
 }
-
 
 .result-box span {
 
-    color:
-        #5b746a;
+    color: #72867f;
 
-    font-size:
-        13px;
+    font-size: 13px;
 
-    font-weight:
-        600;
+    margin-bottom: 8px;
 }
-
 
 .result-box strong {
 
-    color:
-        #00794e;
+    color: #087f5b;
 
-    font-size:
-        22px;
+    font-size: 24px;
 
-    font-weight:
-        800;
+    font-weight: 900;
+}
+
+.fcr-result-small {
+
+    background: #fff8e7;
+
+    border-color: #f0dfae;
+}
+
+.fcr-result-small strong {
+
+    color: #a66a00;
 }
 
 
-.result-box small {
-
-    color:
-        #80948d;
-
-    font-size:
-        11px;
-}
-
-
-.fcr-result {
-
-    background:
-        linear-gradient(
-            135deg,
-            #e7f7ef,
-            #f7fcfa
-        );
-
-    border:
-        2px solid
-        #8fd2b5;
-}
-
-
-.fcr-result strong {
-
-    font-size:
-        27px;
-}
-
-
-/* =========================================================
-   نمودار
-========================================================= */
-
-.chart-card {
-
-    overflow:
-        hidden;
-}
-
-
-.chart-subtitle {
-
-    margin:
-        -8px 0 18px;
-
-    color:
-        #71857d;
-
-    font-size:
-        14px;
-}
-
-
-.chart-container {
-
-    position:
-        relative;
-
-    width:
-        100%;
-
-    height:
-        330px;
-}
-
-
-.distribution-chart {
-
-    height:
-        300px;
-}
-
-
-canvas {
-
-    max-width:
-        100%;
-}
-
-
-/* =========================================================
-   موبایل
-========================================================= */
+/* =====================================================
+   TABLET
+===================================================== */
 
 @media (max-width: 800px) {
 
-    .app-header {
-
-        min-height:
-            210px;
-
-        border-radius:
-            0 0 28px 28px;
+    .dashboard-header {
+        min-height: 245px;
     }
-
 
     .header-content {
+        min-height: 245px;
+        padding: 65px 20px 20px;
+    }
 
-        min-height:
-            210px;
+    .brand-logo {
+        right: 15px;
+        top: 15px;
+        width: 62px;
+        height: 62px;
+    }
 
-        padding:
-            20px 16px;
+    .brand-logo img {
+        width: 58px;
+        height: 58px;
+    }
 
+    .logout-button {
+        left: 15px;
+        top: 15px;
+        min-width: 92px;
+        height: 43px;
+        font-size: 15px;
+        border-radius: 14px;
+    }
+
+    .brand-text h1 {
+        font-size: 34px;
+    }
+
+    .brand-text h2 {
+        font-size: 18px;
+    }
+
+    .quick-grid {
         grid-template-columns:
-            78px 1fr 82px;
-
-        gap:
-            10px;
+            repeat(2, minmax(0,1fr));
     }
 
-
-    .header-logo {
-
-        width:
-            68px;
-
-        height:
-            68px;
-
-        border-radius:
-            17px;
-
-        padding:
-            7px;
+    .fcr-grid {
+        grid-template-columns: 1fr;
     }
 
+    .results-grid {
+        grid-template-columns:
+            repeat(2, minmax(0,1fr));
+    }
+}
 
-    .header-logo img {
 
-        border-radius:
-            11px;
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 520px) {
+
+    body {
+        background: #f3f7f5;
     }
 
-
-    .header-title h1 {
-
-        font-size:
-            23px;
-
-        margin-bottom:
-            7px;
+    .dashboard-header {
+        min-height: 235px;
+        border-radius: 0 0 28px 28px;
     }
 
-
-    .header-title p {
-
-        font-size:
-            13px;
-
-        margin-bottom:
-            8px;
+    .header-content {
+        width: 100%;
+        min-height: 235px;
+        padding: 65px 15px 18px;
     }
 
+    .brand-logo {
+        right: 12px;
+        top: 12px;
+    }
+
+    .logout-button {
+        left: 12px;
+        top: 12px;
+        min-width: 84px;
+        height: 40px;
+        padding: 0 11px;
+        font-size: 14px;
+    }
+
+    .brand-text {
+        padding-top: 12px;
+    }
+
+    .brand-text h1 {
+        font-size: 30px;
+        margin-bottom: 9px;
+    }
+
+    .brand-text h2 {
+        font-size: 16px;
+        line-height: 1.7;
+        margin-bottom: 9px;
+    }
 
     .user-box {
-
-        font-size:
-            11px;
-
-        padding:
-            6px 9px;
-
-        min-height:
-            30px;
-
-        max-width:
-            100%;
-
-        overflow:
-            hidden;
-
-        text-overflow:
-            ellipsis;
-
-        white-space:
-            nowrap;
+        min-height: 34px;
+        padding: 6px 13px;
+        font-size: 13px;
     }
 
-
-    .logout-btn {
-
-        min-height:
-            48px;
-
-        padding:
-            0 10px;
-
-        border-radius:
-            16px;
-
-        font-size:
-            14px;
+    .navigation-inner {
+        justify-content: flex-start;
+        padding: 8px 10px;
     }
 
-
-    .logout-btn span {
-
-        font-size:
-            18px;
+    .nav-item {
+        min-height: 42px;
+        padding: 7px 12px;
+        font-size: 13px;
+        border-radius: 13px;
     }
 
-
-    .main-menu {
-
-        margin:
-            14px auto;
-
-        padding:
-            0 12px;
+    .dashboard-container {
+        width: 94%;
+        margin-top: 18px;
+        gap: 16px;
     }
 
-
-    .main-menu a {
-
-        padding:
-            11px 15px;
-
-        border-radius:
-            15px;
-
-        font-size:
-            13px;
+    .quick-section,
+    .dashboard-card {
+        padding: 18px;
+        border-radius: 22px;
     }
 
+    .quick-grid {
+        grid-template-columns:
+            repeat(2, minmax(0,1fr));
 
-    .container {
-
-        padding:
-            5px 12px 40px;
+        gap: 9px;
     }
 
-
-    .card {
-
-        padding:
-            20px 15px;
-
-        border-radius:
-            23px;
-
-        margin-bottom:
-            16px;
+    .quick-card {
+        min-height: 62px;
+        font-size: 14px;
+        border-radius: 15px;
     }
 
+    .quick-icon {
+        font-size: 19px;
+    }
 
     .form-grid {
-
-        grid-template-columns:
-            1fr;
-
-        gap:
-            12px;
+        grid-template-columns: 1fr;
+        gap: 13px;
     }
 
+    .input-group input,
+    .input-group select {
+        height: 55px;
+    }
 
     .results-grid {
-
         grid-template-columns:
-            repeat(2, minmax(0, 1fr));
+            repeat(2, minmax(0,1fr));
 
-        gap:
-            10px;
+        gap: 9px;
     }
-
 
     .result-box {
-
-        min-height:
-            92px;
-
-        padding:
-            12px 7px;
+        min-height: 88px;
     }
-
 
     .result-box strong {
-
-        font-size:
-            19px;
+        font-size: 20px;
     }
 
-
-    .fcr-result strong {
-
-        font-size:
-            24px;
-    }
-
-
-    .chart-container {
-
-        height:
-            280px;
-    }
-
-
-    .distribution-chart {
-
-        height:
-            260px;
-    }
-
-
-    .input-with-unit {
-
-        flex-direction:
-            column;
-
-        align-items:
-            stretch;
-    }
-
-
-    .input-with-unit span {
-
-        text-align:
-            center;
+    .card-header h2 {
+        font-size: 21px;
     }
 }
 
 
-/* =========================================================
-   موبایل خیلی کوچک
-========================================================= */
+/* =====================================================
+   VERY SMALL PHONES
+===================================================== */
 
-@media (max-width: 430px) {
+@media (max-width: 370px) {
 
-    .header-content {
-
-        grid-template-columns:
-            65px 1fr 72px;
-
-        gap:
-            7px;
-
-        padding:
-            17px 10px;
+    .brand-text h1 {
+        font-size: 26px;
     }
 
-
-    .header-logo {
-
-        width:
-            58px;
-
-        height:
-            58px;
-
-        padding:
-            6px;
+    .brand-text h2 {
+        font-size: 14px;
     }
 
-
-    .header-title h1 {
-
-        font-size:
-            19px;
+    .quick-card {
+        font-size: 12px;
     }
 
-
-    .header-title p {
-
-        font-size:
-            11px;
+    .quick-icon {
+        font-size: 17px;
     }
-
-
-    .logout-btn {
-
-        font-size:
-            12px;
-
-        min-height:
-            43px;
-    }
-
-
-    .results-grid {
-
-        grid-template-columns:
-            repeat(2, 1fr);
-    }
-
-
-    .chart-container {
-
-        height:
-            255px;
-    }
-}
-
-
-/* =========================================================
-   جلوگیری از انتخاب ناخواسته دکمه‌ها
-========================================================= */
-
-button,
-a {
-
-    -webkit-tap-highlight-color:
-        transparent;
-}
-
-
-button {
-
-    -webkit-appearance:
-        none;
 }
