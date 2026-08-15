@@ -17,8 +17,7 @@ const SUPABASE_URL =
 */
 
 const SUPABASE_PUBLISHABLE_KEY =
-    'YOUR_SUPABASE_PUBLISHABLE_KEY';
-
+    'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
 if (
     !window.supabase ||
     typeof window.supabase.createClient !== 'function'
