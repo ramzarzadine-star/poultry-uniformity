@@ -1,10 +1,14 @@
 {
   "name": "مرکز تخصصی سلامت طیور آدینه",
   "short_name": "سلامت طیور آدینه",
+  "description": "سامانه حرفه‌ای پایش و مدیریت سلامت و عملکرد فارم‌های طیور",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "dir": "rtl",
+  "orientation": "portrait-primary",
+  "background_color": "#f4f7f8",
+  "theme_color": "#0b766e",
   "lang": "fa",
-  "theme_color": "#087a50",
-  "background_color": "#f3f7f5"
+  "dir": "rtl",
+  "icons": []
 }
