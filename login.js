@@ -1,147 +1,74 @@
-let message;
+function value(id){
 
+return String(
 
+document.getElementById(id).value || ""
 
-document.addEventListener("DOMContentLoaded",function(){
+).trim();
 
-message=document.getElementById("message");
-
-});
-
-
-
-
+}
 
 
 function register(){
 
+const username=value("username");
 
-let username=document.getElementById("username").value.trim();
+const password=value("password");
 
-let password=document.getElementById("password").value.trim();
-
-
-
-if(username==="" || password===""){
+const message=
+document.getElementById("message");
 
 
-message.innerHTML="نام کاربری و رمز را وارد کنید";
+if(
+username.length<3 ||
+password.length<4
+){
+
+message.textContent=
+"نام کاربری حداقل ۳ و رمز عبور حداقل ۴ کاراکتر باشد.";
 
 return;
-
 
 }
 
 
+const users=
+JSON.parse(
+
+localStorage.getItem(
+"adineh_users"
+) || "{}"
+
+);
 
 
-if(localStorage.getItem("user_"+username)){
+if(users[username]){
 
-
-message.innerHTML="این کاربر قبلا ثبت شده";
+message.textContent=
+"این نام کاربری قبلاً ثبت شده است.";
 
 return;
-
 
 }
 
 
-
-
-
-let user={
-
-
-username:username,
+users[username]={
 
 password:password,
 
-
-created:new Date().toLocaleDateString("fa-IR")
-
+createdAt:
+new Date().toISOString()
 
 };
 
 
-
-
 localStorage.setItem(
 
-"user_"+username,
+"adineh_users",
 
-JSON.stringify(user)
-
-);
-
-
-
-message.innerHTML="ثبت نام موفق بود";
-
-
-
-}
-
-
-
-
-
-
-
-
-function login(){
-
-
-let username=document.getElementById("username").value.trim();
-
-let password=document.getElementById("password").value.trim();
-
-
-
-
-
-let data=localStorage.getItem(
-
-"user_"+username
+JSON.stringify(users)
 
 );
-
-
-
-
-
-if(!data){
-
-
-message.innerHTML="کاربر وجود ندارد";
-
-
-return;
-
-
-}
-
-
-
-
-
-let user=JSON.parse(data);
-
-
-
-
-if(user.password!==password){
-
-
-message.innerHTML="رمز عبور اشتباه است";
-
-
-return;
-
-
-}
-
-
-
 
 
 localStorage.setItem(
@@ -153,24 +80,60 @@ username
 );
 
 
-
-
-
-window.location.href="panel.html";
-
-
+location.href="panel.html";
 
 }
 
 
+function login(){
+
+const username=value("username");
+
+const password=value("password");
+
+const message=
+document.getElementById("message");
 
 
+const users=
+JSON.parse(
 
+localStorage.getItem(
+"adineh_users"
+) || "{}"
+
+);
+
+
+if(
+users[username] &&
+users[username].password===password
+){
+
+localStorage.setItem(
+
+"activeUser",
+
+username
+
+);
+
+
+location.href="panel.html";
+
+}
+
+else{
+
+message.textContent=
+"نام کاربری یا رمز عبور صحیح نیست.";
+
+}
+
+}
 
 
 function guestLogin(){
-
-
 
 localStorage.setItem(
 
@@ -181,10 +144,6 @@ localStorage.setItem(
 );
 
 
-
-
-window.location.href="panel.html";
-
-
+location.href="panel.html";
 
 }
