@@ -2,38 +2,59 @@
 <html lang="fa" dir="rtl">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 
-<title>مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه</title>
+    <meta name="theme-color" content="#087f5b">
 
-<link rel="stylesheet" href="Style.css">
+    <title>مدیریت گله طیور | مرکز تخصصی سلامت طیور آدینه</title>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="Style.css">
 </head>
 
 <body>
 
-<header class="app-header">
+<!-- ================= HEADER ================= -->
+
+<header class="dashboard-header">
 
     <div class="header-background"></div>
 
     <div class="header-content">
 
-        <div class="header-logo">
-            <img src="IMG_4309.png" alt="لوگوی مرکز تخصصی سلامت طیور آدینه">
+        <!-- لوگو -->
+        <div class="brand-logo">
+            <img
+                src="IMG_4309.png"
+                alt="لوگوی مرکز تخصصی سلامت طیور آدینه"
+            >
         </div>
 
-        <div class="header-title">
-            <h1>🐔 مدیریت گله طیور</h1>
-            <p>مرکز تخصصی سلامت طیور آدینه</p>
+        <!-- عنوان -->
+        <div class="brand-text">
 
-            <div id="userBox" class="user-box"></div>
+            <h1>
+                مدیریت گله طیور
+            </h1>
+
+            <h2>
+                مرکز تخصصی سلامت طیور آدینه
+            </h2>
+
+            <div id="userBox" class="user-box">
+                👤 کاربر فعال: مهمان
+            </div>
+
         </div>
 
-        <button class="logout-btn" onclick="logout()">
-            <span>↪</span>
-            خروج
+        <!-- خروج -->
+        <button
+            class="logout-button"
+            type="button"
+            onclick="logout()"
+        >
+            <span>خروج</span>
+            <span class="logout-icon">↪</span>
         </button>
 
     </div>
@@ -41,307 +62,449 @@
 </header>
 
 
-<nav class="main-menu">
+<!-- ================= NAVIGATION ================= -->
 
-    <a href="panel.html" class="active">
-        🏠 داشبورد
-    </a>
+<nav class="main-navigation">
 
-    <a href="flock.html">
-        🐔 مدیریت گله
-    </a>
+    <div class="navigation-inner">
 
-    <a href="feed.html">
-        🌽 مصرف دان
-    </a>
+        <a href="panel.html" class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            <span>داشبورد</span>
+        </a>
 
-    <a href="water.html">
-        💧 مصرف آب
-    </a>
+        <a href="flock.html" class="nav-item">
+            <span class="nav-icon">🐔</span>
+            <span>مدیریت گله</span>
+        </a>
 
-    <a href="vaccine.html">
-        💉 واکسیناسیون
-    </a>
+        <a href="feed.html" class="nav-item">
+            <span class="nav-icon">🌽</span>
+            <span>مصرف دان</span>
+        </a>
 
-    <a href="medicine.html">
-        💊 دارو
-    </a>
+        <a href="water.html" class="nav-item">
+            <span class="nav-icon">💧</span>
+            <span>مصرف آب</span>
+        </a>
 
-    <a href="report.html">
-        📊 گزارشات
-    </a>
+        <a href="vaccine.html" class="nav-item">
+            <span class="nav-icon">💉</span>
+            <span>واکسیناسیون</span>
+        </a>
+
+        <a href="medicine.html" class="nav-item">
+            <span class="nav-icon">💊</span>
+            <span>دارو</span>
+        </a>
+
+        <a href="report.html" class="nav-item">
+            <span class="nav-icon">📊</span>
+            <span>گزارشات</span>
+        </a>
+
+    </div>
 
 </nav>
 
 
-<main class="container">
+<!-- ================= MAIN ================= -->
+
+<main class="dashboard-container">
 
 
-<section class="card">
+    <!-- ================= QUICK ACCESS ================= -->
 
-    <div class="card-title">
-        <h2>اطلاعات گله</h2>
-        <span>📋</span>
-    </div>
+    <section class="quick-section">
 
-    <div class="form-grid">
+        <div class="section-title">
+            <span>دسترسی سریع</span>
+        </div>
 
-        <input
-            id="farm"
-            type="text"
-            placeholder="نام فارم / مرغدار"
+        <div class="quick-grid">
+
+            <a href="panel.html" class="quick-card">
+                <span class="quick-icon">🏠</span>
+                <span>داشبورد</span>
+            </a>
+
+            <a href="flock.html" class="quick-card">
+                <span class="quick-icon">🐔</span>
+                <span>مدیریت گله</span>
+            </a>
+
+            <a href="feed.html" class="quick-card">
+                <span class="quick-icon">🌽</span>
+                <span>مصرف دان</span>
+            </a>
+
+            <a href="water.html" class="quick-card">
+                <span class="quick-icon">💧</span>
+                <span>مصرف آب</span>
+            </a>
+
+            <a href="vaccine.html" class="quick-card">
+                <span class="quick-icon">💉</span>
+                <span>واکسیناسیون</span>
+            </a>
+
+            <a href="medicine.html" class="quick-card">
+                <span class="quick-icon">💊</span>
+                <span>دارو</span>
+            </a>
+
+            <a href="report.html" class="quick-card">
+                <span class="quick-icon">📊</span>
+                <span>گزارشات</span>
+            </a>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= FLOCK INFORMATION ================= -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+                <span class="card-small-title">اطلاعات پایه</span>
+
+                <h2>
+                    🐔 اطلاعات گله
+                </h2>
+            </div>
+
+            <div class="card-header-icon">
+                📋
+            </div>
+
+        </div>
+
+
+        <div class="form-grid">
+
+            <div class="input-group">
+
+                <label for="farm">
+                    نام فارم / مرغدار
+                </label>
+
+                <input
+                    id="farm"
+                    type="text"
+                    placeholder="مثلاً فارم شماره ۱"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label for="hall">
+                    نام سالن
+                </label>
+
+                <input
+                    id="hall"
+                    type="text"
+                    placeholder="مثلاً سالن ۳"
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label for="type">
+                    نوع گله
+                </label>
+
+                <select id="type">
+
+                    <option value="">
+                        انتخاب نوع گله
+                    </option>
+
+                    <option value="گوشتی">
+                        گوشتی
+                    </option>
+
+                    <option value="تخمگذار">
+                        تخمگذار
+                    </option>
+
+                    <option value="مادر">
+                        مادر
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label for="age">
+                    سن گله
+                </label>
+
+                <input
+                    id="age"
+                    type="number"
+                    min="1"
+                    placeholder="روز"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label for="countBird">
+                    تعداد پرنده
+                </label>
+
+                <input
+                    id="countBird"
+                    type="number"
+                    min="1"
+                    placeholder="تعداد اولیه پرنده"
+                >
+
+            </div>
+
+
+            <div class="input-group">
+
+                <label for="date">
+                    تاریخ ارزیابی
+                </label>
+
+                <input
+                    id="date"
+                    type="date"
+                >
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- ================= FCR ================= -->
+
+    <section class="dashboard-card fcr-card">
+
+        <div class="card-header">
+
+            <div>
+                <span class="card-small-title">
+                    شاخص تغذیه
+                </span>
+
+                <h2>
+                    🌽 محاسبه ضریب تبدیل غذایی FCR
+                </h2>
+            </div>
+
+            <div class="card-header-icon">
+                ⚖️
+            </div>
+
+        </div>
+
+
+        <div class="fcr-grid">
+
+            <div class="input-group">
+
+                <label for="feedAverage">
+                    میانگین غذای مصرفی
+                </label>
+
+                <input
+                    id="feedAverage"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    placeholder="گرم به ازای هر پرنده"
+                >
+
+                <small>
+                    مقدار مصرف دان متوسط هر پرنده را وارد کنید.
+                </small>
+
+            </div>
+
+
+            <div class="fcr-result">
+
+                <span>
+                    FCR
+                </span>
+
+                <strong id="fcrResult">
+                    —
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="primary-action"
+            onclick="calculateFCR()"
         >
+            محاسبه FCR
+        </button>
 
-        <input
-            id="hall"
-            type="text"
-            placeholder="نام سالن"
+    </section>
+
+
+
+    <!-- ================= WEIGHT ================= -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <span class="card-small-title">
+                    ارزیابی یکنواختی
+                </span>
+
+                <h2>
+                    ⚖️ ورود وزن پرندگان
+                </h2>
+
+            </div>
+
+            <div class="card-header-icon">
+                📈
+            </div>
+
+        </div>
+
+
+        <div class="input-group">
+
+            <label for="weightsInput">
+                وزن‌ها
+            </label>
+
+            <textarea
+                id="weightsInput"
+                rows="5"
+                placeholder="وزن‌ها را با فاصله یا کاما وارد کنید&#10;مثال: 185 190 195 200 205"
+            ></textarea>
+
+            <small>
+                امکان ورود اعداد فارسی و انگلیسی وجود دارد.
+            </small>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="primary-action"
+            onclick="calculate()"
         >
+            محاسبه شاخص‌های گله
+        </button>
 
-        <select id="type">
-            <option value="">نوع گله</option>
-            <option value="گوشتی">گوشتی</option>
-            <option value="تخمگذار">تخمگذار</option>
-            <option value="مادر">مادر</option>
-        </select>
-
-        <input
-            id="age"
-            type="number"
-            min="1"
-            max="56"
-            placeholder="سن گله (روز)"
-        >
-
-        <input
-            id="countBird"
-            type="number"
-            min="1"
-            placeholder="تعداد پرنده"
-        >
-
-        <input
-            id="date"
-            type="date"
-        >
-
-    </div>
-
-</section>
+    </section>
 
 
-<section class="card">
 
-    <div class="card-title">
-        <h2>ورود اطلاعات عملکرد</h2>
-        <span>📊</span>
-    </div>
+    <!-- ================= RESULTS ================= -->
 
-    <label class="input-label">
-        وزن نمونه‌ها
-    </label>
+    <section class="dashboard-card">
 
-    <textarea
-        id="weightsInput"
-        placeholder="وزن‌ها را وارد کنید؛ مثال:
-210 215 218 220 205 214 217 ..."
-    ></textarea>
+        <div class="card-header">
 
+            <div>
 
-    <div class="feed-input-box">
+                <span class="card-small-title">
+                    نتیجه ارزیابی
+                </span>
 
-        <label class="input-label">
-            میانگین مصرف تجمعی دان
-        </label>
+                <h2>
+                    📊 شاخص‌های گله
+                </h2>
 
-        <div class="input-with-unit">
-
-            <input
-                id="feedAverage"
-                type="number"
-                min="0"
-                step="0.1"
-                placeholder="مثلاً 166"
-            >
-
-            <span>گرم / پرنده</span>
+            </div>
 
         </div>
 
-        <small>
-            برای محاسبه FCR، مصرف تجمعی دان به ازای هر پرنده را وارد کنید.
-        </small>
 
-    </div>
+        <div class="results-grid">
 
+            <div class="result-box">
+                <span>تعداد نمونه</span>
+                <strong id="sample">—</strong>
+            </div>
 
-    <button
-        class="calculate-btn"
-        type="button"
-        onclick="calculate()"
-    >
-        محاسبه و ثبت اطلاعات
-    </button>
+            <div class="result-box">
+                <span>میانگین وزن</span>
+                <strong id="mean">—</strong>
+            </div>
 
-</section>
+            <div class="result-box">
+                <span>حداقل وزن</span>
+                <strong id="min">—</strong>
+            </div>
 
+            <div class="result-box">
+                <span>حداکثر وزن</span>
+                <strong id="max">—</strong>
+            </div>
 
-<section class="card">
+            <div class="result-box">
+                <span>SD</span>
+                <strong id="sd">—</strong>
+            </div>
 
-    <div class="card-title">
-        <h2>نتایج محاسبه</h2>
-        <span>✅</span>
-    </div>
+            <div class="result-box">
+                <span>CV</span>
+                <strong id="cv">—</strong>
+            </div>
 
-    <div class="results-grid">
+            <div class="result-box">
+                <span>یکنواختی ±10%</span>
+                <strong id="u10">—</strong>
+            </div>
 
-        <div class="result-box">
-            <span>تعداد نمونه</span>
-            <strong id="sample">-</strong>
+            <div class="result-box">
+                <span>یکنواختی ±15%</span>
+                <strong id="u15">—</strong>
+            </div>
+
+            <div class="result-box fcr-result-small">
+                <span>FCR</span>
+                <strong id="fcrResult2">—</strong>
+            </div>
+
         </div>
 
-        <div class="result-box">
-            <span>میانگین وزن</span>
-            <strong id="mean">-</strong>
-            <small>گرم</small>
-        </div>
-
-        <div class="result-box">
-            <span>حداقل وزن</span>
-            <strong id="min">-</strong>
-            <small>گرم</small>
-        </div>
-
-        <div class="result-box">
-            <span>حداکثر وزن</span>
-            <strong id="max">-</strong>
-            <small>گرم</small>
-        </div>
-
-        <div class="result-box">
-            <span>SD</span>
-            <strong id="sd">-</strong>
-        </div>
-
-        <div class="result-box">
-            <span>CV</span>
-            <strong id="cv">-</strong>
-        </div>
-
-        <div class="result-box">
-            <span>یکنواختی ±10%</span>
-            <strong id="u10">-</strong>
-        </div>
-
-        <div class="result-box">
-            <span>یکنواختی ±15%</span>
-            <strong id="u15">-</strong>
-        </div>
-
-        <div class="result-box fcr-result">
-            <span>FCR</span>
-            <strong id="fcr">-</strong>
-        </div>
-
-        <div class="result-box">
-            <span>مصرف تجمعی دان</span>
-            <strong id="feedResult">-</strong>
-            <small>g/پرنده</small>
-        </div>
-
-    </div>
-
-</section>
-
-
-<section class="card chart-card">
-
-    <div class="card-title">
-        <h2>مقایسه میانگین وزن</h2>
-        <span>⚖️</span>
-    </div>
-
-    <p class="chart-subtitle">
-        عملکرد واقعی گله در مقایسه با مرجع Ross 308
-    </p>
-
-    <div class="chart-container">
-        <canvas id="weightChart"></canvas>
-    </div>
-
-</section>
-
-
-<section class="card chart-card">
-
-    <div class="card-title">
-        <h2>مقایسه ضریب تغییرات CV</h2>
-        <span>📈</span>
-    </div>
-
-    <p class="chart-subtitle">
-        CV واقعی در مقایسه با خط مرجع مدیریتی 10%
-    </p>
-
-    <div class="chart-container">
-        <canvas id="cvChart"></canvas>
-    </div>
-
-</section>
-
-
-<section class="card chart-card">
-
-    <div class="card-title">
-        <h2>مقایسه یکنواختی گله</h2>
-        <span>🎯</span>
-    </div>
-
-    <p class="chart-subtitle">
-        یکنواختی ±10% واقعی در مقایسه با مرجع 68%
-    </p>
-
-    <div class="chart-container">
-        <canvas id="uniformityChart"></canvas>
-    </div>
-
-</section>
-
-
-<section class="card chart-card">
-
-    <div class="card-title">
-        <h2>مقایسه FCR</h2>
-        <span>🌽</span>
-    </div>
-
-    <p class="chart-subtitle">
-        FCR واقعی گله در مقایسه با Ross 308
-    </p>
-
-    <div class="chart-container">
-        <canvas id="fcrChart"></canvas>
-    </div>
-
-</section>
-
-
-<section class="card chart-card">
-
-    <div class="card-title">
-        <h2>توزیع وزن نمونه‌ها</h2>
-        <span>🐔</span>
-    </div>
-
-    <div class="chart-container distribution-chart">
-        <canvas id="weightDistributionChart"></canvas>
-    </div>
-
-</section>
+    </section>
 
 
 </main>
 
+
+<!-- ================= SCRIPT ================= -->
 
 <script src="Script.js"></script>
 
