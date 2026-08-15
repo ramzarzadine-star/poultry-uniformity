@@ -1,113 +1,60 @@
-const CACHE="adineh-v2";
+const CACHE = "adineh-poultry-v6";
 
-
-const FILES=[
-
-"./",
-
-"./index.html",
-
-"./login.html",
-
-"./panel.html",
-
-"./flock.html",
-
-"./feed.html",
-
-"./water.html",
-
-"./vaccine.html",
-
-"./medicine.html",
-
-"./health.html",
-
-"./report.html",
-
-"./Style.css",
-
-"./app.js",
-
-"./database.js",
-
-"./Script.js",
-
-"./login.js",
-
-"./IMG_4309.png",
-
-"./IMG_4317.jpeg"
-
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./app.js",
+  "./Style.css",
+  "./manifest.json"
 ];
 
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
 
-self.addEventListener(
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys
+          .filter(key => key !== CACHE)
+          .map(key => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
+  );
+});
 
-"install",
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(cached => {
 
-function(event){
+      if (cached) {
+        return cached;
+      }
 
-event.waitUntil(
+      return fetch(event.request)
+        .then(response => {
 
-caches
+          if (!response || !response.ok) {
+            return response;
+          }
 
-.open(CACHE)
+          const copy = response.clone();
 
-.then(function(cache){
+          caches.open(CACHE).then(cache => {
+            cache.put(event.request, copy);
+          });
 
-return cache.addAll(FILES);
+          return response;
+        })
+        .catch(() => {
+          return caches.match("./index.html");
+        });
 
-})
-
-.then(function(){
-
-return self.skipWaiting();
-
-})
-
-);
-
-}
-
-);
-
-
-self.addEventListener(
-
-"activate",
-
-function(event){
-
-event.waitUntil(
-
-self.clients.claim()
-
-);
-
-}
-
-);
-
-
-self.addEventListener(
-
-"fetch",
-
-function(event){
-
-event.respondWith(
-
-caches.match(event.request)
-
-.then(function(response){
-
-return response || fetch(event.request);
-
-})
-
-);
-
-}
-
-);
+    })
+  );
+});
