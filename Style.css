@@ -1,653 +1,1263 @@
+/* =========================================================
+   تنظیمات پایه
+========================================================= */
+
 * {
     box-sizing: border-box;
 }
 
-:root {
-    --green: #087a4b;
-    --green-dark: #075c3b;
-    --green-soft: #eaf7f1;
-    --gold: #c69218;
-    --bg: #f3f7f5;
-    --card: #ffffff;
-    --text: #12352a;
-    --muted: #71827b;
-    --border: #dbe6e1;
-    --danger: #b42345;
-    --shadow: 0 12px 35px rgba(18, 53, 42, .09);
-}
 
 html {
-    direction: rtl;
     scroll-behavior: smooth;
 }
 
+
 body {
     margin: 0;
+
     padding: 0;
+
+    direction: rtl;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Tahoma,
+        Arial,
+        sans-serif;
+
+    background:
+        #f1f6f4;
+
+    color:
+        #16352d;
+
     min-height: 100vh;
-    background: var(--bg);
-    color: var(--text);
-    font-family: Tahoma, Arial, sans-serif;
+
     overflow-x: hidden;
 }
 
-button,
-input,
-select,
-textarea {
-    font-family: inherit;
-}
 
-button {
-    cursor: pointer;
-}
+/* =========================================================
+   هدر
+========================================================= */
 
-a {
-    -webkit-tap-highlight-color: transparent;
-}
+.app-header {
 
-/* ================= HEADER ================= */
-
-.header {
     position: relative;
-    width: 100%;
-    min-height: 235px;
-    padding: 28px 20px 30px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    isolation: isolate;
-    background: #087a4b;
-    border-radius: 0 0 38px 38px;
-}
 
-.header::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -2;
+    width: 100%;
+
+    min-height: 245px;
+
+    overflow: hidden;
+
     background:
         linear-gradient(
-            rgba(4, 92, 59, .60),
-            rgba(3, 108, 70, .60)
-        ),
-        url("IMG_4317.jpeg") center center / cover no-repeat;
-    opacity: .75;
-    transform: scale(1.01);
+            135deg,
+            rgba(0, 105, 75, 0.96),
+            rgba(0, 139, 98, 0.88)
+        );
+
+    border-radius:
+        0 0 38px 38px;
+
+    box-shadow:
+        0 14px 35px
+        rgba(0, 70, 50, 0.15);
 }
 
-.header::after {
-    content: "";
+
+/* =========================================================
+   تصویر فارم
+========================================================= */
+
+.header-background {
+
     position: absolute;
+
     inset: 0;
-    z-index: -1;
-    background: linear-gradient(
-        135deg,
-        rgba(0, 85, 55, .25),
-        rgba(0, 145, 100, .16)
-    );
+
+    background-image:
+        linear-gradient(
+            rgba(0, 80, 58, 0.34),
+            rgba(0, 80, 58, 0.42)
+        ),
+        url("IMG_4317.jpeg");
+
+    background-size: cover;
+
+    background-position:
+        center center;
+
+    opacity: 0.34;
+
+    filter:
+        blur(0.8px);
+
+    transform:
+        scale(1.03);
+
+    z-index: 0;
 }
+
+
+/* =========================================================
+   محتوای هدر
+========================================================= */
+
+.header-content {
+
+    position: relative;
+
+    z-index: 2;
+
+    min-height: 245px;
+
+    width: 100%;
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    padding:
+        28px 28px 25px;
+
+    display: grid;
+
+    grid-template-columns:
+        110px 1fr 125px;
+
+    align-items: center;
+
+    gap: 22px;
+}
+
+
+/* =========================================================
+   لوگو
+========================================================= */
 
 .header-logo {
-    width: 58px !important;
-    height: 58px !important;
-    max-width: 58px !important;
-    object-fit: contain;
-    padding: 6px;
-    margin: 0 0 10px;
-    background: rgba(255,255,255,.94);
-    border-radius: 16px;
-    box-shadow: 0 7px 20px rgba(0,0,0,.16);
-}
 
-.header h1 {
-    margin: 0;
-    color: #fff;
-    font-size: clamp(27px, 7vw, 40px);
-    line-height: 1.35;
-    font-weight: 900;
-    text-shadow: 0 2px 8px rgba(0,0,0,.28);
-}
+    width: 86px;
 
-.header h3 {
-    margin: 8px 0 14px;
-    color: #fff;
-    font-size: clamp(16px, 4vw, 22px);
-    font-weight: 600;
-    text-shadow: 0 2px 6px rgba(0,0,0,.25);
-}
+    height: 86px;
 
-#userBox {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 38px;
-    padding: 8px 15px;
-    color: #fff;
-    background: rgba(255,255,255,.17);
-    border: 1px solid rgba(255,255,255,.25);
-    border-radius: 22px;
-    backdrop-filter: blur(8px);
-}
-
-.logout {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 5;
-    border: 0;
-    border-radius: 15px;
-    padding: 11px 17px;
-    color: #fff;
-    background: rgba(150, 18, 54, .92);
-    font-size: 15px;
-    font-weight: 800;
-    box-shadow: 0 7px 20px rgba(0,0,0,.18);
-}
-
-.logout:active {
-    transform: scale(.97);
-}
-
-/* ================= NAV ================= */
-
-.menu {
-    width: 100%;
     display: flex;
-    gap: 10px;
-    padding: 13px 14px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    background: rgba(255,255,255,.96);
-    border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    direction: rtl;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background:
+        rgba(255, 255, 255, 0.94);
+
+    border-radius:
+        22px;
+
+    padding: 9px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(0, 0, 0, 0.16);
 }
 
-.menu::-webkit-scrollbar {
+
+.header-logo img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: contain;
+
+    border-radius: 15px;
+}
+
+
+/* =========================================================
+   عنوان
+========================================================= */
+
+.header-title {
+
+    text-align: center;
+
+    color: white;
+
+    min-width: 0;
+}
+
+
+.header-title h1 {
+
+    margin:
+        0 0 12px;
+
+    font-size:
+        clamp(27px, 5vw, 48px);
+
+    font-weight:
+        800;
+
+    line-height:
+        1.25;
+
+    text-shadow:
+        0 3px 12px
+        rgba(0, 0, 0, 0.22);
+}
+
+
+.header-title p {
+
+    margin:
+        0 0 14px;
+
+    font-size:
+        clamp(17px, 3vw, 25px);
+
+    font-weight:
+        600;
+
+    line-height:
+        1.5;
+
+    text-shadow:
+        0 2px 8px
+        rgba(0, 0, 0, 0.2);
+}
+
+
+/* =========================================================
+   کاربر
+========================================================= */
+
+.user-box {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 38px;
+
+    padding:
+        8px 17px;
+
+    border-radius:
+        999px;
+
+    background:
+        rgba(255,255,255,0.17);
+
+    border:
+        1px solid
+        rgba(255,255,255,0.24);
+
+    backdrop-filter:
+        blur(8px);
+
+    font-size:
+        14px;
+
+    color:
+        white;
+}
+
+
+/* =========================================================
+   دکمه خروج
+========================================================= */
+
+.logout-btn {
+
+    border: 0;
+
+    cursor: pointer;
+
+    min-height: 58px;
+
+    padding:
+        0 18px;
+
+    border-radius:
+        20px;
+
+    background:
+        rgba(137, 0, 35, 0.92);
+
+    color:
+        white;
+
+    font-size:
+        18px;
+
+    font-weight:
+        700;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 9px;
+
+    box-shadow:
+        0 8px 22px
+        rgba(70, 0, 20, 0.22);
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        background .2s ease;
+}
+
+
+.logout-btn span {
+    font-size: 23px;
+}
+
+
+.logout-btn:hover {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 12px 28px
+        rgba(70, 0, 20, 0.28);
+
+    background:
+        #a60032;
+}
+
+
+.logout-btn:active {
+
+    transform:
+        scale(0.97);
+}
+
+
+/* =========================================================
+   منو
+========================================================= */
+
+.main-menu {
+
+    width: 100%;
+
+    max-width: 1200px;
+
+    margin:
+        20px auto;
+
+    padding:
+        0 18px;
+
+    display: flex;
+
+    gap: 10px;
+
+    overflow-x: auto;
+
+    scrollbar-width: none;
+}
+
+
+.main-menu::-webkit-scrollbar {
     display: none;
 }
 
-.menu a {
-    flex: 0 0 auto;
-    padding: 12px 18px;
-    border-radius: 16px;
-    background: var(--green-soft);
-    color: var(--green);
+
+.main-menu a {
+
+    flex:
+        0 0 auto;
+
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 800;
-    white-space: nowrap;
-    transition: .2s ease;
+
+    color:
+        #08754d;
+
+    background:
+        white;
+
+    border:
+        1px solid
+        #dcebe5;
+
+    padding:
+        14px 22px;
+
+    border-radius:
+        18px;
+
+    font-size:
+        15px;
+
+    font-weight:
+        700;
+
+    box-shadow:
+        0 5px 16px
+        rgba(0, 60, 40, 0.07);
+
+    transition:
+        .2s ease;
 }
 
-.menu a:hover,
-.menu a.active {
-    background: var(--green);
-    color: #fff;
+
+.main-menu a:hover {
+
+    transform:
+        translateY(-2px);
+
+    background:
+        #edf8f3;
 }
 
-/* ================= MAIN ================= */
+
+.main-menu a.active {
+
+    background:
+        #007a4e;
+
+    color:
+        white;
+
+    border-color:
+        #007a4e;
+}
+
+
+/* =========================================================
+   کانتینر
+========================================================= */
 
 .container {
-    width: min(1180px, calc(100% - 28px));
-    margin: 22px auto 60px;
+
+    width: 100%;
+
+    max-width: 1100px;
+
+    margin:
+        0 auto;
+
+    padding:
+        10px 18px 60px;
 }
+
+
+/* =========================================================
+   کارت
+========================================================= */
 
 .card {
+
     position: relative;
-    width: 100%;
-    margin-bottom: 20px;
-    padding: 22px;
-    background: var(--card);
-    border: 1px solid rgba(219,230,225,.8);
-    border-radius: 25px;
-    box-shadow: var(--shadow);
+
+    background:
+        rgba(255,255,255,0.97);
+
+    border-radius:
+        28px;
+
+    padding:
+        26px;
+
+    margin:
+        0 0 22px;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 60, 40, 0.08);
+
+    border:
+        1px solid
+        rgba(0, 110, 75, 0.07);
 }
 
-.card h2 {
-    margin: 0 0 20px;
-    color: var(--green);
-    font-size: 21px;
-    font-weight: 900;
+
+.card-title {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom:
+        22px;
+
+    border-bottom:
+        1px solid
+        #e5efeb;
+
+    padding-bottom:
+        14px;
 }
 
-.card-subtitle {
-    color: var(--muted);
-    margin: -12px 0 18px;
-    font-size: 13px;
+
+.card-title h2 {
+
+    margin: 0;
+
+    color:
+        #007b4e;
+
+    font-size:
+        clamp(20px, 4vw, 28px);
+
+    font-weight:
+        800;
 }
 
-/* ================= DASHBOARD ================= */
 
-.hero-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
+.card-title span {
+
+    font-size:
+        26px;
 }
 
-.stat-card {
-    padding: 18px;
-    border-radius: 21px;
-    background: linear-gradient(145deg,#fff,#f5faf7);
-    border: 1px solid var(--border);
-}
 
-.stat-card .label {
-    color: var(--muted);
-    font-size: 13px;
-}
-
-.stat-card .value {
-    display: block;
-    margin-top: 7px;
-    color: var(--green);
-    font-size: 25px;
-    font-weight: 900;
-}
-
-/* ================= FORMS ================= */
+/* =========================================================
+   فرم
+========================================================= */
 
 .form-grid {
+
     display: grid;
-    grid-template-columns: repeat(2, minmax(0,1fr));
-    gap: 14px;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 16px;
 }
+
 
 input,
 select,
 textarea {
+
     width: 100%;
-    min-width: 0;
-    border: 1.5px solid #ccd9d4;
-    border-radius: 17px;
-    background: #fff;
-    color: var(--text);
-    padding: 14px 16px;
-    font-size: 16px;
-    outline: none;
-    transition: .2s ease;
+
+    border:
+        2px solid
+        #d5e0dc;
+
+    background:
+        #fff;
+
+    color:
+        #18382f;
+
+    border-radius:
+        17px;
+
+    padding:
+        16px 18px;
+
+    font-family:
+        inherit;
+
+    font-size:
+        16px;
+
+    outline:
+        none;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease;
 }
 
-input,
-select {
-    height: 55px;
-}
-
-textarea {
-    min-height: 150px;
-    resize: vertical;
-    line-height: 1.8;
-}
 
 input:focus,
 select:focus,
 textarea:focus {
-    border-color: var(--green);
-    box-shadow: 0 0 0 4px rgba(8,122,75,.09);
+
+    border-color:
+        #008158;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(0,129,88,0.08);
 }
 
-::placeholder {
-    color: #a8b3af;
+
+input::placeholder,
+textarea::placeholder {
+
+    color:
+        #a3aaa7;
+
+    opacity:
+        1;
 }
 
-/* ================= BUTTONS ================= */
 
-.btn {
-    border: 0;
-    min-height: 50px;
-    padding: 12px 22px;
-    border-radius: 15px;
-    font-size: 15px;
-    font-weight: 800;
-    transition: .2s ease;
+textarea {
+
+    min-height:
+        145px;
+
+    resize:
+        vertical;
+
+    line-height:
+        1.8;
 }
 
-.btn-primary {
-    color: #fff;
-    background: var(--green);
+
+/* =========================================================
+   ورودی دان
+========================================================= */
+
+.feed-input-box {
+
+    margin-top:
+        20px;
+
+    padding:
+        20px;
+
+    background:
+        #f4faf7;
+
+    border:
+        1px solid
+        #dceee7;
+
+    border-radius:
+        20px;
 }
 
-.btn-primary:hover {
-    background: var(--green-dark);
-    transform: translateY(-1px);
-}
 
-.btn-secondary {
-    color: var(--green);
-    background: var(--green-soft);
-}
+.input-label {
 
-.btn-danger {
-    color: #fff;
-    background: var(--danger);
-}
-
-.action-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 14px;
-}
-
-/* ================= RESULTS ================= */
-
-.results {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 12px;
-}
-
-.results > div {
-    padding: 16px;
-    border-radius: 18px;
-    background: #f5faf7;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    text-align: center;
-}
-
-.results strong {
     display: block;
-    margin-top: 7px;
-    color: var(--green);
-    font-size: 20px;
+
+    margin-bottom:
+        9px;
+
+    color:
+        #26715a;
+
+    font-weight:
+        700;
+
+    font-size:
+        15px;
 }
 
-/* ================= CHARTS ================= */
 
-.chart-card {
-    padding: 18px;
+.input-with-unit {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
 }
 
-.chart-wrap {
-    position: relative;
+
+.input-with-unit input {
+
+    flex:
+        1;
+}
+
+
+.input-with-unit span {
+
+    white-space:
+        nowrap;
+
+    color:
+        #537267;
+
+    font-size:
+        14px;
+
+    font-weight:
+        600;
+}
+
+
+.feed-input-box small {
+
+    display: block;
+
+    margin-top:
+        9px;
+
+    color:
+        #758b83;
+
+    line-height:
+        1.7;
+}
+
+
+/* =========================================================
+   دکمه محاسبه
+========================================================= */
+
+.calculate-btn {
+
     width: 100%;
-    height: 320px;
+
+    border: 0;
+
+    margin-top:
+        20px;
+
+    min-height:
+        58px;
+
+    border-radius:
+        18px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #007a4d,
+            #009a67
+        );
+
+    color:
+        white;
+
+    font-family:
+        inherit;
+
+    font-size:
+        18px;
+
+    font-weight:
+        800;
+
+    cursor:
+        pointer;
+
+    box-shadow:
+        0 9px 22px
+        rgba(0, 122, 77, 0.20);
+
+    transition:
+        .2s ease;
 }
 
-.chart-wrap canvas {
-    width: 100% !important;
-    height: 100% !important;
+
+.calculate-btn:hover {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 13px 28px
+        rgba(0, 122, 77, 0.25);
 }
 
-/* ================= TABLE ================= */
 
-.table-wrap {
-    width: 100%;
-    overflow-x: auto;
-    border-radius: 17px;
+.calculate-btn:active {
+
+    transform:
+        scale(0.985);
 }
 
-table {
-    width: 100%;
-    min-width: 650px;
-    border-collapse: collapse;
-    background: #fff;
-}
 
-th,
-td {
-    padding: 12px;
-    border-bottom: 1px solid var(--border);
-    text-align: center;
-}
+/* =========================================================
+   نتایج
+========================================================= */
 
-th {
-    color: #fff;
-    background: var(--green);
-    font-weight: 800;
-}
+.results-grid {
 
-tr:nth-child(even) {
-    background: #f7faf8;
-}
-
-/* ================= MENU DASHBOARD ================= */
-
-.dashboard-actions {
     display: grid;
-    grid-template-columns: repeat(4,1fr);
+
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+
     gap: 13px;
 }
 
-.dashboard-actions a {
-    min-height: 78px;
+
+.result-box {
+
+    min-height:
+        105px;
+
+    border-radius:
+        20px;
+
+    padding:
+        17px;
+
+    background:
+        #f4faf7;
+
+    border:
+        1px solid
+        #dceee7;
+
     display: flex;
-    align-items: center;
+
+    flex-direction: column;
+
     justify-content: center;
+
+    align-items: center;
+
     text-align: center;
-    border-radius: 20px;
-    text-decoration: none;
-    color: var(--green);
-    background: #edf8f3;
-    border: 1px solid #d9eee5;
-    font-size: 17px;
-    font-weight: 900;
-    transition: .2s ease;
+
+    gap: 6px;
 }
 
-.dashboard-actions a:hover {
-    color: #fff;
-    background: var(--green);
-    transform: translateY(-2px);
+
+.result-box span {
+
+    color:
+        #5b746a;
+
+    font-size:
+        13px;
+
+    font-weight:
+        600;
 }
 
-/* ================= LOGIN ================= */
 
-.login-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 25px 15px;
+.result-box strong {
+
+    color:
+        #00794e;
+
+    font-size:
+        22px;
+
+    font-weight:
+        800;
+}
+
+
+.result-box small {
+
+    color:
+        #80948d;
+
+    font-size:
+        11px;
+}
+
+
+.fcr-result {
+
     background:
         linear-gradient(
-            rgba(3,77,51,.55),
-            rgba(3,112,75,.55)
-        ),
-        url("IMG_4317.jpeg") center / cover no-repeat;
+            135deg,
+            #e7f7ef,
+            #f7fcfa
+        );
+
+    border:
+        2px solid
+        #8fd2b5;
 }
 
-.login-box {
-    width: min(440px,100%);
-    padding: 32px 26px;
-    background: rgba(255,255,255,.96);
-    border-radius: 30px;
-    box-shadow: 0 25px 70px rgba(0,0,0,.20);
-    text-align: center;
+
+.fcr-result strong {
+
+    font-size:
+        27px;
 }
 
-.login-logo {
-    width: 92px;
-    height: 92px;
-    object-fit: contain;
-    padding: 9px;
-    margin: 0 auto 14px;
-    border-radius: 24px;
-    background: #fff;
-    box-shadow: 0 10px 28px rgba(0,0,0,.12);
+
+/* =========================================================
+   نمودار
+========================================================= */
+
+.chart-card {
+
+    overflow:
+        hidden;
 }
 
-.login-box h1 {
-    margin: 0;
-    color: var(--green);
-    font-size: 25px;
-    font-weight: 900;
+
+.chart-subtitle {
+
+    margin:
+        -8px 0 18px;
+
+    color:
+        #71857d;
+
+    font-size:
+        14px;
 }
 
-.login-box h3 {
-    margin: 8px 0 25px;
-    color: var(--text);
-    font-size: 17px;
+
+.chart-container {
+
+    position:
+        relative;
+
+    width:
+        100%;
+
+    height:
+        330px;
 }
 
-.login-box input {
-    margin-bottom: 12px;
+
+.distribution-chart {
+
+    height:
+        300px;
 }
 
-.login-buttons {
-    display: grid;
-    gap: 11px;
-    margin-top: 8px;
+
+canvas {
+
+    max-width:
+        100%;
 }
 
-.login-buttons button {
-    width: 100%;
-}
 
-.guest {
-    background: #707775 !important;
-}
+/* =========================================================
+   موبایل
+========================================================= */
 
-#message {
-    min-height: 25px;
-    margin: 14px 0 0;
-    color: var(--danger);
-    font-weight: 700;
-}
+@media (max-width: 800px) {
 
-/* ================= BADGES ================= */
+    .app-header {
 
-.badge {
-    display: inline-flex;
-    padding: 6px 11px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 800;
-}
+        min-height:
+            210px;
 
-.badge-good {
-    color: #087a4b;
-    background: #e2f6eb;
-}
-
-.badge-warning {
-    color: #996900;
-    background: #fff5d8;
-}
-
-.badge-danger {
-    color: #a91f43;
-    background: #fde7ed;
-}
-
-/* ================= MOBILE ================= */
-
-@media (max-width: 850px) {
-
-    .hero-grid {
-        grid-template-columns: repeat(2,1fr);
+        border-radius:
+            0 0 28px 28px;
     }
 
-    .dashboard-actions {
-        grid-template-columns: repeat(2,1fr);
+
+    .header-content {
+
+        min-height:
+            210px;
+
+        padding:
+            20px 16px;
+
+        grid-template-columns:
+            78px 1fr 82px;
+
+        gap:
+            10px;
     }
 
-    .results {
-        grid-template-columns: repeat(2,1fr);
-    }
-}
-
-@media (max-width: 600px) {
-
-    .header {
-        min-height: 215px;
-        padding: 25px 15px 25px;
-        border-radius: 0 0 30px 30px;
-    }
 
     .header-logo {
-        width: 54px !important;
-        height: 54px !important;
-        max-width: 54px !important;
-        border-radius: 14px;
+
+        width:
+            68px;
+
+        height:
+            68px;
+
+        border-radius:
+            17px;
+
+        padding:
+            7px;
     }
 
-    .header h1 {
-        font-size: 27px;
+
+    .header-logo img {
+
+        border-radius:
+            11px;
     }
 
-    .header h3 {
-        font-size: 16px;
-        margin-top: 6px;
+
+    .header-title h1 {
+
+        font-size:
+            23px;
+
+        margin-bottom:
+            7px;
     }
 
-    .logout {
-        top: 15px;
-        left: 14px;
-        padding: 9px 13px;
-        border-radius: 13px;
-        font-size: 13px;
+
+    .header-title p {
+
+        font-size:
+            13px;
+
+        margin-bottom:
+            8px;
     }
+
+
+    .user-box {
+
+        font-size:
+            11px;
+
+        padding:
+            6px 9px;
+
+        min-height:
+            30px;
+
+        max-width:
+            100%;
+
+        overflow:
+            hidden;
+
+        text-overflow:
+            ellipsis;
+
+        white-space:
+            nowrap;
+    }
+
+
+    .logout-btn {
+
+        min-height:
+            48px;
+
+        padding:
+            0 10px;
+
+        border-radius:
+            16px;
+
+        font-size:
+            14px;
+    }
+
+
+    .logout-btn span {
+
+        font-size:
+            18px;
+    }
+
+
+    .main-menu {
+
+        margin:
+            14px auto;
+
+        padding:
+            0 12px;
+    }
+
+
+    .main-menu a {
+
+        padding:
+            11px 15px;
+
+        border-radius:
+            15px;
+
+        font-size:
+            13px;
+    }
+
 
     .container {
-        width: calc(100% - 18px);
-        margin-top: 15px;
+
+        padding:
+            5px 12px 40px;
     }
+
 
     .card {
-        padding: 17px;
-        border-radius: 22px;
+
+        padding:
+            20px 15px;
+
+        border-radius:
+            23px;
+
+        margin-bottom:
+            16px;
     }
+
 
     .form-grid {
-        grid-template-columns: 1fr;
+
+        grid-template-columns:
+            1fr;
+
+        gap:
+            12px;
     }
 
-    .results {
-        grid-template-columns: repeat(2,1fr);
+
+    .results-grid {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap:
+            10px;
     }
 
-    .chart-wrap {
-        height: 270px;
+
+    .result-box {
+
+        min-height:
+            92px;
+
+        padding:
+            12px 7px;
     }
 
-    .dashboard-actions {
-        grid-template-columns: repeat(2,1fr);
+
+    .result-box strong {
+
+        font-size:
+            19px;
     }
 
-    .dashboard-actions a {
-        min-height: 70px;
-        font-size: 14px;
-        padding: 8px;
+
+    .fcr-result strong {
+
+        font-size:
+            24px;
     }
 
-    .hero-grid {
-        grid-template-columns: repeat(2,1fr);
+
+    .chart-container {
+
+        height:
+            280px;
     }
 
-    .stat-card {
-        padding: 13px;
+
+    .distribution-chart {
+
+        height:
+            260px;
     }
 
-    .stat-card .value {
-        font-size: 21px;
+
+    .input-with-unit {
+
+        flex-direction:
+            column;
+
+        align-items:
+            stretch;
+    }
+
+
+    .input-with-unit span {
+
+        text-align:
+            center;
     }
 }
 
-@media (max-width: 390px) {
 
-    .dashboard-actions {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
+/* =========================================================
+   موبایل خیلی کوچک
+========================================================= */
+
+@media (max-width: 430px) {
+
+    .header-content {
+
+        grid-template-columns:
+            65px 1fr 72px;
+
+        gap:
+            7px;
+
+        padding:
+            17px 10px;
     }
 
-    .results {
-        gap: 8px;
+
+    .header-logo {
+
+        width:
+            58px;
+
+        height:
+            58px;
+
+        padding:
+            6px;
     }
 
-    .results > div {
-        padding: 12px 7px;
+
+    .header-title h1 {
+
+        font-size:
+            19px;
     }
 
-    .chart-wrap {
-        height: 245px;
+
+    .header-title p {
+
+        font-size:
+            11px;
     }
+
+
+    .logout-btn {
+
+        font-size:
+            12px;
+
+        min-height:
+            43px;
+    }
+
+
+    .results-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+
+    .chart-container {
+
+        height:
+            255px;
+    }
+}
+
+
+/* =========================================================
+   جلوگیری از انتخاب ناخواسته دکمه‌ها
+========================================================= */
+
+button,
+a {
+
+    -webkit-tap-highlight-color:
+        transparent;
+}
+
+
+button {
+
+    -webkit-appearance:
+        none;
 }
