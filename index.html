@@ -1,85 +1,16 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
-
-<meta charset="utf-8">
-
-<meta
-name="viewport"
-content="width=device-width,initial-scale=1"
->
-
-<title>
-مرکز تخصصی سلامت طیور آدینه
-</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدیریت گله طیور - آدینه</title>
+    <link rel="stylesheet" href="Style.css">
 </head>
-
-
 <body>
 
-
 <script>
-
-if(
-localStorage.getItem("activeUser")
-){
-
-location.replace(
-"panel.html"
-);
-
-}
-
-else{
-
-location.replace(
-"login.html"
-);
-
-}
-
+    location.replace("login.html");
 </script>
-
 
 </body>
-
 </html>
-<script>
-
-if("serviceWorker" in navigator){
-
-window.addEventListener(
-
-"load",
-
-function(){
-
-navigator.serviceWorker.register(
-"./sw.js"
-);
-
-}
-
-);
-
-}
-
-
-if(
-localStorage.getItem("activeUser")
-){
-
-location.replace("panel.html");
-
-}
-
-else{
-
-location.replace("login.html");
-
-}
-
-</script>
