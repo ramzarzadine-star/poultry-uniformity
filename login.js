@@ -1,149 +1,98 @@
-function value(id){
-
-return String(
-
-document.getElementById(id).value || ""
-
-).trim();
-
+function getUsers() {
+    try {
+        return JSON.parse(localStorage.getItem("adineh_users")) || {};
+    } catch {
+        return {};
+    }
 }
 
-
-function register(){
-
-const username=value("username");
-
-const password=value("password");
-
-const message=
-document.getElementById("message");
-
-
-if(
-username.length<3 ||
-password.length<4
-){
-
-message.textContent=
-"نام کاربری حداقل ۳ و رمز عبور حداقل ۴ کاراکتر باشد.";
-
-return;
-
+function setUsers(users) {
+    localStorage.setItem("adineh_users", JSON.stringify(users));
 }
 
+function message(text, good = false) {
+    const el = document.getElementById("message");
 
-const users=
-JSON.parse(
+    if (!el) return;
 
-localStorage.getItem(
-"adineh_users"
-) || "{}"
-
-);
-
-
-if(users[username]){
-
-message.textContent=
-"این نام کاربری قبلاً ثبت شده است.";
-
-return;
-
+    el.textContent = text;
+    el.style.color = good ? "#087a4b" : "#b42345";
 }
 
+function getCredentials() {
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
 
-users[username]={
-
-password:password,
-
-createdAt:
-new Date().toISOString()
-
-};
-
-
-localStorage.setItem(
-
-"adineh_users",
-
-JSON.stringify(users)
-
-);
-
-
-localStorage.setItem(
-
-"activeUser",
-
-username
-
-);
-
-
-location.href="panel.html";
-
+    return { username, password };
 }
 
+function register() {
 
-function login(){
+    const { username, password } = getCredentials();
 
-const username=value("username");
+    if (username.length < 3) {
+        message("نام کاربری حداقل ۳ کاراکتر باشد.");
+        return;
+    }
 
-const password=value("password");
+    if (password.length < 4) {
+        message("رمز عبور حداقل ۴ کاراکتر باشد.");
+        return;
+    }
 
-const message=
-document.getElementById("message");
+    const users = getUsers();
 
+    if (users[username]) {
+        message("این نام کاربری قبلاً ثبت شده است.");
+        return;
+    }
 
-const users=
-JSON.parse(
+    users[username] = {
+        password: password,
+        createdAt: new Date().toISOString()
+    };
 
-localStorage.getItem(
-"adineh_users"
-) || "{}"
+    setUsers(users);
 
-);
+    localStorage.setItem("activeUser", username);
 
+    message("ثبت نام با موفقیت انجام شد.", true);
 
-if(
-users[username] &&
-users[username].password===password
-){
-
-localStorage.setItem(
-
-"activeUser",
-
-username
-
-);
-
-
-location.href="panel.html";
-
+    setTimeout(() => {
+        location.href = "panel.html";
+    }, 400);
 }
 
-else{
+function login() {
 
-message.textContent=
-"نام کاربری یا رمز عبور صحیح نیست.";
+    const { username, password } = getCredentials();
 
+    const users = getUsers();
+
+    if (!users[username]) {
+        message("نام کاربری یا رمز عبور صحیح نیست.");
+        return;
+    }
+
+    if (users[username].password !== password) {
+        message("نام کاربری یا رمز عبور صحیح نیست.");
+        return;
+    }
+
+    localStorage.setItem("activeUser", username);
+
+    location.href = "panel.html";
 }
 
+function guestLogin() {
+
+    localStorage.setItem("activeUser", "guest");
+
+    location.href = "panel.html";
 }
 
-
-function guestLogin(){
-
-localStorage.setItem(
-
-"activeUser",
-
-"guest"
-
-);
-
-
-location.href="panel.html";
-
-}
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        login();
+    }
+});
