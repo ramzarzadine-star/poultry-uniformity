@@ -2,76 +2,64 @@
 <html lang="fa" dir="rtl">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#087f5b">
 
-<title>مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه</title>
+  <title>مدیریت گله طیور - مرکز تخصصی سلامت طیور آدینه</title>
 
-<link rel="stylesheet" href="Style.css">
+  <link rel="stylesheet" href="Style.css">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 
 <body>
 
-<header class="header">
+<header class="header hero-header">
 
-    <div class="brand">
+  <img
+    class="brand-logo"
+    src="IMG_4309.png"
+    alt="لوگوی مرکز تخصصی سلامت طیور آدینه"
+  >
 
-        <img
-            src="IMG_4309.png"
-            class="header-logo"
-            alt="مرکز تخصصی سلامت طیور آدینه"
-        >
+  <div class="hero-content">
 
-        <div class="brand-text">
+    <h1>🐔 مدیریت گله طیور</h1>
 
-            <h1>🐔 مدیریت گله طیور</h1>
-
-            <h3>مرکز تخصصی سلامت طیور آدینه</h3>
-
-        </div>
-
-    </div>
+    <h3>مرکز تخصصی سلامت طیور آدینه</h3>
 
     <div id="userBox"></div>
 
-    <button onclick="logout()" class="logout">
-        خروج از حساب
-    </button>
+  </div>
+
+  <button
+    onclick="logout()"
+    class="logout"
+    aria-label="خروج از حساب"
+  >
+    <span class="logout-icon">↪</span>
+    <span>خروج</span>
+  </button>
 
 </header>
 
 
 <nav class="menu">
 
-    <a href="panel.html" class="active">
-        🏠 داشبورد
-    </a>
+  <a href="panel.html">🏠 داشبورد</a>
 
-    <a href="flock.html">
-        🐔 مدیریت گله
-    </a>
+  <a href="flock.html">🐔 مدیریت گله</a>
 
-    <a href="feed.html">
-        🌽 مصرف دان
-    </a>
+  <a href="feed.html">🌽 مصرف دان</a>
 
-    <a href="water.html">
-        💧 مصرف آب
-    </a>
+  <a href="water.html">💧 مصرف آب</a>
 
-    <a href="vaccine.html">
-        💉 واکسیناسیون
-    </a>
+  <a href="vaccine.html">💉 واکسیناسیون</a>
 
-    <a href="medicine.html">
-        💊 دارو
-    </a>
+  <a href="medicine.html">💊 دارو</a>
 
-    <a href="report.html">
-        📊 گزارشات
-    </a>
+  <a href="report.html">📊 گزارشات</a>
 
 </nav>
 
@@ -83,187 +71,202 @@
 
 <section class="card">
 
-    <h2>اطلاعات گله</h2>
+  <h2>اطلاعات گله</h2>
 
-    <div class="form-grid">
+  <div class="form-grid">
 
-        <input
-            id="farm"
-            placeholder="نام فارم / مرغدار"
-        >
+    <input
+      id="farm"
+      placeholder="نام فارم / مرغدار"
+    >
 
-        <input
-            id="hall"
-            placeholder="نام سالن"
-        >
+    <input
+      id="hall"
+      placeholder="نام سالن"
+    >
 
-        <select id="type">
+    <select id="type">
 
-            <option value="">نوع گله</option>
+      <option value="">نوع گله</option>
 
-            <option value="گوشتی">
-                گوشتی
-            </option>
+      <option value="گوشتی">
+        گوشتی
+      </option>
 
-            <option value="تخمگذار">
-                تخمگذار
-            </option>
+      <option value="تخمگذار">
+        تخمگذار
+      </option>
 
-            <option value="مادر">
-                مادر
-            </option>
+      <option value="مادر">
+        مادر
+      </option>
 
-        </select>
+    </select>
 
-        <input
-            id="age"
-            type="number"
-            min="0"
-            max="100"
-            placeholder="سن گله (روز)"
-        >
+    <input
+      id="age"
+      type="number"
+      min="1"
+      max="200"
+      placeholder="سن گله (روز)"
+    >
 
-        <input
-            id="countBird"
-            type="number"
-            min="1"
-            placeholder="تعداد پرنده"
-        >
+    <input
+      id="countBird"
+      type="number"
+      min="1"
+      placeholder="تعداد پرنده در شروع"
+    >
 
-        <input
-            id="date"
-            type="date"
-        >
+    <input
+      id="date"
+      type="date"
+    >
 
-    </div>
-
-</section>
-
-
-<!-- ورود وزن -->
-
-<section class="card">
-
-    <h2>ثبت وزن و عملکرد</h2>
-
-    <label>
-        وزن‌های نمونه
-    </label>
-
-    <textarea
-        id="weightsInput"
-        placeholder="وزن‌ها را با فاصله، ویرگول یا خط جدید وارد کنید&#10;مثال: 205 220 218 230 211"
-    ></textarea>
-
-
-    <div class="form-grid performance-inputs">
-
-        <input
-            id="feedCumulative"
-            type="number"
-            step="0.001"
-            min="0"
-            placeholder="دان تجمعی هر پرنده (گرم)"
-        >
-
-        <input
-            id="actualFCR"
-            type="number"
-            step="0.001"
-            min="0"
-            placeholder="FCR واقعی - اختیاری"
-        >
-
-    </div>
-
-
-    <p class="hint">
-        اگر FCR واقعی را وارد نکنید، برنامه آن را از دان تجمعی و افزایش وزن محاسبه می‌کند.
-    </p>
-
-
-    <div class="action-row">
-
-        <button
-            type="button"
-            onclick="calculate()"
-            class="primary-btn"
-        >
-            محاسبه و ثبت
-        </button>
-
-        <button
-            type="button"
-            onclick="clearCurrentCalculation()"
-            class="secondary-btn"
-        >
-            پاک کردن
-        </button>
-
-    </div>
+  </div>
 
 </section>
 
 
-<!-- شاخص های اصلی -->
+<!-- ثبت عملکرد -->
 
 <section class="card">
 
-    <h2>نتیجه ارزیابی گله</h2>
+  <h2>
+    پایش عملکرد در سن جاری
+  </h2>
 
-    <div class="results">
+  <div class="info-note">
 
-        <div>
-            تعداد نمونه
-            <strong id="sample">-</strong>
-        </div>
+    برای مقایسه استاندارد، سن گله را روی یکی از سنین
+    ۷، ۱۴، ۲۱، ۲۸، ۳۵، ۴۲، ۴۹ یا ۵۶ روز قرار دهید.
 
-        <div>
-            میانگین وزن
-            <strong id="mean">-</strong>
-        </div>
+  </div>
 
-        <div>
-            کمترین وزن
-            <strong id="min">-</strong>
-        </div>
 
-        <div>
-            بیشترین وزن
-            <strong id="max">-</strong>
-        </div>
+  <textarea
+    id="weightsInput"
+    placeholder="وزن نمونه‌ها را وارد کنید؛ مثال: 205 218 221 210 230 ..."
+  ></textarea>
 
-        <div>
-            SD
-            <strong id="sd">-</strong>
-        </div>
 
-        <div>
-            CV
-            <strong id="cv">-</strong>
-        </div>
+  <div class="form-grid performance-inputs">
 
-        <div>
-            یکنواختی ±10%
-            <strong id="u10">-</strong>
-        </div>
+    <input
+      id="feedCumulative"
+      type="number"
+      min="0"
+      step="0.01"
+      placeholder="مصرف تجمعی دان از شروع گله (کیلوگرم)"
+    >
 
-        <div>
-            یکنواختی ±15%
-            <strong id="u15">-</strong>
-        </div>
+    <input
+      id="mortalityCumulative"
+      type="number"
+      min="0"
+      step="1"
+      placeholder="تلفات تجمعی (تعداد)"
+    >
 
-        <div>
-            FCR
-            <strong id="fcr">-</strong>
-        </div>
+  </div>
 
-        <div>
-            وضعیت نسبت به Ross
-            <strong id="performanceStatus">-</strong>
-        </div>
 
+  <div class="button-row">
+
+    <button
+      onclick="calculate()"
+      class="primary-btn"
+    >
+      محاسبه و ثبت در نمودار
+    </button>
+
+    <button
+      onclick="clearCurrentDay()"
+      class="secondary-btn"
+    >
+      حذف داده این سن
+    </button>
+
+    <button
+      onclick="clearHistory()"
+      class="danger-btn"
+    >
+      پاک کردن تاریخچه
+    </button>
+
+  </div>
+
+
+  <p id="calculationMessage" class="calculation-message"></p>
+
+</section>
+
+
+<!-- نتایج -->
+
+<section class="card">
+
+  <h2>نتایج اندازه‌گیری</h2>
+
+
+  <div class="results">
+
+    <div>
+      <span>تعداد نمونه</span>
+      <strong id="sample">-</strong>
     </div>
+
+    <div>
+      <span>میانگین وزن</span>
+      <strong id="mean">-</strong>
+    </div>
+
+    <div>
+      <span>کمترین وزن</span>
+      <strong id="min">-</strong>
+    </div>
+
+    <div>
+      <span>بیشترین وزن</span>
+      <strong id="max">-</strong>
+    </div>
+
+    <div>
+      <span>SD</span>
+      <strong id="sd">-</strong>
+    </div>
+
+    <div>
+      <span>CV</span>
+      <strong id="cv">-</strong>
+    </div>
+
+    <div>
+      <span>یکنواختی ±10%</span>
+      <strong id="u10">-</strong>
+    </div>
+
+    <div>
+      <span>یکنواختی ±15%</span>
+      <strong id="u15">-</strong>
+    </div>
+
+    <div>
+      <span>FCR واقعی</span>
+      <strong id="fcrActual">-</strong>
+    </div>
+
+    <div>
+      <span>FCR تعدیل‌شده</span>
+      <strong id="fcrAdjusted">-</strong>
+    </div>
+
+    <div>
+      <span>وضعیت نسبت به Ross</span>
+      <strong id="performanceStatus">-</strong>
+    </div>
+
+  </div>
 
 </section>
 
@@ -272,19 +275,20 @@
 
 <section class="card chart-card">
 
+  <div class="chart-heading">
+
     <h2>
-        میانگین وزن گله
+      مقایسه میانگین وزن با Ross 308
     </h2>
 
-    <p class="chart-note">
-        مقایسه عملکرد واقعی با هدف Ross 308 – As-Hatched
+    <p>
+      خط واقعی = عملکرد فارم
+      | خط مرجع = Ross 308 As-Hatched
     </p>
 
-    <div class="chart-container">
+  </div>
 
-        <canvas id="weightTrendChart"></canvas>
-
-    </div>
+  <canvas id="weightTrendChart"></canvas>
 
 </section>
 
@@ -293,19 +297,20 @@
 
 <section class="card chart-card">
 
+  <div class="chart-heading">
+
     <h2>
-        ضریب تغییرات CV%
+      مقایسه CV گله
     </h2>
 
-    <p class="chart-note">
-        خط مرجع مدیریتی Ross: CV = 10%
+    <p>
+      خط واقعی = CV گله
+      | خط مرجع = حد مدیریتی CV ≤ 10%
     </p>
 
-    <div class="chart-container">
+  </div>
 
-        <canvas id="cvChart"></canvas>
-
-    </div>
+  <canvas id="cvChart"></canvas>
 
 </section>
 
@@ -314,19 +319,20 @@
 
 <section class="card chart-card">
 
+  <div class="chart-heading">
+
     <h2>
-        یکنواختی گله ±10%
+      مقایسه یکنواختی ±10%
     </h2>
 
-    <p class="chart-note">
-        خط مرجع مدیریتی Ross: Uniformity = 68%
+    <p>
+      خط واقعی = یکنواختی گله
+      | خط مرجع = حد مدیریتی ≥ 68%
     </p>
 
-    <div class="chart-container">
+  </div>
 
-        <canvas id="uniformityChart"></canvas>
-
-    </div>
+  <canvas id="uniformityChart"></canvas>
 
 </section>
 
@@ -335,139 +341,87 @@
 
 <section class="card chart-card">
 
+  <div class="chart-heading">
+
     <h2>
-        ضریب تبدیل غذایی FCR
+      مقایسه FCR با Ross 308
     </h2>
 
-    <p class="chart-note">
-        مقایسه FCR واقعی با هدف Ross 308 – As-Hatched
+    <p>
+      خط واقعی = FCR فارم
+      | خط مرجع = Ross 308 As-Hatched
     </p>
 
-    <div class="chart-container">
+  </div>
 
-        <canvas id="fcrChart"></canvas>
-
-    </div>
+  <canvas id="fcrChart"></canvas>
 
 </section>
 
 
-<!-- نمودار توزیع وزن -->
+<!-- توزیع وزن -->
 
 <section class="card chart-card">
 
+  <div class="chart-heading">
+
     <h2>
-        توزیع وزن نمونه‌ها
+      توزیع وزن نمونه‌ها
     </h2>
 
-    <div class="chart-container">
+  </div>
 
-        <canvas id="weightChart"></canvas>
-
-    </div>
+  <canvas id="weightChart"></canvas>
 
 </section>
 
 
-<section class="card ross-reference">
+<!-- جدول استاندارد -->
 
-    <h2>
-        مرجع Ross 308 تا ۸ هفتگی
-    </h2>
+<section class="card">
 
-    <div class="table-wrapper">
+  <h2>
+    مرجع Ross 308 تا ۸ هفتگی
+  </h2>
 
-        <table>
 
-            <thead>
+  <div class="table-wrap">
 
-                <tr>
-                    <th>سن</th>
-                    <th>وزن هدف (g)</th>
-                    <th>FCR هدف</th>
-                    <th>مرجع CV</th>
-                    <th>مرجع یکنواختی</th>
-                </tr>
+    <table class="reference-table">
 
-            </thead>
+      <thead>
 
-            <tbody>
+        <tr>
 
-                <tr>
-                    <td>۷ روز</td>
-                    <td>213</td>
-                    <td>0.780</td>
-                    <td>≤ 10%</td>
-                    <td>≥ 68%</td>
-                </tr>
+          <th>سن</th>
 
-                <tr>
-                    <td>۱۴ روز</td>
-                    <td>533</td>
-                    <td>1.005</td>
-                    <td>≤ 10%</td>
-                    <td>≥ 68%</td>
-                </tr>
+          <th>وزن هدف (g)</th>
 
-                <tr>
-                    <td>۲۱ روز</td>
-                    <td>1012</td>
-                    <td>1.142</td>
-                    <td>≤ 10%</td>
-                    <td>≥ 68%</td>
-                </tr>
+          <th>FCR هدف</th>
 
-                <tr>
-                    <td>۲۸ روز</td>
-                    <td>1616</td>
-                    <td>1.269</td>
-                    <td>≤ 10%</td>
-                    <td>≥ 68%</td>
-                </tr>
+          <th>CV مدیریتی</th>
 
-                <tr>
-                    <td>۳۵ روز</td>
-                    <td>2296</td>
-                    <td>1.399</td>
-                    <td>≤ 10%</td>
-                    <td>≥ 68%</td>
-                </tr>
+          <th>یکنواختی مدیریتی</th>
 
-                <tr>
-                    <td>۴۲ روز</td>
-                    <td>2998</td>
-                    <td>1.531</td>
-                    <td>≤ 10%</td>
-                    <td>≥ 68%</td>
-                </tr>
+        </tr>
 
-                <tr>
-                    <td>۴۹ روز</td>
-                    <td>3681</td>
-                    <td>1.663</td>
-                    <td>≤ 10%</td>
-                    <td>≥ 68%</td>
-                </tr>
+      </thead>
 
-                <tr>
-                    <td>۵۶ روز</td>
-                    <td>4318</td>
-                    <td>1.793</td>
-                    <td>≤ 10%</td>
-                    <td>≥ 68%</td>
-                </tr>
+      <tbody id="rossReferenceBody"></tbody>
 
-            </tbody>
+    </table>
 
-        </table>
+  </div>
 
-    </div>
 
-    <p class="reference-note">
-        وزن و FCR از Performance Objectives رسمی Ross 308/308 FF گرفته شده‌اند.
-        CV و یکنواختی به‌عنوان مرجع مدیریتی Ross نمایش داده می‌شوند و
-        منحنی سنی رسمی برای CV/Uniformity در کاتالوگ Ross ارائه نشده است.
-    </p>
+  <p class="source-note">
+
+    وزن و FCR بر اساس Performance Objectives رسمی
+    Ross 308 / As-Hatched استفاده شده‌اند.
+    CV و یکنواختی در این نرم‌افزار به‌عنوان
+    حدود مدیریتی نمایش داده می‌شوند.
+
+  </p>
 
 </section>
 
