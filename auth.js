@@ -9,7 +9,9 @@ Authentication Guard
 
 (function () {
 
-  const client = window.supabaseClient;
+  const client =
+    window.supabaseClient ||
+    window.adinehSupabase;
 
 
   /*
@@ -27,7 +29,24 @@ Authentication Guard
 
 
   /*
-  اعلام آماده بودن احراز هویت
+  انتقال به صفحه ورود
+  */
+  function goLogin(message = '') {
+
+    const url =
+      message
+        ? 'login.html?message=' +
+          encodeURIComponent(message)
+        : 'login.html';
+
+
+    window.location.replace(url);
+
+  }
+
+
+  /*
+  اعلام آماده بودن
   */
   function authReady(
     user,
@@ -38,9 +57,9 @@ Authentication Guard
 
       ready: true,
 
-      user: user || null,
+      user,
 
-      profile: profile || null
+      profile
 
     };
 
@@ -55,38 +74,19 @@ Authentication Guard
 
 
   /*
-  انتقال به صفحه ورود
-  */
-  function goLogin() {
-
-    window.ADINEH_AUTH = {
-
-      ready: false,
-
-      user: null,
-
-      profile: null
-
-    };
-
-
-    window.location.replace(
-      'login.html'
-    );
-
-  }
-
-
-  /*
-  Supabase موجود نیست
+  اگر Supabase لود نشده
   */
   if (!client) {
 
     console.error(
-      'Supabase client is not available.'
+      'Supabase client not found.'
     );
 
-    goLogin();
+
+    goLogin(
+      'سامانه احراز هویت بارگذاری نشد.'
+    );
+
 
     return;
 
@@ -110,7 +110,7 @@ Authentication Guard
       if (error) {
 
         console.error(
-          'getUser error:',
+          'getUser:',
           error
         );
 
@@ -179,7 +179,7 @@ Authentication Guard
       if (error) {
 
         console.error(
-          'Profile error:',
+          'Profile query error:',
           error
         );
 
@@ -207,63 +207,56 @@ Authentication Guard
 
 
   /*
-  Bootstrap
+  بررسی دسترسی کاربر
   */
-  async function bootstrap() {
+  async function checkAccess() {
 
     try {
 
       /*
-      دریافت Session
+      اول کاربر را از Auth بگیر
       */
-      const {
-        data,
-        error
-      } =
-        await client.auth.getSession();
+      const user =
+        await getCurrentUser();
 
 
-      if (error) {
+      /*
+      ورود انجام نشده
+      */
+      if (!user) {
 
-        console.error(
-          'Session error:',
-          error
+        goLogin(
+          'ابتدا وارد سامانه شوید.'
         );
 
-        goLogin();
-
         return;
 
       }
 
 
-      const session =
-        data?.session;
+      console.log(
+        'Authenticated user:',
+        user.id
+      );
 
 
       /*
-      کاربر وارد نشده
-      */
-      if (!session?.user) {
-
-        goLogin();
-
-        return;
-
-      }
-
-
-      /*
-      دریافت Profile
+      پروفایل
       */
       const profile =
         await getCurrentProfile(
-          session.user
+          user
         );
 
 
+      console.log(
+        'Profile:',
+        profile
+      );
+
+
       /*
-      Profile پیدا نشد
+      پروفایل وجود ندارد
       */
       if (!profile) {
 
@@ -271,9 +264,14 @@ Authentication Guard
           'Profile not found.'
         );
 
+
         await client.auth.signOut();
 
-        goLogin();
+
+        goLogin(
+          'پروفایل کاربر پیدا نشد.'
+        );
+
 
         return;
 
@@ -281,20 +279,25 @@ Authentication Guard
 
 
       /*
-      حساب باید Active باشد
+      حساب باید active باشد
       */
       if (
         profile.status !== 'active'
       ) {
 
-        console.error(
+        console.warn(
           'Account status:',
           profile.status
         );
 
+
         await client.auth.signOut();
 
-        goLogin();
+
+        goLogin(
+          'حساب شما هنوز فعال نشده است.'
+        );
+
 
         return;
 
@@ -302,25 +305,125 @@ Authentication Guard
 
 
       /*
-      همه چیز صحیح است
+      موفق
       */
       authReady(
-        session.user,
+        user,
         profile
       );
+
 
     }
 
     catch (error) {
 
       console.error(
-        'Authentication error:',
+        'AUTH FATAL ERROR:',
         error
       );
 
-      goLogin();
+
+      goLogin(
+        'خطا در بررسی دسترسی.'
+      );
 
     }
+
+  }
+
+
+  /*
+  بررسی دستی دسترسی
+  */
+  async function requireActiveUser(
+    options = {}
+  ) {
+
+    const redirect =
+      options.redirect !== false;
+
+
+    const user =
+      await getCurrentUser();
+
+
+    if (!user) {
+
+      if (redirect)
+        goLogin();
+
+      return null;
+
+    }
+
+
+    const profile =
+      await getCurrentProfile(
+        user
+      );
+
+
+    if (!profile) {
+
+      if (redirect)
+        goLogin();
+
+      return null;
+
+    }
+
+
+    if (
+      profile.status !== 'active'
+    ) {
+
+      if (redirect)
+        goLogin();
+
+      return null;
+
+    }
+
+
+    return {
+
+      user,
+
+      profile
+
+    };
+
+  }
+
+
+  /*
+  Owner
+  */
+  async function requireOwner() {
+
+    const session =
+      await requireActiveUser();
+
+
+    if (!session)
+      return null;
+
+
+    if (
+      session.profile.role !== 'owner'
+    ) {
+
+      window.location.replace(
+        'index.html'
+      );
+
+
+      return null;
+
+    }
+
+
+    return session;
 
   }
 
@@ -339,7 +442,7 @@ Authentication Guard
     catch (error) {
 
       console.error(
-        'Logout error:',
+        'Logout:',
         error
       );
 
@@ -362,15 +465,19 @@ Authentication Guard
 
     getCurrentProfile,
 
+    requireActiveUser,
+
+    requireOwner,
+
     logout
 
   };
 
 
   /*
-  شروع
+  شروع بررسی
   */
-  bootstrap();
+  checkAccess();
 
 
 })();
