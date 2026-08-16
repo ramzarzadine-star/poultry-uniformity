@@ -2652,12 +2652,11 @@ function flocksPage() {
             `
           )}
 
-          ${field(
-            'flockPlacement',
-            'تاریخ جوجه‌ریزی',
-            'date',
-            today()
-          )}
+          ${jalaliDateField(
+  'flockPlacement',
+  'تاریخ جوجه‌ریزی',
+  today()
+)}
 
           ${field(
             'flockInitial',
@@ -5185,8 +5184,16 @@ function bindEvents() {
 
 }
 
+    /*
+    Jalali date fields
+  */
+
   bindJalaliDate(
     'weightDate'
+  );
+
+  bindJalaliDate(
+    'flockPlacement'
   );
 /* =========================================================
    GLOBAL ERROR PROTECTION
