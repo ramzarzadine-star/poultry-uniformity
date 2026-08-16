@@ -4,6 +4,7 @@
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
 Authentication Guard
+Stable Version
 =========================================================
 */
 
@@ -14,9 +15,6 @@ Authentication Guard
     window.adinehSupabase;
 
 
-  /*
-  وضعیت اولیه
-  */
   window.ADINEH_AUTH = {
 
     ready: false,
@@ -28,26 +26,50 @@ Authentication Guard
   };
 
 
+  let redirecting =
+    false;
+
+
   /*
-  انتقال به صفحه ورود
+    =======================================================
+    LOGIN REDIRECT
+    =======================================================
   */
-  function goLogin(message = '') {
+
+  function goLogin(
+    message = ''
+  ) {
+
+    if (redirecting)
+      return;
+
+
+    redirecting =
+      true;
+
 
     const url =
       message
         ? 'login.html?message=' +
-          encodeURIComponent(message)
+          encodeURIComponent(
+            message
+          )
         : 'login.html';
 
 
-    window.location.replace(url);
+    window.location.replace(
+      url
+    );
 
   }
 
 
   /*
-  اعلام آماده بودن
+    =======================================================
+    AUTH READY
+    =======================================================
   */
+
   function authReady(
     user,
     profile
@@ -74,8 +96,11 @@ Authentication Guard
 
 
   /*
-  اگر Supabase لود نشده
+    =======================================================
+    SUPABASE CHECK
+    =======================================================
   */
+
   if (!client) {
 
     console.error(
@@ -94,8 +119,11 @@ Authentication Guard
 
 
   /*
-  دریافت کاربر
+    =======================================================
+    CURRENT USER
+    =======================================================
   */
+
   async function getCurrentUser() {
 
     try {
@@ -104,7 +132,8 @@ Authentication Guard
         data,
         error
       } =
-        await client.auth.getUser();
+        await client.auth
+          .getUser();
 
 
       if (error) {
@@ -114,12 +143,14 @@ Authentication Guard
           error
         );
 
+
         return null;
 
       }
 
 
-      return data?.user || null;
+      return data?.user ||
+        null;
 
     }
 
@@ -130,6 +161,7 @@ Authentication Guard
         error
       );
 
+
       return null;
 
     }
@@ -138,8 +170,11 @@ Authentication Guard
 
 
   /*
-  دریافت پروفایل
+    =======================================================
+    CURRENT PROFILE
+    =======================================================
   */
+
   async function getCurrentProfile(
     user
   ) {
@@ -183,12 +218,14 @@ Authentication Guard
           error
         );
 
+
         return null;
 
       }
 
 
-      return data || null;
+      return data ||
+        null;
 
     }
 
@@ -199,6 +236,7 @@ Authentication Guard
         error
       );
 
+
       return null;
 
     }
@@ -207,27 +245,107 @@ Authentication Guard
 
 
   /*
-  بررسی دسترسی کاربر
+    =======================================================
+    GET SESSION WITH RETRY
+    =======================================================
   */
+
+  async function waitForUser() {
+
+    /*
+      ابتدا Session محلی را بررسی می‌کنیم.
+    */
+
+    for (
+      let attempt = 0;
+      attempt < 12;
+      attempt++
+    ) {
+
+      try {
+
+        const {
+          data,
+          error
+        } =
+          await client.auth
+            .getSession();
+
+
+        if (error) {
+
+          console.error(
+            'getSession:',
+            error
+          );
+
+        }
+
+
+        if (
+          data?.session?.user
+        ) {
+
+          return data.session.user;
+
+        }
+
+      }
+
+      catch (error) {
+
+        console.error(
+          'getSession exception:',
+          error
+        );
+
+      }
+
+
+      /*
+        به Session فرصت بده.
+      */
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            250
+          )
+      );
+
+    }
+
+
+    /*
+      در پایان getUser را امتحان کن.
+    */
+
+    return getCurrentUser();
+
+  }
+
+
+  /*
+    =======================================================
+    ACCESS CHECK
+    =======================================================
+  */
+
   async function checkAccess() {
 
     try {
 
-      /*
-      اول کاربر را از Auth بگیر
-      */
       const user =
-        await getCurrentUser();
+        await waitForUser();
 
 
-      /*
-      ورود انجام نشده
-      */
       if (!user) {
 
         goLogin(
           'ابتدا وارد سامانه شوید.'
         );
+
 
         return;
 
@@ -240,9 +358,6 @@ Authentication Guard
       );
 
 
-      /*
-      پروفایل
-      */
       const profile =
         await getCurrentProfile(
           user
@@ -255,9 +370,6 @@ Authentication Guard
       );
 
 
-      /*
-      پروفایل وجود ندارد
-      */
       if (!profile) {
 
         console.error(
@@ -265,11 +377,14 @@ Authentication Guard
         );
 
 
-        await client.auth.signOut();
-
+        /*
+          در این حالت Session را فوراً
+          حذف نمی‌کنیم؛ ممکن است RLS یا
+          تأخیر ایجاد پروفایل باشد.
+        */
 
         goLogin(
-          'پروفایل کاربر پیدا نشد.'
+          'پروفایل کاربر پیدا نشد یا هنوز آماده نشده است.'
         );
 
 
@@ -278,9 +393,6 @@ Authentication Guard
       }
 
 
-      /*
-      حساب باید active باشد
-      */
       if (
         profile.status !== 'active'
       ) {
@@ -289,9 +401,6 @@ Authentication Guard
           'Account status:',
           profile.status
         );
-
-
-        await client.auth.signOut();
 
 
         goLogin(
@@ -304,14 +413,10 @@ Authentication Guard
       }
 
 
-      /*
-      موفق
-      */
       authReady(
         user,
         profile
       );
-
 
     }
 
@@ -333,8 +438,11 @@ Authentication Guard
 
 
   /*
-  بررسی دستی دسترسی
+    =======================================================
+    REQUIRE ACTIVE USER
+    =======================================================
   */
+
   async function requireActiveUser(
     options = {}
   ) {
@@ -344,13 +452,14 @@ Authentication Guard
 
 
     const user =
-      await getCurrentUser();
+      await waitForUser();
 
 
     if (!user) {
 
       if (redirect)
         goLogin();
+
 
       return null;
 
@@ -368,6 +477,7 @@ Authentication Guard
       if (redirect)
         goLogin();
 
+
       return null;
 
     }
@@ -379,6 +489,7 @@ Authentication Guard
 
       if (redirect)
         goLogin();
+
 
       return null;
 
@@ -397,8 +508,11 @@ Authentication Guard
 
 
   /*
-  Owner
+    =======================================================
+    OWNER
+    =======================================================
   */
+
   async function requireOwner() {
 
     const session =
@@ -410,7 +524,8 @@ Authentication Guard
 
 
     if (
-      session.profile.role !== 'owner'
+      session.profile.role !==
+      'owner'
     ) {
 
       window.location.replace(
@@ -429,13 +544,17 @@ Authentication Guard
 
 
   /*
-  خروج
+    =======================================================
+    LOGOUT
+    =======================================================
   */
+
   async function logout() {
 
     try {
 
-      await client.auth.signOut();
+      await client.auth
+        .signOut();
 
     }
 
@@ -457,8 +576,11 @@ Authentication Guard
 
 
   /*
-  API عمومی
+    =======================================================
+    PUBLIC API
+    =======================================================
   */
+
   window.AdinehAuth = {
 
     getCurrentUser,
@@ -475,8 +597,53 @@ Authentication Guard
 
 
   /*
-  شروع بررسی
+    =======================================================
+    AUTH STATE LISTENER
+    =======================================================
   */
+
+  client.auth
+    .onAuthStateChange(
+      (
+        event,
+        session
+      ) => {
+
+        console.log(
+          'Auth state:',
+          event
+        );
+
+
+        if (
+          event === 'SIGNED_OUT'
+        ) {
+
+          if (
+            window.location.pathname
+              .endsWith(
+                'index.html'
+              )
+          ) {
+
+            goLogin(
+              'از سامانه خارج شده‌اید.'
+            );
+
+          }
+
+        }
+
+      }
+    );
+
+
+  /*
+    =======================================================
+    START
+    =======================================================
+  */
+
   checkAccess();
 
 
