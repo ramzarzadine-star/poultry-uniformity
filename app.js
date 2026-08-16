@@ -319,43 +319,28 @@ function toPersianDate(
     return '—';
   }
 
-
   const normalized =
     normalizeDigits(
       value
     );
-
 
   const match =
     normalized.match(
       /^(\d{4})-(\d{1,2})-(\d{1,2})/
     );
 
-
   if (!match) {
-
-    return esc(
-      value
-    );
-
+    return esc(value);
   }
 
-
   const gy =
-    Number(
-      match[1]
-    );
+    Number(match[1]);
 
   const gm =
-    Number(
-      match[2]
-    );
+    Number(match[2]);
 
   const gd =
-    Number(
-      match[3]
-    );
-
+    Number(match[3]);
 
   if (
     !Number.isInteger(gy) ||
@@ -366,25 +351,42 @@ function toPersianDate(
     gd < 1 ||
     gd > 31
   ) {
-
-    return esc(
-      value
-    );
-
+    return esc(value);
   }
 
-
-  const [
-    jy,
-    jm,
-    jd
-  ] =
+  const result =
     gregorianToJalali(
       gy,
       gm,
       gd
     );
 
+  if (!result) {
+    return esc(value);
+  }
+
+  const [
+    jy,
+    jm,
+    jd
+  ] = result;
+
+  return [
+    toPersianDigits(jy),
+
+    toPersianDigits(
+      String(jm)
+        .padStart(2, '0')
+    ),
+
+    toPersianDigits(
+      String(jd)
+        .padStart(2, '0')
+    )
+
+  ].join('/');
+
+}
 /* =========================================================
    JALALI → GREGORIAN
 ========================================================= */
@@ -685,8 +687,9 @@ function jalaliDateField(
       </label>
 
       <input
-        id="${esc(id)}Jalali"
-        type="text"
+  id="${esc(id)}Jalali"
+  class="jalali-date-input"
+  type="text"
         inputmode="numeric"
         autocomplete="off"
         dir="ltr"
@@ -885,7 +888,7 @@ function toPersianDigits(
   value
 ) {
 
-  return String(
+   String(
     value ?? ''
   ).replace(
     /\d/g,
@@ -3020,7 +3023,11 @@ function simplePage(
 
 
   const records =
-    db[dataKey] || [];
+    Array.isArray(
+      db[dataKey]
+    )
+      ? db[dataKey]
+      : [];
 
 
   const columns =
@@ -3060,10 +3067,9 @@ function simplePage(
             flockOptions
           )}
 
-          ${field(
+          ${jalaliDateField(
             `${type}Date`,
             'تاریخ',
-            'date',
             today()
           )}
 
@@ -3113,8 +3119,6 @@ function simplePage(
   );
 
 }
-
-
 /* =========================================================
    TABLE
 ========================================================= */
@@ -3134,6 +3138,39 @@ function table(
               : item
         )
       : [];
+
+
+  const cellValue = (
+    row,
+    column
+  ) => {
+
+    const key =
+      Array.isArray(column)
+        ? column[0]
+        : column;
+
+
+    const value =
+      row?.[key];
+
+
+    if (
+      key === 'date' ||
+      key === 'placement'
+    ) {
+
+      return displayDate(
+        value
+      );
+
+    }
+
+
+    return value ??
+      '—';
+
+  };
 
 
   return `
@@ -3178,27 +3215,18 @@ function table(
                     <tr>
 
                       ${columns.map(
-                        column => {
+                        column => `
 
-                          const key =
-                            Array.isArray(
-                              column
-                            )
-                              ? column[0]
-                              : column;
+                          <td>
+                            ${esc(
+                              cellValue(
+                                row,
+                                column
+                              )
+                            )}
+                          </td>
 
-
-                          return `
-
-                            <td>
-                              ${esc(
-                                row?.[key]
-                              )}
-                            </td>
-
-                          `;
-
-                        }
+                        `
                       ).join('')}
 
                     </tr>
@@ -3233,8 +3261,6 @@ function table(
   `;
 
 }
-
-
 /* =========================================================
    REPORTS
 ========================================================= */
@@ -5182,19 +5208,44 @@ function bindEvents() {
       }
     );
 
-}
 
-    /*
+  /*
     Jalali date fields
+
+    تمام فیلدهایی که با
+    jalaliDateField()
+    ساخته شده‌اند به صورت خودکار
+    متصل می‌شوند.
   */
 
-  bindJalaliDate(
-    'weightDate'
-  );
+  document
+    .querySelectorAll(
+      '.jalali-date-input'
+    )
+    .forEach(
+      input => {
 
-  bindJalaliDate(
-    'flockPlacement'
-  );
+        const id =
+          String(
+            input.id || ''
+          ).replace(
+            /Jalali$/,
+            ''
+          );
+
+
+        if (id) {
+
+          bindJalaliDate(
+            id
+          );
+
+        }
+
+      }
+    );
+
+}
 /* =========================================================
    GLOBAL ERROR PROTECTION
 ========================================================= */
