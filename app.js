@@ -385,7 +385,468 @@ function toPersianDate(
       gd
     );
 
+/* =========================================================
+   JALALI → GREGORIAN
+========================================================= */
 
+function jalaliToGregorian(
+  jy,
+  jm,
+  jd
+) {
+
+  jy = Number(jy);
+  jm = Number(jm);
+  jd = Number(jd);
+
+  if (
+    !Number.isInteger(jy) ||
+    !Number.isInteger(jm) ||
+    !Number.isInteger(jd) ||
+    jy < 1200 ||
+    jy > 1600 ||
+    jm < 1 ||
+    jm > 12 ||
+    jd < 1 ||
+    jd > 31
+  ) {
+    return null;
+  }
+
+  let gy;
+
+  if (jy > 979) {
+    gy = 1600;
+    jy -= 979;
+  } else {
+    gy = 621;
+  }
+
+  let days =
+    365 * jy +
+    Math.floor(jy / 33) * 8 +
+    Math.floor(
+      ((jy % 33) + 3) / 4
+    ) +
+    78 +
+    jd +
+    (
+      jm < 7
+        ? (jm - 1) * 31
+        : (jm - 7) * 30 + 186
+    );
+
+  gy +=
+    400 *
+    Math.floor(
+      days / 146097
+    );
+
+  days %= 146097;
+
+  if (days > 36524) {
+
+    gy +=
+      100 *
+      Math.floor(
+        --days / 36524
+      );
+
+    days %= 36524;
+
+    if (days >= 365) {
+      days++;
+    }
+
+  }
+
+  gy +=
+    4 *
+    Math.floor(
+      days / 1461
+    );
+
+  days %= 1461;
+
+  if (days > 365) {
+
+    gy +=
+      Math.floor(
+        (days - 1) / 365
+      );
+
+    days =
+      (days - 1) % 365;
+
+  }
+
+  const gd =
+    days + 1;
+
+  const leap =
+    (
+      gy % 4 === 0 &&
+      gy % 100 !== 0
+    ) ||
+    gy % 400 === 0;
+
+  const monthDays = [
+    31,
+    leap ? 29 : 28,
+    31,
+    30,
+    31,
+    30,
+    31,
+    31,
+    30,
+    31,
+    30,
+    31
+  ];
+
+  let gm = 1;
+  let remaining = gd;
+
+  for (
+    let i = 0;
+    i < monthDays.length;
+    i++
+  ) {
+
+    if (
+      remaining <=
+      monthDays[i]
+    ) {
+
+      gm = i + 1;
+      break;
+
+    }
+
+    remaining -=
+      monthDays[i];
+
+  }
+
+  return [
+
+    gy,
+
+    gm,
+
+    remaining
+
+  ];
+}
+
+
+/* =========================================================
+   JALALI DATE INPUT HELPERS
+========================================================= */
+
+function jalaliDateToGregorian(
+  value
+) {
+
+  if (!value) {
+    return '';
+  }
+
+  const normalized =
+    normalizeDigits(
+      value
+    )
+      .replace(
+        /[-.]/g,
+        '/'
+      );
+
+  const match =
+    normalized.match(
+      /^(\d{4})\/(\d{1,2})\/(\d{1,2})$/
+    );
+
+  if (!match) {
+    return '';
+  }
+
+  const jy =
+    Number(match[1]);
+
+  const jm =
+    Number(match[2]);
+
+  const jd =
+    Number(match[3]);
+
+  const result =
+    jalaliToGregorian(
+      jy,
+      jm,
+      jd
+    );
+
+  if (!result) {
+    return '';
+  }
+
+  const [
+    gy,
+    gm,
+    gd
+  ] = result;
+
+  return [
+    gy,
+    String(gm).padStart(2, '0'),
+    String(gd).padStart(2, '0')
+  ].join('-');
+
+}
+
+
+function gregorianDateToJalaliInput(
+  value
+) {
+
+  if (!value) {
+    return '';
+  }
+
+  const normalized =
+    normalizeDigits(
+      value
+    );
+
+  const match =
+    normalized.match(
+      /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+    );
+
+  if (!match) {
+    return '';
+  }
+
+  const result =
+    gregorianToJalali(
+      Number(match[1]),
+      Number(match[2]),
+      Number(match[3])
+    );
+
+  if (!result) {
+    return '';
+  }
+
+  return [
+
+    toPersianDigits(
+      result[0]
+    ),
+
+    toPersianDigits(
+      String(result[1])
+        .padStart(2, '0')
+    ),
+
+    toPersianDigits(
+      String(result[2])
+        .padStart(2, '0')
+    )
+
+  ].join('/');
+}
+
+
+/* =========================================================
+   JALALI DATE FIELD
+========================================================= */
+
+function jalaliDateField(
+  id,
+  label,
+  gregorianValue = today()
+) {
+
+  const jalaliValue =
+    gregorianDateToJalaliInput(
+      gregorianValue
+    );
+
+  return `
+
+    <div class="field">
+
+      <label
+        for="${esc(id)}Jalali"
+      >
+        ${esc(label)}
+      </label>
+
+      <input
+        id="${esc(id)}Jalali"
+        type="text"
+        inputmode="numeric"
+        autocomplete="off"
+        dir="ltr"
+        placeholder="۱۴۰۵/۰۵/۲۵"
+        value="${esc(jalaliValue)}"
+      >
+
+      <input
+        id="${esc(id)}"
+        type="hidden"
+        value="${esc(gregorianValue)}"
+      >
+
+      <small
+        class="muted"
+        id="${esc(id)}Message"
+      >
+        تاریخ را به صورت شمسی وارد کنید
+      </small>
+
+    </div>
+
+  `;
+}
+
+
+/* =========================================================
+   JALALI DATE EVENT BINDING
+========================================================= */
+
+function bindJalaliDate(
+  id
+) {
+
+  const visible =
+    document.getElementById(
+      `${id}Jalali`
+    );
+
+  const hidden =
+    document.getElementById(
+      id
+    );
+
+  const message =
+    document.getElementById(
+      `${id}Message`
+    );
+
+  if (
+    !visible ||
+    !hidden
+  ) {
+    return;
+  }
+
+  const sync =
+    () => {
+
+      const raw =
+        normalizeDigits(
+          visible.value
+        )
+          .replace(
+            /[-.]/g,
+            '/'
+          );
+
+      const normalized =
+        raw
+          .split('/')
+          .filter(Boolean)
+          .map(
+            part =>
+              part.trim()
+          )
+          .join('/');
+
+      const gregorian =
+        jalaliDateToGregorian(
+          normalized
+        );
+
+      if (gregorian) {
+
+        hidden.value =
+          gregorian;
+
+        visible.value =
+          gregorianDateToJalaliInput(
+            gregorian
+          );
+
+        if (message) {
+
+          message.textContent =
+            `تاریخ میلادی ذخیره‌شده: ${gregorian}`;
+
+        }
+
+        visible.classList.remove(
+          'invalid'
+        );
+
+        return;
+
+      }
+
+      /*
+        اگر کاربر هنوز تاریخ را کامل
+        وارد نکرده، خطا نشان نمی‌دهیم.
+      */
+
+      if (
+        normalized.length >= 8
+      ) {
+
+        hidden.value = '';
+
+        if (message) {
+
+          message.textContent =
+            'تاریخ شمسی واردشده معتبر نیست';
+
+        }
+
+        visible.classList.add(
+          'invalid'
+        );
+
+      } else {
+
+        visible.classList.remove(
+          'invalid'
+        );
+
+        if (message) {
+
+          message.textContent =
+            'تاریخ را به صورت شمسی وارد کنید';
+
+        }
+
+      }
+
+    };
+
+  visible.addEventListener(
+    'input',
+    sync
+  );
+
+  visible.addEventListener(
+    'change',
+    sync
+  );
+
+  sync();
+
+}
   return [
 
     toPersianDigits(
@@ -2376,12 +2837,11 @@ function weightsPage() {
             flockOptions
           )}
 
-          ${field(
-            'weightDate',
-            'تاریخ ارزیابی',
-            'date',
-            today()
-          )}
+        ${jalaliDateField(
+  'weightDate',
+  'تاریخ ارزیابی',
+  today()
+)}
 
         </div>
 
@@ -4725,7 +5185,9 @@ function bindEvents() {
 
 }
 
-
+  bindJalaliDate(
+    'weightDate'
+  );
 /* =========================================================
    GLOBAL ERROR PROTECTION
 ========================================================= */
