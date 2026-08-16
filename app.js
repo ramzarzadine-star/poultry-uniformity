@@ -99,27 +99,38 @@ const fmt = (
 
 /* =========================================================
    DATE
+   ---------------------------------------------------------
+   Internal storage:
+   Gregorian YYYY-MM-DD
+
+   User display:
+   Persian / Jalali YYYY/MM/DD
+
+   IMPORTANT:
+   The database continues to store Gregorian dates so that
+   existing records remain compatible.
 ========================================================= */
 
 /*
-  تاریخ امروز به وقت محلی دستگاه.
-  از toISOString استفاده نمی‌کنیم تا مشکل اختلاف روز
-  به دلیل UTC ایجاد نشود.
+  تاریخ امروز به وقت محلی دستگاه
+  بدون استفاده از UTC
 */
-
 const today = () => {
 
   const d = new Date();
 
-  const y = d.getFullYear();
+  const y =
+    d.getFullYear();
 
   const m =
-    String(d.getMonth() + 1)
-      .padStart(2, '0');
+    String(
+      d.getMonth() + 1
+    ).padStart(2, '0');
 
   const day =
-    String(d.getDate())
-      .padStart(2, '0');
+    String(
+      d.getDate()
+    ).padStart(2, '0');
 
   return `${y}-${m}-${day}`;
 
@@ -127,9 +138,48 @@ const today = () => {
 
 
 /*
+  تبدیل اعداد فارسی و عربی به انگلیسی
+  برای ورود اطلاعات عددی و تاریخ
+*/
+function normalizeDigits(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return '';
+  }
+
+  return String(value)
+
+    .replace(
+      /[۰-۹]/g,
+      digit =>
+        String(
+          '۰۱۲۳۴۵۶۷۸۹'
+            .indexOf(digit)
+        )
+    )
+
+    .replace(
+      /[٠-٩]/g,
+      digit =>
+        String(
+          '٠١٢٣٤٥٦٧٨٩'
+            .indexOf(digit)
+        )
+    )
+
+    .replace(/٬/g, '')
+
+    .replace(/٫/g, '.');
+
+}
+
+
+/*
   تبدیل Gregorian → Jalali
 */
-
 function gregorianToJalali(
   gy,
   gm,
@@ -189,13 +239,17 @@ function gregorianToJalali(
 
   jy +=
     33 *
-    Math.floor(days / 12053);
+    Math.floor(
+      days / 12053
+    );
 
   days %= 12053;
 
   jy +=
     4 *
-    Math.floor(days / 1461);
+    Math.floor(
+      days / 1461
+    );
 
   days %= 1461;
 
@@ -213,20 +267,28 @@ function gregorianToJalali(
 
   const jm =
     days < 186
+
       ? 1 +
-        Math.floor(days / 31)
+        Math.floor(
+          days / 31
+        )
+
       : 7 +
         Math.floor(
           (days - 186) / 30
         );
 
+
   const jd =
     1 +
     (
       days < 186
+
         ? days % 31
+
         : (days - 186) % 30
     );
+
 
   return [
     jy,
@@ -238,37 +300,79 @@ function gregorianToJalali(
 
 
 /*
-  نمایش تاریخ به شمسی
+  نمایش تاریخ Gregorian به صورت شمسی
 
   مثال:
   2026-08-16
-  ↓
+  →
   ۱۴۰۵/۰۵/۲۵
 */
-
 function toPersianDate(
   value
 ) {
 
-  if (!value)
+  if (
+    value === null ||
+    value === undefined ||
+    value === ''
+  ) {
     return '—';
+  }
+
+
+  const normalized =
+    normalizeDigits(
+      value
+    );
+
 
   const match =
-    String(value).match(
+    normalized.match(
       /^(\d{4})-(\d{1,2})-(\d{1,2})/
     );
 
-  if (!match)
-    return esc(value);
+
+  if (!match) {
+
+    return esc(
+      value
+    );
+
+  }
+
 
   const gy =
-    Number(match[1]);
+    Number(
+      match[1]
+    );
 
   const gm =
-    Number(match[2]);
+    Number(
+      match[2]
+    );
 
   const gd =
-    Number(match[3]);
+    Number(
+      match[3]
+    );
+
+
+  if (
+    !Number.isInteger(gy) ||
+    !Number.isInteger(gm) ||
+    !Number.isInteger(gd) ||
+    gm < 1 ||
+    gm > 12 ||
+    gd < 1 ||
+    gd > 31
+  ) {
+
+    return esc(
+      value
+    );
+
+  }
+
 
   const [
     jy,
@@ -281,53 +385,120 @@ function toPersianDate(
       gd
     );
 
+
   return [
-    jy,
-    String(jm).padStart(2, '0'),
-    String(jd).padStart(2, '0')
+
+    toPersianDigits(
+      jy
+    ),
+
+    String(jm)
+      .padStart(2, '0')
+      .replace(
+        /\d/g,
+        digit =>
+          '۰۱۲۳۴۵۶۷۸۹'[
+            Number(digit)
+          ]
+      ),
+
+    String(jd)
+      .padStart(2, '0')
+      .replace(
+        /\d/g,
+        digit =>
+          '۰۱۲۳۴۵۶۷۸۹'[
+            Number(digit)
+          ]
+      )
+
   ].join('/');
-}
-
-
-/*
-  تاریخ شمسی + متن مناسب برای نمایش
-*/
-
-function displayDate(value) {
-
-  return toPersianDate(value);
 
 }
 
 
 /*
-  محاسبه سن گله بر اساس تاریخ واقعی
+  تبدیل اعداد انگلیسی به فارسی برای نمایش
 */
+function toPersianDigits(
+  value
+) {
 
+  return String(
+    value ?? ''
+  ).replace(
+    /\d/g,
+    digit =>
+      '۰۱۲۳۴۵۶۷۸۹'[
+        Number(digit)
+      ]
+  );
+
+}
+
+
+/*
+  نمایش تاریخ در تمام قسمت‌های برنامه
+*/
+function displayDate(
+  value
+) {
+
+  return toPersianDate(
+    value
+  );
+
+}
+
+
+/*
+  محاسبه اختلاف دو تاریخ Gregorian
+*/
 const daysBetween = (
   start,
   end = today()
 ) => {
 
-  if (!start)
+  if (!start) {
     return 0;
+  }
+
+
+  const normalizedStart =
+    normalizeDigits(
+      start
+    );
+
+  const normalizedEnd =
+    normalizeDigits(
+      end
+    );
+
 
   const a =
     new Date(
-      `${start}T00:00:00`
+      `${normalizedStart}T00:00:00`
     );
 
   const b =
     new Date(
-      `${end}T00:00:00`
+      `${normalizedEnd}T00:00:00`
     );
 
+
   if (
-    Number.isNaN(a.getTime()) ||
-    Number.isNaN(b.getTime())
+    Number.isNaN(
+      a.getTime()
+    ) ||
+    Number.isNaN(
+      b.getTime()
+    )
   ) {
+
     return 0;
+
   }
+
 
   return Math.max(
     0,
@@ -341,8 +512,6 @@ const daysBetween = (
   );
 
 };
-
-
 /* =========================================================
    DATABASE
 ========================================================= */
@@ -1261,26 +1430,7 @@ function shell(
           </div>
 
 
-          <div class="quick">
-
-            <button
-              class="btn small"
-              data-page="flocks"
-              type="button"
-            >
-              + گله
-            </button>
-
-            <button
-              class="btn small"
-              data-page="weights"
-              type="button"
-            >
-              + وزن‌کشی
-            </button>
-
-          </div>
-
+          
         </div>
 
 
