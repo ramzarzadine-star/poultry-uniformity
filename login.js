@@ -3,8 +3,8 @@
 /*
   =========================================================
   مرکز تخصصی سلامت طیور آدینه
-  LOGIN.JS — Authentication / Login
-  Stable Integrated Version
+  LOGIN.JS
+  Authentication / Login / Magic Link / Recovery
   =========================================================
 
   هماهنگ با:
@@ -12,17 +12,20 @@
     supabase.js
     auth.js
     index.html
+    auth-guard.jS
 
   امکانات:
-    - ورود با Email + Password
+    - ورود Email + Password
     - ورود با Magic Link
     - ثبت نام
-    - بازیابی رمز عبور
-    - پردازش Callback لینک ایمیل
+    - ارسال لینک بازیابی رمز
+    - تعیین رمز جدید داخل همان صفحه
+    - تشخیص Recovery Callback
+    - تشخیص Magic Link Callback
+    - Session موجود
     - جلوگیری از Redirect Loop
-    - نمایش خطای واقعی Supabase
-    - پشتیبانی از Session موجود
     - جلوگیری از چند بار ارسال درخواست
+    - نمایش خطای واقعی Supabase
 */
 
 
@@ -87,6 +90,16 @@
   let bootFinished = false;
 
   let authListenerReady = false;
+
+  let recoveryMode = false;
+
+  let recoveryForm = null;
+
+  let recoveryPassword = null;
+
+  let recoveryPasswordConfirm = null;
+
+  let recoverySubmit = null;
 
 
   /* =======================================================
@@ -154,14 +167,156 @@
 
 
   /* =======================================================
-     REDIRECT URL
+     URL HELPERS
+  ======================================================= */
+
+  function getSearchParams() {
+
+    return new URLSearchParams(
+      window.location.search
+    );
+
+  }
+
+
+  function getHashParams() {
+
+    return new URLSearchParams(
+      window.location.hash
+        .replace(
+          /^#/,
+          ''
+        )
+    );
+
+  }
+
+
+  function getAuthType() {
+
+    const search =
+      getSearchParams();
+
+    const hash =
+      getHashParams();
+
+
+    return (
+      search.get('type') ||
+      hash.get('type') ||
+      ''
+    ).toLowerCase();
+
+  }
+
+
+  function getAuthError() {
+
+    const search =
+      getSearchParams();
+
+    const hash =
+      getHashParams();
+
+
+    return {
+
+      error:
+        search.get('error') ||
+        hash.get('error') ||
+        '',
+
+      description:
+        search.get(
+          'error_description'
+        ) ||
+        hash.get(
+          'error_description'
+        ) ||
+        '',
+
+      code:
+        search.get(
+          'error_code'
+        ) ||
+        hash.get(
+          'error_code'
+        ) ||
+        ''
+
+    };
+
+  }
+
+
+  function hasAccessToken() {
+
+    const hash =
+      getHashParams();
+
+
+    return (
+      hash.has('access_token') &&
+      hash.has('refresh_token')
+    );
+
+  }
+
+
+  function hasCode() {
+
+    const search =
+      getSearchParams();
+
+
+    return search.has(
+      'code'
+    );
+
+  }
+
+
+  function isRecoveryCallback() {
+
+    const type =
+      getAuthType();
+
+
+    return (
+      type === 'recovery' ||
+      type === 'password_recovery'
+    );
+
+  }
+
+
+  function hasAuthCallback() {
+
+    return (
+
+      hasCode() ||
+
+      hasAccessToken() ||
+
+      isRecoveryCallback()
+
+    );
+
+  }
+
+
+  /* =======================================================
+     LOGIN REDIRECT URL
   ======================================================= */
 
   function getLoginRedirectUrl() {
 
     /*
-      همیشه login.html فعلی را به صورت
-      absolute URL به Supabase می‌دهیم.
+      لینک‌های ایمیل همیشه به همان login.html
+      فعلی برمی‌گردند.
+
+      بنابراین کاربر در صفحه جداگانه‌ای
+      از نرم‌افزار قرار نمی‌گیرد.
     */
 
     return new URL(
@@ -183,6 +338,16 @@
     }
 
 
+    /*
+      در حالت بازیابی رمز نباید
+      مستقیماً وارد برنامه شویم.
+    */
+
+    if (recoveryMode) {
+      return;
+    }
+
+
     redirecting = true;
 
 
@@ -190,9 +355,8 @@
 
 
     /*
-      Session باید توسط Supabase ذخیره شده باشد.
-      مقدار خیلی کوتاه تأخیر برای جلوگیری از
-      Race Condition بین Auth Event و Navigation.
+      مقدار کوتاه تأخیر برای اطمینان
+      از ذخیره Session توسط Supabase.
     */
 
     window.setTimeout(
@@ -203,7 +367,7 @@
         );
 
       },
-      300
+      250
     );
 
   }
@@ -216,6 +380,11 @@
   function switchMode(
     mode
   ) {
+
+    if (recoveryMode) {
+      return;
+    }
+
 
     const register =
       mode === 'register';
@@ -396,14 +565,15 @@
 
 
       if (
-        !data?.user
+        !data?.user ||
+        !data?.session
       ) {
 
         setBusy(false);
 
 
         showMessage(
-          'کاربر معتبر دریافت نشد.'
+          'نشست کاربری ایجاد نشد. دوباره تلاش کنید.'
         );
 
 
@@ -417,10 +587,6 @@
         data.user.id
       );
 
-
-      /*
-        Session توسط Supabase ایجاد شده است.
-      */
 
       openApp();
 
@@ -631,16 +797,17 @@
 
 
       /*
-        اگر Supabase Session ایجاد کرده باشد،
-        برای جلوگیری از ورود خودکار حساب جدید
-        خارج می‌شویم.
+        اگر Session خودکار ساخته شود،
+        چون حساب باید توسط مالک تأیید شود،
+        فعلاً از آن خارج می‌شویم.
       */
 
       if (data?.session) {
 
         try {
 
-          await supabase.auth.signOut();
+          await supabase.auth
+            .signOut();
 
         }
 
@@ -770,9 +937,6 @@
           });
 
 
-      const data =
-        response?.data;
-
       const error =
         response?.error;
 
@@ -799,12 +963,6 @@
         return;
 
       }
-
-
-      console.log(
-        'Magic Link request successful:',
-        data
-      );
 
 
       showMessage(
@@ -838,7 +996,7 @@
 
 
   /* =======================================================
-     PASSWORD RESET
+     PASSWORD RESET REQUEST
   ======================================================= */
 
   async function resetPassword() {
@@ -890,6 +1048,12 @@
         getLoginRedirectUrl();
 
 
+      console.log(
+        'Password recovery redirect URL:',
+        redirectTo
+      );
+
+
       const response =
         await supabase.auth
           .resetPasswordForEmail(
@@ -899,9 +1063,6 @@
             }
           );
 
-
-      const data =
-        response?.data;
 
       const error =
         response?.error;
@@ -931,14 +1092,8 @@
       }
 
 
-      console.log(
-        'Password reset successful:',
-        data
-      );
-
-
       showMessage(
-        'لینک بازیابی رمز عبور ارسال شد.',
+        'لینک بازیابی رمز عبور ارسال شد. ایمیل خود را بررسی کنید.',
         'success'
       );
 
@@ -968,69 +1123,539 @@
 
 
   /* =======================================================
+     CREATE RECOVERY FORM
+  ======================================================= */
+
+  function createRecoveryForm() {
+
+    if (recoveryForm) {
+      return;
+    }
+
+
+    recoveryForm =
+      document.createElement(
+        'form'
+      );
+
+
+    recoveryForm.id =
+      'recoveryForm';
+
+    recoveryForm.className =
+      'recovery-form';
+
+
+    recoveryForm.noValidate =
+      true;
+
+
+    recoveryForm.innerHTML = `
+
+      <label
+        for="recoveryPassword"
+      >
+        رمز عبور جدید
+      </label>
+
+      <input
+        id="recoveryPassword"
+        type="password"
+        autocomplete="new-password"
+        minlength="8"
+        placeholder="حداقل ۸ کاراکتر"
+        required
+      >
+
+
+      <label
+        for="recoveryPasswordConfirm"
+      >
+        تکرار رمز عبور جدید
+      </label>
+
+      <input
+        id="recoveryPasswordConfirm"
+        type="password"
+        autocomplete="new-password"
+        minlength="8"
+        placeholder="تکرار رمز عبور"
+        required
+      >
+
+
+      <button
+        id="recoverySubmitBtn"
+        class="primary-btn"
+        type="submit"
+      >
+        ذخیره رمز عبور جدید
+      </button>
+
+    `;
+
+
+    recoveryPassword =
+      recoveryForm.querySelector(
+        '#recoveryPassword'
+      );
+
+
+    recoveryPasswordConfirm =
+      recoveryForm.querySelector(
+        '#recoveryPasswordConfirm'
+      );
+
+
+    recoverySubmit =
+      recoveryForm.querySelector(
+        '#recoverySubmitBtn'
+      );
+
+
+    recoveryForm.addEventListener(
+      'submit',
+      updatePassword
+    );
+
+
+    /*
+      فرم بازیابی قبل از Security Note
+      قرار می‌گیرد.
+    */
+
+    const securityNote =
+      document.querySelector(
+        '.security-note'
+      );
+
+
+    if (
+      securityNote &&
+      securityNote.parentNode
+    ) {
+
+      securityNote.parentNode.insertBefore(
+        recoveryForm,
+        securityNote
+      );
+
+    }
+
+    else if (
+      loginForm &&
+      loginForm.parentNode
+    ) {
+
+      loginForm.parentNode.insertBefore(
+        recoveryForm,
+        loginForm
+      );
+
+    }
+
+
+    recoveryForm.hidden =
+      true;
+
+  }
+
+
+  /* =======================================================
+     SHOW RECOVERY MODE
+  ======================================================= */
+
+  function showRecoveryMode() {
+
+    recoveryMode =
+      true;
+
+
+    createRecoveryForm();
+
+
+    if (loginForm) {
+
+      loginForm.hidden =
+        true;
+
+    }
+
+
+    if (registerForm) {
+
+      registerForm.hidden =
+        true;
+
+    }
+
+
+    if (loginModeBtn) {
+
+      loginModeBtn.disabled =
+        true;
+
+      loginModeBtn.classList.remove(
+        'active'
+      );
+
+    }
+
+
+    if (registerModeBtn) {
+
+      registerModeBtn.disabled =
+        true;
+
+      registerModeBtn.classList.remove(
+        'active'
+      );
+
+    }
+
+
+    if (recoveryForm) {
+
+      recoveryForm.hidden =
+        false;
+
+    }
+
+
+    if (modeTitle) {
+
+      modeTitle.textContent =
+        'تغییر رمز عبور';
+
+    }
+
+
+    if (modeText) {
+
+      modeText.textContent =
+        'رمز عبور جدید خود را وارد کنید.';
+
+    }
+
+
+    showMessage(
+      'لینک بازیابی معتبر است. رمز عبور جدید خود را تعیین کنید.',
+      'success'
+    );
+
+
+    setBusy(false);
+
+
+    window.setTimeout(
+      function () {
+
+        recoveryPassword?.focus();
+
+      },
+      100
+    );
+
+  }
+
+
+  /* =======================================================
+     UPDATE PASSWORD
+  ======================================================= */
+
+  async function updatePassword(
+    event
+  ) {
+
+    if (event) {
+
+      event.preventDefault();
+
+    }
+
+
+    if (
+      !supabase ||
+      !recoveryForm
+    ) {
+
+      showMessage(
+        'فرم تغییر رمز آماده نیست.'
+      );
+
+      return;
+
+    }
+
+
+    const password =
+      recoveryPassword
+        ?.value ||
+      '';
+
+
+    const confirm =
+      recoveryPasswordConfirm
+        ?.value ||
+      '';
+
+
+    if (!password) {
+
+      showMessage(
+        'رمز عبور جدید را وارد کنید.'
+      );
+
+      return;
+
+    }
+
+
+    if (
+      password.length < 8
+    ) {
+
+      showMessage(
+        'رمز عبور جدید باید حداقل ۸ کاراکتر باشد.'
+      );
+
+      return;
+
+    }
+
+
+    if (
+      password !== confirm
+    ) {
+
+      showMessage(
+        'تکرار رمز عبور با رمز جدید یکسان نیست.'
+      );
+
+      return;
+
+    }
+
+
+    setBusy(true);
+
+
+    try {
+
+      const response =
+        await supabase.auth
+          .updateUser({
+
+            password
+
+          });
+
+
+      const error =
+        response?.error;
+
+
+      if (error) {
+
+        console.error(
+          'Update password error:',
+          error
+        );
+
+
+        setBusy(false);
+
+
+        showMessage(
+          `تغییر رمز عبور انجام نشد: ${
+            error.message ||
+            'خطای نامشخص'
+          }`
+        );
+
+
+        return;
+
+      }
+
+
+      showMessage(
+        'رمز عبور با موفقیت تغییر کرد. اکنون می‌توانید وارد سامانه شوید.',
+        'success'
+      );
+
+
+      recoveryPassword.value =
+        '';
+
+      recoveryPasswordConfirm.value =
+        '';
+
+
+      /*
+        بعد از تغییر رمز،
+        Session معتبر است اما برای اینکه
+        مسیر ورود کاملاً مشخص باشد،
+        فرم ورود را دوباره نمایش می‌دهیم.
+      */
+
+      recoveryMode =
+        false;
+
+
+      if (recoveryForm) {
+
+        recoveryForm.hidden =
+          true;
+
+      }
+
+
+      if (loginModeBtn) {
+
+        loginModeBtn.disabled =
+          false;
+
+      }
+
+
+      if (registerModeBtn) {
+
+        registerModeBtn.disabled =
+          false;
+
+      }
+
+
+      if (loginForm) {
+
+        loginForm.hidden =
+          false;
+
+      }
+
+
+      if (registerForm) {
+
+        registerForm.hidden =
+          true;
+
+      }
+
+
+      if (modeTitle) {
+
+        modeTitle.textContent =
+          'ورود امن به سامانه';
+
+      }
+
+
+      if (modeText) {
+
+        modeText.textContent =
+          'رمز عبور جدید شما ثبت شد.';
+
+      }
+
+
+      setBusy(false);
+
+
+      /*
+        چون تغییر رمز با Session معتبر
+        انجام شده، کاربر می‌تواند مستقیماً
+        وارد برنامه شود.
+      */
+
+      const session =
+        await getSession();
+
+
+      if (
+        session?.user
+      ) {
+
+        openApp();
+
+      }
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'Update password exception:',
+        error
+      );
+
+
+      setBusy(false);
+
+
+      showMessage(
+        `خطا هنگام تغییر رمز عبور: ${
+          error?.message ||
+          'خطای نامشخص'
+        }`
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
      URL ERROR
   ======================================================= */
 
   function checkUrlError() {
 
-    const search =
-      new URLSearchParams(
-        window.location.search
-      );
-
-
-    const hash =
-      new URLSearchParams(
-        window.location.hash
-          .replace(
-            /^#/,
-            ''
-          )
-      );
-
-
-    const error =
-      search.get('error') ||
-      hash.get('error');
-
-
-    const errorDescription =
-      search.get(
-        'error_description'
-      ) ||
-      hash.get(
-        'error_description'
-      );
-
-
-    const errorCode =
-      search.get(
-        'error_code'
-      ) ||
-      hash.get(
-        'error_code'
-      );
+    const authError =
+      getAuthError();
 
 
     if (
-      error ||
-      errorDescription
+      authError.error ||
+      authError.description
     ) {
 
       console.error(
         'Supabase URL authentication error:',
-        {
-          error,
-          errorCode,
-          errorDescription
-        }
+        authError
       );
 
 
+      let message =
+        authError.description ||
+        authError.error ||
+        'احراز هویت ناموفق بود.';
+
+
+      try {
+
+        message =
+          decodeURIComponent(
+            message.replace(
+              /\+/g,
+              ' '
+            )
+          );
+
+      }
+
+      catch (_) {
+
+        /*
+          اگر decode ناموفق بود،
+          متن اصلی حفظ می‌شود.
+        */
+
+      }
+
+
       showMessage(
-        errorDescription ||
-        error ||
-        'احراز هویت ناموفق بود.'
+        message
       );
 
 
@@ -1045,50 +1670,15 @@
 
 
   /* =======================================================
-     CALLBACK DETECTION
-  ======================================================= */
-
-  function hasAuthCallback() {
-
-    const search =
-      new URLSearchParams(
-        window.location.search
-      );
-
-
-    const hash =
-      new URLSearchParams(
-        window.location.hash
-          .replace(
-            /^#/,
-            ''
-          )
-      );
-
-
-    return (
-
-      search.has('code') ||
-
-      hash.has('access_token') ||
-
-      hash.has('refresh_token') ||
-
-      hash.has('type')
-
-    );
-
-  }
-
-
-  /* =======================================================
-     GET SESSION
+     SESSION
   ======================================================= */
 
   async function getSession() {
 
     if (!supabase) {
+
       return null;
+
     }
 
 
@@ -1099,7 +1689,9 @@
           .getSession();
 
 
-      if (response?.error) {
+      if (
+        response?.error
+      ) {
 
         console.error(
           'getSession error:',
@@ -1197,7 +1789,8 @@
     }
 
 
-    authListenerReady = true;
+    authListenerReady =
+      true;
 
 
     try {
@@ -1218,12 +1811,31 @@
 
 
             /*
-              فقط Session واقعی.
+              Recovery باید در صفحه Login
+              باقی بماند.
+            */
+
+            if (
+              event === 'PASSWORD_RECOVERY'
+            ) {
+
+              showRecoveryMode();
+
+              return;
+
+            }
+
+
+            /*
+              اگر Session در callback
+              ایجاد شد ولی Recovery نیست،
+              وارد برنامه شو.
             */
 
             if (
               event === 'SIGNED_IN' &&
-              session?.user
+              session?.user &&
+              !recoveryMode
             ) {
 
               openApp();
@@ -1234,14 +1846,15 @@
 
 
             /*
-              اگر callback از ایمیل
-              با INITIAL_SESSION رسید.
+              Session اولیه اگر کاربر قبلاً
+              وارد شده باشد.
             */
 
             if (
               event === 'INITIAL_SESSION' &&
               session?.user &&
-              hasAuthCallback()
+              !hasAuthCallback() &&
+              !recoveryMode
             ) {
 
               openApp();
@@ -1249,12 +1862,6 @@
               return;
 
             }
-
-
-            /*
-              TOKEN_REFRESHED نیازی به
-              انتقال صفحه ندارد.
-            */
 
           }
         );
@@ -1274,17 +1881,158 @@
 
 
   /* =======================================================
+     CLEAN AUTH URL
+  ======================================================= */
+
+  function cleanAuthUrl() {
+
+    try {
+
+      const cleanUrl =
+        new URL(
+          window.location.href
+        );
+
+
+      cleanUrl.searchParams.delete(
+        'code'
+      );
+
+      cleanUrl.searchParams.delete(
+        'type'
+      );
+
+      cleanUrl.searchParams.delete(
+        'error'
+      );
+
+      cleanUrl.searchParams.delete(
+        'error_code'
+      );
+
+      cleanUrl.searchParams.delete(
+        'error_description'
+      );
+
+
+      /*
+        Hash حاوی access_token است.
+        قبل از پاک کردن باید Session توسط
+        Supabase ساخته شده باشد.
+      */
+
+      cleanUrl.hash =
+        '';
+
+
+      window.history.replaceState(
+        {},
+        document.title,
+        cleanUrl.pathname +
+        cleanUrl.search
+      );
+
+    }
+
+    catch (error) {
+
+      console.warn(
+        'Could not clean authentication URL:',
+        error
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     HANDLE RECOVERY CALLBACK
+  ======================================================= */
+
+  async function handleRecoveryCallback() {
+
+    if (
+      !isRecoveryCallback()
+    ) {
+
+      return false;
+
+    }
+
+
+    console.log(
+      'Password recovery callback detected.'
+    );
+
+
+    setBusy(true);
+
+
+    /*
+      ابتدا صبر می‌کنیم تا Supabase
+      Session بازیابی را ثبت کند.
+    */
+
+    const session =
+      await waitForSession(
+        8000
+      );
+
+
+    if (
+      !session?.user
+    ) {
+
+      setBusy(false);
+
+
+      showMessage(
+        'لینک بازیابی دریافت شد، اما نشست امن ایجاد نشد. لطفاً یک لینک بازیابی جدید درخواست کنید.'
+      );
+
+
+      return true;
+
+    }
+
+
+    /*
+      از اینجا به بعد در حالت Recovery هستیم.
+    */
+
+    showRecoveryMode();
+
+
+    /*
+      بعد از ایجاد Session، پارامترهای
+      اضافی URL پاک می‌شوند ولی صفحه
+      همان login.html باقی می‌ماند.
+    */
+
+    cleanAuthUrl();
+
+
+    return true;
+
+  }
+
+
+  /* =======================================================
      BOOT
   ======================================================= */
 
   async function boot() {
 
     if (bootFinished) {
+
       return;
+
     }
 
 
-    bootFinished = true;
+    bootFinished =
+      true;
 
 
     if (!supabase) {
@@ -1306,7 +2054,7 @@
 
       /*
         Listener باید قبل از بررسی Session
-        فعال باشد.
+        فعال شود.
       */
 
       listenForAuthChanges();
@@ -1314,7 +2062,7 @@
 
       /*
         ---------------------------------------------------
-        1. خطای URL
+        1. URL ERROR
         ---------------------------------------------------
       */
 
@@ -1331,7 +2079,24 @@
 
       /*
         ---------------------------------------------------
-        2. بررسی callback
+        2. RECOVERY CALLBACK
+        ---------------------------------------------------
+      */
+
+      if (
+        isRecoveryCallback()
+      ) {
+
+        await handleRecoveryCallback();
+
+        return;
+
+      }
+
+
+      /*
+        ---------------------------------------------------
+        3. AUTH CALLBACK
         ---------------------------------------------------
       */
 
@@ -1363,6 +2128,11 @@
           );
 
 
+          /*
+            اگر callback از Recovery نبود،
+            ورود عادی است.
+          */
+
           openApp();
 
           return;
@@ -1385,7 +2155,7 @@
 
       /*
         ---------------------------------------------------
-        3. Session قبلی
+        4. EXISTING SESSION
         ---------------------------------------------------
       */
 
@@ -1412,16 +2182,15 @@
 
       /*
         ---------------------------------------------------
-        4. پیام ارسال‌شده توسط Guard
+        5. GUARD MESSAGE
         ---------------------------------------------------
       */
 
       const message =
-        new URLSearchParams(
-          window.location.search
-        ).get(
-          'message'
-        );
+        getSearchParams()
+          .get(
+            'message'
+          );
 
 
       if (message) {
