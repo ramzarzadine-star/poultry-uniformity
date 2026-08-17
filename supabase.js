@@ -3,8 +3,8 @@
 /*
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
-SUPABASE CLIENT
-نسخه اصلاح شده
+SUPABASE AUTH CLIENT
+GitHub Pages / Client Only
 =========================================================
 */
 
@@ -19,17 +19,15 @@ if (
   !window.supabase ||
   typeof window.supabase.createClient !== 'function'
 ) {
-
   throw new Error(
-    'Supabase JavaScript library could not be loaded.'
+    'Supabase JavaScript library is not loaded.'
   );
-
 }
 
 
 /*
 =========================================================
-یک Client واحد برای کل برنامه
+Single Supabase Client
 =========================================================
 */
 
@@ -41,24 +39,23 @@ const adinehSupabase =
       auth: {
 
         /*
-        Session در مرورگر ذخیره شود
+        GitHub Pages یک Client-Side App است.
         */
+
+        flowType: 'implicit',
+
         persistSession: true,
 
-        /*
-        تمدید خودکار Session
-        */
         autoRefreshToken: true,
 
-        /*
-        پردازش لینک‌های Auth
-        */
         detectSessionInUrl: true,
 
-        /*
-        استفاده از PKCE برای جریان امن‌تر
-        */
-        flowType: 'pkce'
+        storage:
+          window.localStorage,
+
+        storageKey:
+          'adineh-auth'
+
       }
     }
   );
@@ -66,7 +63,7 @@ const adinehSupabase =
 
 /*
 =========================================================
-Global Client
+Global access
 =========================================================
 */
 
