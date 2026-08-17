@@ -3,17 +3,30 @@
 /*
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
-Authentication Guard
-Stable Version
+AUTHENTICATION GUARD
+نسخه اصلاح‌شده
 =========================================================
 */
 
 (function () {
 
+  /*
+  ========================================================
+  SUPABASE CLIENT
+  ========================================================
+  */
+
   const client =
     window.supabaseClient ||
-    window.adinehSupabase;
+    window.adinehSupabase ||
+    null;
 
+
+  /*
+  ========================================================
+  GLOBAL AUTH STATE
+  ========================================================
+  */
 
   window.ADINEH_AUTH = {
 
@@ -163,8 +176,7 @@ Stable Version
       }
 
 
-      return data?.user ||
-        null;
+      return data?.user || null;
 
     }
 
@@ -185,7 +197,7 @@ Stable Version
 
   /*
   ========================================================
-  GET PROFILE
+  GET CURRENT PROFILE
   ========================================================
   */
 
@@ -233,13 +245,15 @@ Stable Version
         );
 
 
-        return null;
+        return {
+          __error: true,
+          error
+        };
 
       }
 
 
-      return data ||
-        null;
+      return data || null;
 
     }
 
@@ -251,7 +265,10 @@ Stable Version
       );
 
 
-      return null;
+      return {
+        __error: true,
+        error
+      };
 
     }
 
@@ -266,9 +283,15 @@ Stable Version
 
   async function waitForUser() {
 
+    /*
+      اولویت با getSession است.
+      در iPhone ممکن است Session چند لحظه
+      بعد از بارگذاری صفحه آماده شود.
+    */
+
     for (
       let attempt = 0;
-      attempt < 20;
+      attempt < 30;
       attempt++
     ) {
 
@@ -354,6 +377,21 @@ Stable Version
         );
 
 
+      /*
+        اگر خطای واقعی دیتابیس رخ داده،
+        دوباره آن را به عنوان profile=null
+        تفسیر نمی‌کنیم.
+      */
+
+      if (
+        profile?.__error
+      ) {
+
+        return profile;
+
+      }
+
+
       if (profile)
         return profile;
 
@@ -418,15 +456,22 @@ Stable Version
       );
 
 
-      if (!profile) {
+      /*
+        خطای واقعی Supabase / RLS
+      */
+
+      if (
+        profile?.__error
+      ) {
 
         console.error(
-          'Profile not found after retry.'
+          'Profile access error:',
+          profile.error
         );
 
 
         goLogin(
-          'پروفایل کاربر پیدا نشد. وضعیت حساب را در سامانه بررسی کنید.'
+          'نشست برقرار است، اما دسترسی به پروفایل کاربر امکان‌پذیر نیست.'
         );
 
 
@@ -434,6 +479,32 @@ Stable Version
 
       }
 
+
+      /*
+        profile وجود ندارد
+      */
+
+      if (!profile) {
+
+        console.error(
+          'Profile not found:',
+          user.id
+        );
+
+
+        goLogin(
+          'پروفایل کاربر پیدا نشد. حساب شما باید در سامانه فعال شود.'
+        );
+
+
+        return;
+
+      }
+
+
+      /*
+        حساب هنوز فعال نشده
+      */
 
       if (
         profile.status !== 'active'
@@ -474,6 +545,12 @@ Stable Version
       window.ADINEH_DB_KEY =
         `adineh_poultry_db_v7_${user.id}`;
 
+
+      /*
+      ======================================================
+      AUTH READY
+      ======================================================
+      */
 
       authReady(
         user,
@@ -522,7 +599,6 @@ Stable Version
       if (redirect)
         goLogin();
 
-
       return null;
 
     }
@@ -534,11 +610,13 @@ Stable Version
       );
 
 
-    if (!profile) {
+    if (
+      !profile ||
+      profile.__error
+    ) {
 
       if (redirect)
         goLogin();
-
 
       return null;
 
@@ -551,7 +629,6 @@ Stable Version
 
       if (redirect)
         goLogin();
-
 
       return null;
 
@@ -586,8 +663,7 @@ Stable Version
 
 
     if (
-      session.profile.role !==
-      'owner'
+      session.profile.role !== 'owner'
     ) {
 
       window.location.replace(
@@ -707,6 +783,5 @@ Stable Version
   */
 
   checkAccess();
-
 
 })();
