@@ -2,9 +2,8 @@
 
 /*
 =========================================================
- ADINEH POULTRY
- SUPABASE AUTH CLIENT
- GitHub Pages
+مرکز تخصصی سلامت طیور آدینه
+SUPABASE AUTH CLIENT
 =========================================================
 */
 
@@ -40,7 +39,7 @@
 
   /*
   =======================================================
-  اگر Client قبلاً ساخته شده، دوباره نساز
+  جلوگیری از ساخت Client دوم
   =======================================================
   */
 
@@ -49,7 +48,8 @@
     window.supabaseClient =
       window.adinehSupabase;
 
-    window.ADINEH_SUPABASE_READY = true;
+    window.ADINEH_SUPABASE_READY =
+      true;
 
     return;
   }
@@ -59,17 +59,6 @@
   =======================================================
   ساخت Client اصلی
   =======================================================
-
-  از PKCE استفاده می‌کنیم.
-
-  این روش برای:
-  - Login
-  - Email verification
-  - Magic Link
-  - Password Recovery
-
-  مناسب‌تر و پایدارتر است.
-  =======================================================
   */
 
   const client =
@@ -77,6 +66,7 @@
       SUPABASE_URL,
       SUPABASE_PUBLISHABLE_KEY,
       {
+
         auth: {
 
           /*
@@ -85,31 +75,35 @@
           persistSession: true,
 
           /*
-           * Refresh Token به صورت خودکار تمدید شود
+           * Token به صورت خودکار Refresh شود
            */
           autoRefreshToken: true,
 
           /*
-           * URL callback توسط Supabase بررسی شود
+           * لینک‌های Auth از URL خوانده شوند
            */
           detectSessionInUrl: true,
 
           /*
-           * استفاده از PKCE
+           * برای GitHub Pages
+           * و لینک‌های قدیمی Supabase
            */
-          flowType: 'pkce',
+          flowType: 'implicit',
 
           /*
-           * محل ذخیره Session
+           * Storage
            */
-          storage: window.localStorage,
+          storage:
+            window.localStorage,
 
           /*
-           * نام ثابت برای Session
+           * نام ثابت Session
            */
-          storageKey: 'adineh-supabase-auth'
+          storageKey:
+            'adineh-supabase-auth'
 
         }
+
       }
     );
 
