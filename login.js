@@ -1,16 +1,17 @@
 'use strict';
 
 /*
-  =========================================================
-  ADINEH POULTRY
-  Supabase Authentication
-  Stable Authentication Version
-  =========================================================
+=========================================================
+مرکز تخصصی سلامت طیور آدینه
+Login / Register / Magic Link
+Stable Authentication
+=========================================================
 */
 
 (function () {
 
   const supabase =
+    window.supabaseClient ||
     window.adinehSupabase;
 
 
@@ -49,9 +50,9 @@
 
 
   /*
-    =======================================================
-    MESSAGE
-    =======================================================
+  ========================================================
+  MESSAGE
+  ========================================================
   */
 
   function showMessage(
@@ -76,9 +77,9 @@
 
 
   /*
-    =======================================================
-    BUSY
-    =======================================================
+  ========================================================
+  BUSY
+  ========================================================
   */
 
   function setBusy(
@@ -86,9 +87,7 @@
   ) {
 
     document
-      .querySelectorAll(
-        'button'
-      )
+      .querySelectorAll('button')
       .forEach(
         button => {
 
@@ -110,9 +109,9 @@
 
 
   /*
-    =======================================================
-    REDIRECT TO APP
-    =======================================================
+  ========================================================
+  REDIRECT
+  ========================================================
   */
 
   function openApp() {
@@ -136,9 +135,39 @@
 
 
   /*
-    =======================================================
-    SWITCH MODE
-    =======================================================
+  ========================================================
+  REDIRECT URL
+  ========================================================
+  */
+
+  function getLoginRedirectUrl() {
+
+    const url =
+      new URL(
+        'login.html',
+        window.location.href
+      );
+
+
+    /*
+      فقط origin و pathname مهم هستند.
+      query و hash قبلی حذف می‌شوند.
+    */
+
+    url.search = '';
+
+    url.hash = '';
+
+
+    return url.href;
+
+  }
+
+
+  /*
+  ========================================================
+  SWITCH MODE
+  ========================================================
   */
 
   function switchMode(
@@ -167,24 +196,20 @@
 
     if (loginModeBtn) {
 
-      loginModeBtn
-        .classList
-        .toggle(
-          'active',
-          !register
-        );
+      loginModeBtn.classList.toggle(
+        'active',
+        !register
+      );
 
     }
 
 
     if (registerModeBtn) {
 
-      registerModeBtn
-        .classList
-        .toggle(
-          'active',
-          register
-        );
+      registerModeBtn.classList.toggle(
+        'active',
+        register
+      );
 
     }
 
@@ -203,9 +228,7 @@
 
       modeText.textContent =
         register
-
           ? 'پس از ثبت‌نام، فعال‌سازی حساب توسط مالک سامانه انجام می‌شود.'
-
           : 'برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.';
 
     }
@@ -217,9 +240,9 @@
 
 
   /*
-    =======================================================
-    PASSWORD LOGIN
-    =======================================================
+  ========================================================
+  PASSWORD LOGIN
+  ========================================================
   */
 
   async function login(
@@ -246,10 +269,7 @@
       '';
 
 
-    if (
-      !email ||
-      !password
-    ) {
+    if (!email || !password) {
 
       showMessage(
         'ایمیل و رمز عبور را کامل وارد کنید.'
@@ -326,11 +346,6 @@
       }
 
 
-      /*
-        Session توسط Supabase ذخیره شده است.
-        ورود به برنامه.
-      */
-
       openApp();
 
     }
@@ -356,9 +371,9 @@
 
 
   /*
-    =======================================================
-    REGISTER
-    =======================================================
+  ========================================================
+  REGISTER
+  ========================================================
   */
 
   async function register(
@@ -428,9 +443,7 @@
     }
 
 
-    if (
-      password.length < 8
-    ) {
+    if (password.length < 8) {
 
       showMessage(
         'رمز عبور باید حداقل ۸ کاراکتر باشد.'
@@ -441,9 +454,7 @@
     }
 
 
-    if (
-      password !== confirm
-    ) {
+    if (password !== confirm) {
 
       showMessage(
         'تکرار رمز عبور با رمز اصلی یکسان نیست.'
@@ -471,10 +482,7 @@
     try {
 
       const redirectTo =
-        new URL(
-          'login.html',
-          window.location.href
-        ).href;
+        getLoginRedirectUrl();
 
 
       const {
@@ -522,7 +530,8 @@
 
 
         showMessage(
-          'ثبت‌نام انجام نشد. اطلاعات را بررسی کنید.'
+          error.message ||
+          'ثبت‌نام انجام نشد.'
         );
 
 
@@ -530,11 +539,6 @@
 
       }
 
-
-      /*
-        اگر Session مستقیم ساخته شده باشد،
-        حساب هنوز ممکن است نیاز به فعال‌سازی مالک داشته باشد.
-      */
 
       if (data?.session) {
 
@@ -558,14 +562,14 @@
         setBusy(false);
 
 
-        showMessage(
-          'ثبت‌نام انجام شد. حساب شما در انتظار تأیید مالک سامانه است.',
-          'success'
+        switchMode(
+          'login'
         );
 
 
-        switchMode(
-          'login'
+        showMessage(
+          'ثبت‌نام انجام شد. حساب شما در انتظار تأیید مالک سامانه است.',
+          'success'
         );
 
 
@@ -577,14 +581,14 @@
       setBusy(false);
 
 
-      showMessage(
-        'ثبت‌نام انجام شد. ایمیل تأیید را بررسی کنید؛ پس از تأیید، حساب برای فعال‌سازی به مالک سامانه ارسال می‌شود.',
-        'success'
+      switchMode(
+        'login'
       );
 
 
-      switchMode(
-        'login'
+      showMessage(
+        'ثبت‌نام انجام شد. ایمیل تأیید را بررسی کنید.',
+        'success'
       );
 
     }
@@ -610,9 +614,9 @@
 
 
   /*
-    =======================================================
-    MAGIC LINK
-    =======================================================
+  ========================================================
+  MAGIC LINK
+  ========================================================
   */
 
   async function magicLink() {
@@ -653,13 +657,17 @@
     try {
 
       const redirectTo =
-        new URL(
-          'login.html',
-          window.location.href
-        ).href;
+        getLoginRedirectUrl();
+
+
+      console.log(
+        'Magic Link redirect:',
+        redirectTo
+      );
 
 
       const {
+        data,
         error
       } =
         await supabase.auth
@@ -670,14 +678,14 @@
             options: {
 
               emailRedirectTo:
-                redirectTo
+                redirectTo,
+
+              shouldCreateUser:
+                false
 
             }
 
           });
-
-
-      setBusy(false);
 
 
       if (error) {
@@ -688,7 +696,11 @@
         );
 
 
+        setBusy(false);
+
+
         showMessage(
+          error.message ||
           'ارسال لینک ورود انجام نشد.'
         );
 
@@ -698,8 +710,17 @@
       }
 
 
+      console.log(
+        'Magic link response:',
+        data
+      );
+
+
+      setBusy(false);
+
+
       showMessage(
-        'لینک ورود به ایمیل شما ارسال شد. پس از بازکردن لینک، ورود به سامانه به‌صورت خودکار انجام می‌شود.',
+        'لینک ورود به ایمیل شما ارسال شد. پس از بازکردن لینک، چند لحظه صبر کنید تا سامانه ورود را تکمیل کند.',
         'success'
       );
 
@@ -726,9 +747,9 @@
 
 
   /*
-    =======================================================
-    PASSWORD RESET
-    =======================================================
+  ========================================================
+  PASSWORD RESET
+  ========================================================
   */
 
   async function resetPassword() {
@@ -769,10 +790,7 @@
     try {
 
       const redirectTo =
-        new URL(
-          'login.html',
-          window.location.href
-        ).href;
+        getLoginRedirectUrl();
 
 
       const {
@@ -787,9 +805,6 @@
           );
 
 
-      setBusy(false);
-
-
       if (error) {
 
         console.error(
@@ -798,7 +813,11 @@
         );
 
 
+        setBusy(false);
+
+
         showMessage(
+          error.message ||
           'ارسال لینک بازیابی انجام نشد.'
         );
 
@@ -806,6 +825,9 @@
         return;
 
       }
+
+
+      setBusy(false);
 
 
       showMessage(
@@ -836,9 +858,9 @@
 
 
   /*
-    =======================================================
-    AUTH STATE LISTENER
-    =======================================================
+  ========================================================
+  AUTH STATE LISTENER
+  ========================================================
   */
 
   function listenForAuthChanges() {
@@ -860,13 +882,11 @@
           );
 
 
-          /*
-            SIGNED_IN:
-            مخصوص ورود با رمز یا Magic Link
-          */
-
           if (
-            event === 'SIGNED_IN' &&
+            (
+              event === 'SIGNED_IN' ||
+              event === 'INITIAL_SESSION'
+            ) &&
             session?.user
           ) {
 
@@ -881,113 +901,79 @@
 
 
   /*
-    =======================================================
-    BOOT
-    =======================================================
+  ========================================================
+  CHECK SESSION
+  ========================================================
   */
 
-  async function boot() {
+  async function checkExistingSession() {
 
-    if (!supabase) {
-
-      showMessage(
-        'سامانه احراز هویت بارگذاری نشده است.'
-      );
-
-
+    if (!supabase)
       return;
-
-    }
 
 
     try {
 
-      /*
-        مهم:
-        Supabase ممکن است هنگام بازشدن لینک ایمیل
-        هنوز Session موجود در URL را پردازش نکرده باشد.
+      const {
+        data,
+        error
+      } =
+        await supabase.auth
+          .getSession();
 
-        بنابراین getSession را بلافاصله با redirect
-        انجام نمی‌دهیم و چند بار با فاصله کوتاه
-        Session را بررسی می‌کنیم.
-      */
 
-      for (
-        let attempt = 0;
-        attempt < 20;
-        attempt++
-      ) {
+      if (error) {
 
-        const {
-          data,
+        console.error(
+          'Initial session error:',
           error
-        } =
-          await supabase.auth
-            .getSession();
+        );
 
-
-        if (error) {
-
-          console.error(
-            'getSession:',
-            error
-          );
-
-        }
-
-
-        if (
-          data?.session?.user
-        ) {
-
-          openApp();
-
-          return;
-
-        }
-
-
-        /*
-          اگر URL حاوی کد/توکن احراز هویت باشد،
-          به Supabase فرصت پردازش بده.
-        */
-
-        if (
-          window.location.search.includes(
-            'code='
-          ) ||
-          window.location.hash.includes(
-            'access_token'
-          )
-        ) {
-
-          await new Promise(
-            resolve =>
-              setTimeout(
-                resolve,
-                250
-              )
-          );
-
-
-          continue;
-
-        }
-
-
-        break;
+        return;
 
       }
 
 
-      /*
-        پیام redirect از auth.js
-      */
+      if (
+        data?.session?.user
+      ) {
 
-      const message =
+        openApp();
+
+      }
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'Initial session exception:',
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+  ========================================================
+  READ MESSAGE FROM URL
+  ========================================================
+  */
+
+  function readUrlMessage() {
+
+    try {
+
+      const params =
         new URLSearchParams(
           window.location.search
-        ).get(
+        );
+
+
+      const message =
+        params.get(
           'message'
         );
 
@@ -1005,13 +991,8 @@
     catch (error) {
 
       console.error(
-        'Authentication boot error:',
+        'URL message error:',
         error
-      );
-
-
-      showMessage(
-        'بررسی وضعیت ورود با خطا مواجه شد.'
       );
 
     }
@@ -1020,65 +1001,49 @@
 
 
   /*
-    =======================================================
-    INITIALIZATION
-    =======================================================
+  ========================================================
+  INITIALIZATION
+  ========================================================
   */
 
-  if (
-    loginModeBtn
-  ) {
+  if (loginModeBtn) {
 
-    loginModeBtn
-      .addEventListener(
-        'click',
-        () =>
-          switchMode(
-            'login'
-          )
-      );
+    loginModeBtn.addEventListener(
+      'click',
+      () =>
+        switchMode('login')
+    );
 
   }
 
 
-  if (
-    registerModeBtn
-  ) {
+  if (registerModeBtn) {
 
-    registerModeBtn
-      .addEventListener(
-        'click',
-        () =>
-          switchMode(
-            'register'
-          )
-      );
+    registerModeBtn.addEventListener(
+      'click',
+      () =>
+        switchMode('register')
+    );
 
   }
 
 
-  if (
-    loginForm
-  ) {
+  if (loginForm) {
 
-    loginForm
-      .addEventListener(
-        'submit',
-        login
-      );
+    loginForm.addEventListener(
+      'submit',
+      login
+    );
 
   }
 
 
-  if (
-    registerForm
-  ) {
+  if (registerForm) {
 
-    registerForm
-      .addEventListener(
-        'submit',
-        register
-      );
+    registerForm.addEventListener(
+      'submit',
+      register
+    );
 
   }
 
@@ -1089,11 +1054,10 @@
 
   if (magicButton) {
 
-    magicButton
-      .addEventListener(
-        'click',
-        magicLink
-      );
+    magicButton.addEventListener(
+      'click',
+      magicLink
+    );
 
   }
 
@@ -1104,11 +1068,10 @@
 
   if (forgotButton) {
 
-    forgotButton
-      .addEventListener(
-        'click',
-        resetPassword
-      );
+    forgotButton.addEventListener(
+      'click',
+      resetPassword
+    );
 
   }
 
@@ -1119,14 +1082,19 @@
 
 
   /*
-    Listener باید قبل از boot
-    فعال شود تا SIGNED_IN ناشی از
-    لینک ایمیل را از دست ندهیم.
+    Listener قبل از بررسی Session
   */
 
   listenForAuthChanges();
 
 
-  boot();
+  readUrlMessage();
+
+
+  /*
+    بررسی Session موجود
+  */
+
+  checkExistingSession();
 
 })();
