@@ -12,12 +12,13 @@
 
   <meta
     name="theme-color"
-    content="#0b766e"
+    content="#176b54"
   >
 
   <title>
     ورود | مرکز تخصصی سلامت طیور آدینه
   </title>
+
 
   <style>
 
@@ -25,11 +26,13 @@
       box-sizing: border-box;
     }
 
+
     html,
     body {
       margin: 0;
       min-height: 100%;
     }
+
 
     body {
 
@@ -46,9 +49,9 @@
       background:
         linear-gradient(
           135deg,
-          #062d25 0%,
-          #0b3f34 50%,
-          #06231d 100%
+          #05271f 0%,
+          #0c4738 50%,
+          #041a15 100%
         );
 
       display: flex;
@@ -57,19 +60,21 @@
 
       justify-content: center;
 
-      padding: 24px;
+      padding: 18px;
 
       color: #17352d;
 
     }
 
+
     .page {
 
       width: 100%;
 
-      max-width: 470px;
+      max-width: 440px;
 
     }
+
 
     .card {
 
@@ -78,93 +83,102 @@
       background:
         rgba(255,255,255,.98);
 
-      border-radius: 28px;
+      border-radius: 26px;
 
       padding:
-        34px 28px 30px;
+        30px 24px 24px;
 
       box-shadow:
         0 25px 70px
-        rgba(0,0,0,.30);
+        rgba(0,0,0,.35);
 
     }
 
+
+    .brand {
+
+      text-align: center;
+
+      margin-bottom: 20px;
+
+    }
+
+
     .logo {
 
-      width: 92px;
+      width: 82px;
 
-      height: 92px;
+      height: 82px;
 
       object-fit: contain;
 
       display: block;
 
-      margin:
-        0 auto 18px;
+      margin: 0 auto 14px;
 
-      border-radius: 20px;
+      border-radius: 18px;
 
     }
 
-    h1 {
+
+    .brand h1 {
 
       margin: 0;
 
-      text-align: center;
-
-      font-size: 27px;
-
-      color: #173b32;
+      font-size: 24px;
 
       font-weight: 800;
 
+      color: #173b32;
+
     }
 
-    .subtitle {
+
+    .brand p {
 
       margin:
-        10px 0 25px;
+        8px 0 0;
 
-      text-align: center;
+      color: #728079;
 
-      color: #70807a;
+      font-size: 13px;
 
-      font-size: 14px;
-
-      line-height: 2;
+      line-height: 1.8;
 
     }
 
-    .mode-switch {
+
+    .tabs {
 
       display: grid;
 
       grid-template-columns:
         1fr 1fr;
 
-      gap: 8px;
-
-      background: #eef3f1;
+      gap: 6px;
 
       padding: 5px;
 
-      border-radius: 14px;
+      background: #edf3f0;
+
+      border-radius: 13px;
 
       margin-bottom: 22px;
 
     }
 
-    .mode-switch button {
 
-      height: 44px;
+    .tabs button {
+
+      height: 43px;
 
       border: 0;
 
-      border-radius: 11px;
+      border-radius: 10px;
 
       background: transparent;
 
-      color: #61716b;
+      color: #687871;
 
       font-size: 14px;
 
@@ -174,29 +188,22 @@
 
     }
 
-    .mode-switch button.active {
+
+    .tabs button.active {
 
       background: #176b54;
 
       color: white;
 
-      box-shadow:
-        0 4px 12px
-        rgba(23,107,84,.20);
-
     }
 
-    form {
-
-      width: 100%;
-
-    }
 
     .field {
 
-      margin-bottom: 16px;
+      margin-bottom: 15px;
 
     }
+
 
     label {
 
@@ -204,13 +211,14 @@
 
       margin-bottom: 7px;
 
-      color: #30443d;
-
-      font-size: 14px;
+      font-size: 13px;
 
       font-weight: 700;
 
+      color: #344840;
+
     }
+
 
     input {
 
@@ -221,54 +229,54 @@
       border:
         1px solid #d5dfdb;
 
-      border-radius: 13px;
+      border-radius: 12px;
+
+      padding:
+        0 14px;
 
       background: #fafcfb;
 
-      padding:
-        0 15px;
-
-      outline: none;
+      color: #19342d;
 
       font-size: 16px;
-
-      color: #19342d;
 
       direction: ltr;
 
       text-align: left;
 
-      transition: .2s;
+      outline: none;
 
     }
 
+
     input:focus {
 
-      border-color: #19745a;
+      border-color: #176b54;
 
       background: white;
 
       box-shadow:
         0 0 0 3px
-        rgba(25,116,90,.12);
+        rgba(23,107,84,.12);
 
     }
+
 
     .primary {
 
       width: 100%;
 
-      height: 54px;
+      height: 53px;
 
       border: 0;
 
-      border-radius: 14px;
+      border-radius: 13px;
 
       background: #176b54;
 
       color: white;
 
-      font-size: 16px;
+      font-size: 15px;
 
       font-weight: 800;
 
@@ -278,35 +286,29 @@
 
     }
 
+
     .primary:hover {
 
-      background: #125a47;
+      background: #125942;
 
     }
 
-    button:disabled {
 
-      opacity: .6;
-
-      cursor: not-allowed;
-
-    }
-
-    .actions {
+    .secondary-actions {
 
       display: flex;
 
-      justify-content: space-between;
-
-      align-items: center;
+      justify-content:
+        space-between;
 
       gap: 10px;
 
-      margin-top: 15px;
+      margin-top: 14px;
 
     }
 
-    .link-button {
+
+    .link {
 
       border: 0;
 
@@ -314,7 +316,7 @@
 
       color: #176b54;
 
-      font-size: 13px;
+      font-size: 12px;
 
       font-weight: 700;
 
@@ -324,23 +326,34 @@
 
     }
 
-    .link-button:hover {
+
+    .link:hover {
 
       text-decoration: underline;
 
     }
 
+
+    button:disabled {
+
+      opacity: .55;
+
+      cursor: not-allowed;
+
+    }
+
+
     .message {
 
       display: none;
 
-      margin-top: 18px;
+      margin-top: 16px;
 
-      padding: 13px 14px;
+      padding: 12px 13px;
 
-      border-radius: 12px;
+      border-radius: 11px;
 
-      font-size: 14px;
+      font-size: 13px;
 
       line-height: 1.8;
 
@@ -348,27 +361,31 @@
 
     }
 
+
     .message.show {
 
       display: block;
 
     }
 
+
     .message.error {
+
+      color: #9c2222;
 
       background: #fff0f0;
 
-      color: #a32323;
-
     }
+
 
     .message.success {
 
-      background: #eaf8f1;
-
       color: #176b54;
 
+      background: #eaf8f1;
+
     }
+
 
     .loading {
 
@@ -376,13 +393,14 @@
 
       text-align: center;
 
-      margin-top: 14px;
+      margin-top: 13px;
 
-      color: #70807a;
+      color: #728079;
 
-      font-size: 13px;
+      font-size: 12px;
 
     }
+
 
     .loading.show {
 
@@ -390,47 +408,29 @@
 
     }
 
-    .register-only {
-
-      display: none;
-
-    }
 
     .footer {
 
       text-align: center;
 
-      color: #8a9691;
+      margin-top: 22px;
 
-      font-size: 12px;
+      color: #8b9792;
 
-      margin-top: 24px;
+      font-size: 11px;
 
     }
 
-    @media (
-      max-width: 480px
-    ) {
+
+    @media (max-width: 480px) {
 
       body {
-
-        padding: 15px;
-
+        padding: 12px;
       }
 
       .card {
-
         padding:
-          28px 20px 24px;
-
-        border-radius: 24px;
-
-      }
-
-      h1 {
-
-        font-size: 24px;
-
+          26px 19px 22px;
       }
 
     }
@@ -442,39 +442,37 @@
 
 <body>
 
-
   <main class="page">
 
     <section class="card">
 
 
-      <img
-        class="logo"
-        src="IMG_4309.png"
-        alt="مرکز تخصصی سلامت طیور آدینه"
-      >
+      <div class="brand">
 
+        <img
+          class="logo"
+          src="IMG_4309.png"
+          alt="مرکز تخصصی سلامت طیور آدینه"
+        >
 
-      <h1 id="modeTitle">
-        ورود امن به سامانه
-      </h1>
+        <h1 id="modeTitle">
+          ورود به سامانه
+        </h1>
 
+        <p id="modeText">
+          برای ورود، ایمیل و رمز عبور خود را وارد کنید.
+        </p>
 
-      <div
-        id="modeText"
-        class="subtitle"
-      >
-        برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.
       </div>
 
 
-      <!-- ================================
-           LOGIN / REGISTER SWITCH
-      ================================= -->
+      <!-- =========================
+           TABS
+      ========================== -->
 
       <div
         id="modeSwitch"
-        class="mode-switch"
+        class="tabs"
       >
 
         <button
@@ -496,26 +494,27 @@
       </div>
 
 
-      <!-- ================================
+      <!-- =========================
            LOGIN
-      ================================= -->
+      ========================== -->
 
       <form
         id="loginForm"
+        autocomplete="on"
       >
 
         <div class="field">
 
-          <label
-            for="loginEmail"
-          >
+          <label for="loginEmail">
             ایمیل
           </label>
 
           <input
             id="loginEmail"
+            name="email"
             type="email"
-            autocomplete="email"
+            autocomplete="username"
+            inputmode="email"
             placeholder="example@email.com"
             required
           >
@@ -525,17 +524,16 @@
 
         <div class="field">
 
-          <label
-            for="loginPassword"
-          >
+          <label for="loginPassword">
             رمز عبور
           </label>
 
           <input
             id="loginPassword"
+            name="password"
             type="password"
             autocomplete="current-password"
-            placeholder="رمز عبور خود را وارد کنید"
+            placeholder="رمز عبور"
             required
           >
 
@@ -543,19 +541,20 @@
 
 
         <button
-          type="submit"
+          id="loginButton"
           class="primary"
+          type="submit"
         >
           ورود به سامانه
         </button>
 
 
-        <div class="actions">
+        <div class="secondary-actions">
 
           <button
             id="forgotBtn"
+            class="link"
             type="button"
-            class="link-button"
           >
             فراموشی رمز عبور
           </button>
@@ -563,8 +562,8 @@
 
           <button
             id="magicLinkBtn"
+            class="link"
             type="button"
-            class="link-button"
           >
             ورود با لینک ایمیل
           </button>
@@ -574,28 +573,28 @@
       </form>
 
 
-      <!-- ================================
+      <!-- =========================
            REGISTER
-      ================================= -->
+      ========================== -->
 
       <form
         id="registerForm"
         hidden
+        autocomplete="on"
       >
 
         <div class="field">
 
-          <label
-            for="firstName"
-          >
+          <label for="firstName">
             نام
           </label>
 
           <input
             id="firstName"
+            name="given-name"
             type="text"
             autocomplete="given-name"
-            placeholder="نام"
+            required
           >
 
         </div>
@@ -603,17 +602,16 @@
 
         <div class="field">
 
-          <label
-            for="lastName"
-          >
+          <label for="lastName">
             نام خانوادگی
           </label>
 
           <input
             id="lastName"
+            name="family-name"
             type="text"
             autocomplete="family-name"
-            placeholder="نام خانوادگی"
+            required
           >
 
         </div>
@@ -621,16 +619,16 @@
 
         <div class="field">
 
-          <label
-            for="registerPhone"
-          >
+          <label for="registerPhone">
             شماره تلفن
           </label>
 
           <input
             id="registerPhone"
+            name="tel"
             type="tel"
             autocomplete="tel"
+            inputmode="tel"
             placeholder="09xxxxxxxxx"
           >
 
@@ -639,17 +637,16 @@
 
         <div class="field">
 
-          <label
-            for="registerEmail"
-          >
+          <label for="registerEmail">
             ایمیل
           </label>
 
           <input
             id="registerEmail"
+            name="email"
             type="email"
             autocomplete="email"
-            placeholder="example@email.com"
+            required
           >
 
         </div>
@@ -657,18 +654,17 @@
 
         <div class="field">
 
-          <label
-            for="registerPassword"
-          >
+          <label for="registerPassword">
             رمز عبور
           </label>
 
           <input
             id="registerPassword"
+            name="new-password"
             type="password"
             autocomplete="new-password"
             minlength="8"
-            placeholder="حداقل ۸ کاراکتر"
+            required
           >
 
         </div>
@@ -676,26 +672,26 @@
 
         <div class="field">
 
-          <label
-            for="registerPasswordConfirm"
-          >
+          <label for="registerPasswordConfirm">
             تکرار رمز عبور
           </label>
 
           <input
             id="registerPasswordConfirm"
+            name="new-password-confirm"
             type="password"
             autocomplete="new-password"
             minlength="8"
-            placeholder="رمز عبور را دوباره وارد کنید"
+            required
           >
 
         </div>
 
 
         <button
-          type="submit"
+          id="registerButton"
           class="primary"
+          type="submit"
         >
           ایجاد حساب کاربری
         </button>
@@ -703,62 +699,42 @@
       </form>
 
 
-      <!-- ================================
-           MESSAGE
-      ================================= -->
-
       <div
         id="loading"
         class="loading"
       >
-        در حال بررسی...
+        در حال اتصال به سامانه...
       </div>
 
 
       <div
         id="message"
         class="message"
+        role="alert"
+        aria-live="polite"
       ></div>
 
 
       <div class="footer">
-
         مرکز تخصصی سلامت طیور آدینه
-
       </div>
-
 
     </section>
 
   </main>
 
 
-  <!-- ================================
-       SUPABASE
-  ================================= -->
+  <!-- فقط یک بار Supabase -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
   ></script>
 
 
-  <!-- ================================
-       SUPABASE CONFIG
-  ================================= -->
+  <script src="supabase.js"></script>
 
-  <script
-    src="supabase-config.js"
-  ></script>
+  <script src="login.js"></script>
 
+</body>
 
-  <!-- ================================
-       LOGIN
-  ================================= -->
-
-  <script
-  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
-></script>
-
-<script src="supabase.js"></script>
-
-<script src="login.js"></script>
+</html>
