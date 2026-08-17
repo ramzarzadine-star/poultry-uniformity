@@ -1,38 +1,18 @@
 'use strict';
 
-/*
-=========================================================
-ADINEH POULTRY
-PROFESSIONAL SUPABASE AUTH SYSTEM
-
-Features:
-- Email / Password Login
-- Signup
-- Magic Link
-- Forgot Password
-- Password Recovery
-- Session Detection
-- Session Persistence
-- Safe Redirect
-- Profile Validation
-=========================================================
-*/
+/* =========================================================
+   ADINEH POULTRY
+   LOGIN / SIGN UP / MAGIC LINK / PASSWORD RECOVERY
+   ========================================================= */
 
 (() => {
 
-  const supabase =
-    window.adinehSupabase;
-
+  const supabase = window.adinehSupabase;
 
   if (!supabase) {
-
-    console.error(
-      'ADINEH: Supabase client not available.'
-    );
-
+    console.error('Supabase client not found.');
     return;
   }
-
 
   /* =====================================================
      DOM
@@ -83,9 +63,6 @@ Features:
   ===================================================== */
 
   let busy = false;
-
-  let recoveryMode = false;
-
   let redirecting = false;
 
 
@@ -100,99 +77,66 @@ Features:
 
     if (!messageEl) return;
 
-    messageEl.textContent =
-      text;
+    messageEl.textContent = text;
 
     messageEl.className =
       'login-message';
 
     if (text) {
-
-      messageEl.classList.add(
-        type
-      );
-
+      messageEl.classList.add(type);
     }
-
   }
 
 
-  function setBusy(
-    value
-  ) {
+  function setBusy(state) {
 
-    busy =
-      Boolean(value);
+    busy = Boolean(state);
 
     document
-      .querySelectorAll(
-        'button'
-      )
-      .forEach(
-        button => {
-
-          button.disabled =
-            busy;
-
-        }
-      );
+      .querySelectorAll('button')
+      .forEach(button => {
+        button.disabled = busy;
+      });
 
     if (loadingEl) {
-
-      loadingEl.hidden =
-        !busy;
-
+      loadingEl.hidden = !busy;
       loadingEl.style.display =
-        busy
-          ? ''
-          : 'none';
-
+        busy ? '' : 'none';
     }
-
   }
 
 
-  function getEmail(
-    id
-  ) {
+  function getValue(id) {
 
     return String(
-      document
-        .getElementById(id)
-        ?.value || ''
-    )
-      .trim()
-      .toLowerCase();
+      document.getElementById(id)?.value || ''
+    ).trim();
 
   }
 
 
-  function validEmail(
-    email
-  ) {
+  function getEmail(id) {
 
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      .test(email);
+    return getValue(id).toLowerCase();
 
   }
 
 
-  function validPassword(
-    password
-  ) {
+  function validEmail(email) {
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  }
+
+
+  function validPassword(password) {
 
     if (!password) {
-
       return 'رمز عبور را وارد کنید.';
-
     }
 
-    if (
-      password.length < 8
-    ) {
-
+    if (password.length < 8) {
       return 'رمز عبور باید حداقل ۸ کاراکتر باشد.';
-
     }
 
     return '';
@@ -200,7 +144,28 @@ Features:
   }
 
 
-  function loginUrl() {
+  /*
+   * صفحه اصلی بازیابی رمز عبور
+   *
+   * IMPORTANT:
+   * لینک Reset دیگر به login.html نمی‌آید.
+   */
+
+  function getResetPasswordUrl() {
+
+    return new URL(
+      'reset-password.html',
+      window.location.href
+    ).href;
+
+  }
+
+
+  /*
+   * لینک Callback ورود معمولی / Magic Link / ثبت‌نام
+   */
+
+  function getLoginUrl() {
 
     return new URL(
       'login.html',
@@ -211,167 +176,47 @@ Features:
 
 
   /* =====================================================
-     URL / CALLBACK DETECTION
-  ===================================================== */
-
-  function getUrlData() {
-
-    const url =
-      new URL(
-        window.location.href
-      );
-
-    const query =
-      Object.fromEntries(
-        url.searchParams.entries()
-      );
-
-    const hashText =
-      url.hash.startsWith('#')
-        ? url.hash.substring(1)
-        : url.hash;
-
-    const hash =
-      new URLSearchParams(
-        hashText
-      );
-
-    return {
-
-      query,
-
-      hash,
-
-      hasRecovery:
-        query.type === 'recovery' ||
-        hash.get('type') === 'recovery',
-
-      hasAccessToken:
-        Boolean(
-          hash.get(
-            'access_token'
-          )
-        ),
-
-      hasError:
-        Boolean(
-          query.error ||
-          hash.get('error')
-        )
-
-    };
-
-  }
-
-
-  function cleanAuthUrl() {
-
-    try {
-
-      const url =
-        new URL(
-          window.location.href
-        );
-
-      url.search = '';
-
-      url.hash = '';
-
-      window.history.replaceState(
-        {},
-        document.title,
-        url.pathname
-      );
-
-    } catch (error) {
-
-      console.warn(
-        'URL cleanup failed:',
-        error
-      );
-
-    }
-
-  }
-
-
-  /* =====================================================
-     FORM CONTROL
+     FORM MODES
   ===================================================== */
 
   function showLogin() {
 
-    recoveryMode =
-      false;
-
     if (loginForm) {
-
-      loginForm.hidden =
-        false;
-
-      loginForm.style.display =
-        '';
-
+      loginForm.hidden = false;
+      loginForm.style.display = '';
     }
 
     if (registerForm) {
-
-      registerForm.hidden =
-        true;
-
-      registerForm.style.display =
-        'none';
-
+      registerForm.hidden = true;
+      registerForm.style.display = 'none';
     }
 
     if (resetForm) {
-
-      resetForm.hidden =
-        true;
-
-      resetForm.style.display =
-        'none';
-
+      resetForm.hidden = true;
+      resetForm.style.display = 'none';
     }
 
     if (modeSwitch) {
-
-      modeSwitch.hidden =
-        false;
-
-      modeSwitch.style.display =
-        '';
-
+      modeSwitch.hidden = false;
+      modeSwitch.style.display = '';
     }
 
     if (modeTitle) {
-
       modeTitle.textContent =
         'ورود امن به سامانه';
-
     }
 
     if (modeText) {
-
       modeText.textContent =
         'برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.';
-
     }
 
     if (loginModeBtn) {
-
-      loginModeBtn.classList.add(
-        'active'
-      );
-
+      loginModeBtn.classList.add('active');
     }
 
     if (registerModeBtn) {
-
-      registerModeBtn.classList.remove(
-        'active'
-      );
-
+      registerModeBtn.classList.remove('active');
     }
 
   }
@@ -379,166 +224,45 @@ Features:
 
   function showRegister() {
 
-    if (recoveryMode) {
-      return;
-    }
-
     if (loginForm) {
-
-      loginForm.hidden =
-        true;
-
-      loginForm.style.display =
-        'none';
-
+      loginForm.hidden = true;
+      loginForm.style.display = 'none';
     }
 
     if (registerForm) {
-
-      registerForm.hidden =
-        false;
-
-      registerForm.style.display =
-        '';
-
+      registerForm.hidden = false;
+      registerForm.style.display = '';
     }
 
     if (resetForm) {
-
-      resetForm.hidden =
-        true;
-
-      resetForm.style.display =
-        'none';
-
+      resetForm.hidden = true;
+      resetForm.style.display = 'none';
     }
 
     if (modeSwitch) {
-
-      modeSwitch.hidden =
-        false;
-
-      modeSwitch.style.display =
-        '';
-
+      modeSwitch.hidden = false;
+      modeSwitch.style.display = '';
     }
 
     if (modeTitle) {
-
       modeTitle.textContent =
         'ایجاد حساب کاربری';
-
     }
 
     if (modeText) {
-
       modeText.textContent =
         'اطلاعات خود را برای ایجاد حساب وارد کنید.';
-
     }
 
     if (loginModeBtn) {
-
-      loginModeBtn.classList.remove(
-        'active'
-      );
-
+      loginModeBtn.classList.remove('active');
     }
 
     if (registerModeBtn) {
-
-      registerModeBtn.classList.add(
-        'active'
-      );
-
+      registerModeBtn.classList.add('active');
     }
 
     showMessage('');
-
-  }
-
-
-  function showRecovery() {
-
-    recoveryMode =
-      true;
-
-    redirecting =
-      false;
-
-    if (loginForm) {
-
-      loginForm.hidden =
-        true;
-
-      loginForm.style.display =
-        'none';
-
-    }
-
-    if (registerForm) {
-
-      registerForm.hidden =
-        true;
-
-      registerForm.style.display =
-        'none';
-
-    }
-
-    if (resetForm) {
-
-      resetForm.hidden =
-        false;
-
-      resetForm.style.display =
-        '';
-
-    }
-
-    if (modeSwitch) {
-
-      modeSwitch.hidden =
-        true;
-
-      modeSwitch.style.display =
-        'none';
-
-    }
-
-    if (modeTitle) {
-
-      modeTitle.textContent =
-        'تعیین رمز عبور جدید';
-
-    }
-
-    if (modeText) {
-
-      modeText.textContent =
-        'رمز عبور جدید خود را انتخاب کنید.';
-
-    }
-
-    showMessage(
-      'هویت شما تأیید شد. رمز عبور جدید را وارد کنید.',
-      'success'
-    );
-
-    setBusy(false);
-
-    setTimeout(
-      () => {
-
-        document
-          .getElementById(
-            'resetPassword'
-          )
-          ?.focus();
-
-      },
-      150
-    );
 
   }
 
@@ -547,32 +271,25 @@ Features:
      PROFILE
   ===================================================== */
 
-  async function getProfile(
-    userId
-  ) {
+  async function getProfile(userId) {
 
     const {
       data,
       error
-    } =
-      await supabase
-        .from('profiles')
-        .select(`
-          id,
-          username,
-          first_name,
-          last_name,
-          phone,
-          company_name,
-          role,
-          status
-        `)
-        .eq(
-          'id',
-          userId
-        )
-        .maybeSingle();
-
+    } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        username,
+        first_name,
+        last_name,
+        phone,
+        company_name,
+        role,
+        status
+      `)
+      .eq('id', userId)
+      .maybeSingle();
 
     if (error) {
 
@@ -582,7 +299,6 @@ Features:
       );
 
       return null;
-
     }
 
     return data;
@@ -591,69 +307,51 @@ Features:
 
 
   /* =====================================================
-     GO TO APPLICATION
+     REDIRECT TO APPLICATION
   ===================================================== */
 
-  async function goToApplication(
-    user
-  ) {
+  async function goToApplication(user) {
 
     if (!user) {
-
       setBusy(false);
-
       return;
-
     }
-
-
-    if (recoveryMode) {
-
-      return;
-
-    }
-
 
     if (redirecting) {
-
       return;
-
     }
 
-
     const profile =
-      await getProfile(
-        user.id
-      );
-
+      await getProfile(user.id);
 
     if (!profile) {
 
-      await supabase.auth
-        .signOut();
+      await supabase.auth.signOut();
 
       setBusy(false);
 
       showMessage(
-        'ورود احراز شد اما پروفایل کاربری شما در سامانه پیدا نشد.'
+        'حساب وارد شد اما پروفایل کاربری شما در سامانه پیدا نشد.'
       );
 
       return;
-
     }
 
 
+    /*
+     * وضعیت حساب
+     */
+
     if (
-      profile.status !==
-      'active'
+      profile.status &&
+      profile.status !== 'active'
     ) {
 
-      await supabase.auth
-        .signOut();
+      await supabase.auth.signOut();
 
       setBusy(false);
 
-      const messages = {
+      const statusMessages = {
 
         pending:
           'حساب شما هنوز توسط مالک سامانه تأیید نشده است.',
@@ -667,21 +365,15 @@ Features:
       };
 
       showMessage(
-        messages[
-          profile.status
-        ] ||
+        statusMessages[profile.status] ||
         'دسترسی این حساب فعال نیست.'
       );
 
       return;
-
     }
 
 
-    redirecting =
-      true;
-
-    cleanAuthUrl();
+    redirecting = true;
 
     window.location.replace(
       'index.html'
@@ -691,37 +383,24 @@ Features:
 
 
   /* =====================================================
-     EMAIL / PASSWORD LOGIN
+     LOGIN
   ===================================================== */
 
-  async function login(
-    event
-  ) {
+  async function login(event) {
 
     event.preventDefault();
 
-    if (
-      busy ||
-      recoveryMode
-    ) {
-
+    if (busy) {
       return;
-
     }
 
     showMessage('');
 
     const email =
-      getEmail(
-        'loginEmail'
-      );
+      getEmail('loginEmail');
 
     const password =
-      document
-        .getElementById(
-          'loginPassword'
-        )
-        ?.value || '';
+      getValue('loginPassword');
 
 
     if (!email) {
@@ -731,20 +410,16 @@ Features:
       );
 
       return;
-
     }
 
 
-    if (
-      !validEmail(email)
-    ) {
+    if (!validEmail(email)) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
       return;
-
     }
 
 
@@ -755,7 +430,6 @@ Features:
       );
 
       return;
-
     }
 
 
@@ -767,32 +441,57 @@ Features:
       const {
         data,
         error
-      } =
-        await supabase.auth
-          .signInWithPassword({
-
-            email,
-
-            password
-
-          });
+      } = await supabase.auth
+        .signInWithPassword({
+          email,
+          password
+        });
 
 
       if (error) {
 
         console.error(
-          'LOGIN:',
+          'SUPABASE LOGIN ERROR:',
           error
         );
 
         setBusy(false);
 
+        /*
+         * پیام کاربرپسند
+         */
+
+        if (
+          error.code ===
+          'invalid_credentials'
+        ) {
+
+          showMessage(
+            'ایمیل یا رمز عبور اشتباه است.'
+          );
+
+        } else {
+
+          showMessage(
+            error.message ||
+            'ورود انجام نشد.'
+          );
+
+        }
+
+        return;
+      }
+
+
+      if (!data?.user) {
+
+        setBusy(false);
+
         showMessage(
-          'ایمیل یا رمز عبور صحیح نیست.'
+          'ورود انجام نشد.'
         );
 
         return;
-
       }
 
 
@@ -825,23 +524,15 @@ Features:
 
   async function forgotPassword() {
 
-    if (
-      busy ||
-      recoveryMode
-    ) {
-
+    if (busy) {
       return;
-
     }
-
 
     showMessage('');
 
 
     const email =
-      getEmail(
-        'loginEmail'
-      );
+      getEmail('loginEmail');
 
 
     if (!email) {
@@ -851,26 +542,20 @@ Features:
       );
 
       document
-        .getElementById(
-          'loginEmail'
-        )
+        .getElementById('loginEmail')
         ?.focus();
 
       return;
-
     }
 
 
-    if (
-      !validEmail(email)
-    ) {
+    if (!validEmail(email)) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
       return;
-
     }
 
 
@@ -879,38 +564,56 @@ Features:
 
     try {
 
+      /*
+       * =================================================
+       * IMPORTANT
+       *
+       * Reset Password اکنون مستقیماً به
+       * reset-password.html می‌رود.
+       * =================================================
+       */
+
+      const redirectTo =
+        getResetPasswordUrl();
+
+
+      console.log(
+        'PASSWORD RESET REDIRECT:',
+        redirectTo
+      );
+
+
       const {
         error
-      } =
-        await supabase.auth
-          .resetPasswordForEmail(
-            email,
-            {
-              redirectTo:
-                loginUrl()
-            }
-          );
+      } = await supabase.auth
+        .resetPasswordForEmail(
+          email,
+          {
+            redirectTo
+          }
+        );
 
 
       if (error) {
 
         console.error(
-          'PASSWORD RESET:',
+          'PASSWORD RESET ERROR:',
           error
         );
 
         setBusy(false);
 
         showMessage(
+          error.message ||
           'ارسال لینک بازیابی انجام نشد.'
         );
 
         return;
-
       }
 
 
       setBusy(false);
+
 
       showMessage(
         'لینک بازیابی رمز عبور ارسال شد. ایمیل خود را بررسی کنید.',
@@ -921,6 +624,7 @@ Features:
     } catch (error) {
 
       console.error(
+        'PASSWORD RESET EXCEPTION:',
         error
       );
 
@@ -936,182 +640,21 @@ Features:
 
 
   /* =====================================================
-     UPDATE PASSWORD
-  ===================================================== */
-
-  async function updatePassword(
-    event
-  ) {
-
-    event.preventDefault();
-
-
-    if (
-      busy ||
-      !recoveryMode
-    ) {
-
-      return;
-
-    }
-
-
-    const password =
-      document
-        .getElementById(
-          'resetPassword'
-        )
-        ?.value || '';
-
-
-    const confirmation =
-      document
-        .getElementById(
-          'resetPasswordConfirm'
-        )
-        ?.value || '';
-
-
-    const passwordError =
-      validPassword(
-        password
-      );
-
-
-    if (passwordError) {
-
-      showMessage(
-        passwordError
-      );
-
-      return;
-
-    }
-
-
-    if (
-      password !==
-      confirmation
-    ) {
-
-      showMessage(
-        'تکرار رمز عبور یکسان نیست.'
-      );
-
-      return;
-
-    }
-
-
-    setBusy(true);
-
-
-    try {
-
-      const {
-        data,
-        error
-      } =
-        await supabase.auth
-          .updateUser({
-
-            password
-
-          });
-
-
-      if (error) {
-
-        console.error(
-          'UPDATE PASSWORD:',
-          error
-        );
-
-        setBusy(false);
-
-        showMessage(
-          error.message ||
-          'تغییر رمز عبور انجام نشد.'
-        );
-
-        return;
-
-      }
-
-
-      if (!data?.user) {
-
-        setBusy(false);
-
-        showMessage(
-          'تغییر رمز عبور تأیید نشد.'
-        );
-
-        return;
-
-      }
-
-
-      recoveryMode =
-        false;
-
-      cleanAuthUrl();
-
-      showMessage(
-        'رمز عبور با موفقیت تغییر کرد.',
-        'success'
-      );
-
-
-      setTimeout(
-        async () => {
-
-          await goToApplication(
-            data.user
-          );
-
-        },
-        700
-      );
-
-
-    } catch (error) {
-
-      console.error(
-        error
-      );
-
-      setBusy(false);
-
-      showMessage(
-        'خطایی هنگام تغییر رمز عبور رخ داد.'
-      );
-
-    }
-
-  }
-
-
-  /* =====================================================
      MAGIC LINK
   ===================================================== */
 
   async function sendMagicLink() {
 
-    if (
-      busy ||
-      recoveryMode
-    ) {
-
+    if (busy) {
       return;
-
     }
 
 
+    showMessage('');
+
+
     const email =
-      getEmail(
-        'loginEmail'
-      );
+      getEmail('loginEmail');
 
 
     if (!email) {
@@ -1121,20 +664,16 @@ Features:
       );
 
       return;
-
     }
 
 
-    if (
-      !validEmail(email)
-    ) {
+    if (!validEmail(email)) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
       return;
-
     }
 
 
@@ -1145,40 +684,34 @@ Features:
 
       const {
         error
-      } =
-        await supabase.auth
-          .signInWithOtp({
+      } = await supabase.auth
+        .signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo:
+              getLoginUrl(),
 
-            email,
-
-            options: {
-
-              emailRedirectTo:
-                loginUrl(),
-
-              shouldCreateUser:
-                false
-
-            }
-
-          });
+            shouldCreateUser:
+              false
+          }
+        });
 
 
       if (error) {
 
         console.error(
-          'MAGIC LINK:',
+          'MAGIC LINK ERROR:',
           error
         );
 
         setBusy(false);
 
         showMessage(
+          error.message ||
           'ارسال لینک ورود انجام نشد.'
         );
 
         return;
-
       }
 
 
@@ -1193,6 +726,7 @@ Features:
     } catch (error) {
 
       console.error(
+        'MAGIC LINK EXCEPTION:',
         error
       );
 
@@ -1211,20 +745,12 @@ Features:
      REGISTER
   ===================================================== */
 
-  async function register(
-    event
-  ) {
+  async function register(event) {
 
     event.preventDefault();
 
-
-    if (
-      busy ||
-      recoveryMode
-    ) {
-
+    if (busy) {
       return;
-
     }
 
 
@@ -1232,52 +758,22 @@ Features:
 
 
     const firstName =
-      document
-        .getElementById(
-          'firstName'
-        )
-        ?.value
-        .trim() || '';
-
+      getValue('firstName');
 
     const lastName =
-      document
-        .getElementById(
-          'lastName'
-        )
-        ?.value
-        .trim() || '';
-
+      getValue('lastName');
 
     const phone =
-      document
-        .getElementById(
-          'registerPhone'
-        )
-        ?.value
-        .trim() || '';
-
+      getValue('registerPhone');
 
     const email =
-      getEmail(
-        'registerEmail'
-      );
-
+      getEmail('registerEmail');
 
     const password =
-      document
-        .getElementById(
-          'registerPassword'
-        )
-        ?.value || '';
+      getValue('registerPassword');
 
-
-    const confirmation =
-      document
-        .getElementById(
-          'registerPasswordConfirm'
-        )
-        ?.value || '';
+    const confirmPassword =
+      getValue('registerPasswordConfirm');
 
 
     if (
@@ -1292,27 +788,21 @@ Features:
       );
 
       return;
-
     }
 
 
-    if (
-      !validEmail(email)
-    ) {
+    if (!validEmail(email)) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
       return;
-
     }
 
 
     const passwordError =
-      validPassword(
-        password
-      );
+      validPassword(password);
 
 
     if (passwordError) {
@@ -1322,13 +812,12 @@ Features:
       );
 
       return;
-
     }
 
 
     if (
       password !==
-      confirmation
+      confirmPassword
     ) {
 
       showMessage(
@@ -1336,7 +825,6 @@ Features:
       );
 
       return;
-
     }
 
 
@@ -1348,40 +836,39 @@ Features:
       const {
         data,
         error
-      } =
-        await supabase.auth
-          .signUp({
+      } = await supabase.auth
+        .signUp({
 
-            email,
+          email,
 
-            password,
+          password,
 
-            options: {
+          options: {
 
-              emailRedirectTo:
-                loginUrl(),
+            emailRedirectTo:
+              getLoginUrl(),
 
-              data: {
+            data: {
 
-                first_name:
-                  firstName,
+              first_name:
+                firstName,
 
-                last_name:
-                  lastName,
+              last_name:
+                lastName,
 
-                phone
-
-              }
+              phone
 
             }
 
-          });
+          }
+
+        });
 
 
       if (error) {
 
         console.error(
-          'REGISTER:',
+          'REGISTER ERROR:',
           error
         );
 
@@ -1393,9 +880,12 @@ Features:
         );
 
         return;
-
       }
 
+
+      /*
+       * اگر Supabase فوراً Session ساخت
+       */
 
       if (
         data?.session &&
@@ -1407,16 +897,19 @@ Features:
         );
 
         return;
-
       }
 
+
+      /*
+       * در حالت تأیید ایمیل
+       */
 
       setBusy(false);
 
       showLogin();
 
       showMessage(
-        'حساب ایجاد شد. ایمیل خود را برای تأیید حساب بررسی کنید.',
+        'حساب شما ایجاد شد. ایمیل خود را برای تأیید حساب بررسی کنید.',
         'success'
       );
 
@@ -1424,6 +917,7 @@ Features:
     } catch (error) {
 
       console.error(
+        'REGISTER EXCEPTION:',
         error
       );
 
@@ -1458,48 +952,9 @@ Features:
 
 
           /*
-          -----------------------------------------------
-          Password Recovery
-          -----------------------------------------------
-          */
-
-          if (
-            event ===
-            'PASSWORD_RECOVERY'
-          ) {
-
-            showRecovery();
-
-            return;
-
-          }
-
-
-          /*
-          -----------------------------------------------
-          Signed Out
-          -----------------------------------------------
-          */
-
-          if (
-            event ===
-            'SIGNED_OUT'
-          ) {
-
-            showLogin();
-
-            setBusy(false);
-
-            return;
-
-          }
-
-
-          /*
-          -----------------------------------------------
-          Signed In
-          -----------------------------------------------
-          */
+           * اگر Magic Link یا Email Verification
+           * به login.html برگشته باشد.
+           */
 
           if (
             event ===
@@ -1507,47 +962,27 @@ Features:
             session?.user
           ) {
 
-            /*
-              اگر URL فعلی Recovery باشد،
-              هرگز به index نرو.
-            */
-
-            const url =
-              getUrlData();
-
-
-            if (
-              url.hasRecovery
-            ) {
-
-              showRecovery();
-
-              return;
-
-            }
-
-
-            /*
-              اگر Recovery قبلاً تشخیص داده شده،
-              باز هم Redirect ممنوع.
-            */
-
-            if (
-              recoveryMode
-            ) {
-
-              return;
-
-            }
-
-
-            /*
-              ورود معمولی / Magic Link
-            */
-
             await goToApplication(
               session.user
             );
+
+          }
+
+
+          /*
+           * خروج
+           */
+
+          if (
+            event ===
+            'SIGNED_OUT'
+          ) {
+
+            redirecting = false;
+
+            setBusy(false);
+
+            showLogin();
 
           }
 
@@ -1558,155 +993,72 @@ Features:
 
 
   /* =====================================================
-     INITIAL SESSION CHECK
+     INITIAL SESSION
   ===================================================== */
 
-  async function initializeAuth() {
+  async function initialize() {
 
-    const url =
-      getUrlData();
+    /*
+     * Listener ابتدا فعال می‌شود.
+     */
+
+    setupAuthListener();
 
 
     /*
-    ------------------------------------------------------
-    اگر لینک Recovery است
-    ------------------------------------------------------
-    */
+     * صفحه Login
+     */
 
-    if (
-      url.hasRecovery
-    ) {
+    showLogin();
 
-      /*
-        ابتدا Listener فعال شده است.
-        Session باید توسط Supabase ساخته شده باشد.
-      */
+    setBusy(false);
+
+
+    /*
+     * Session موجود را بررسی می‌کنیم.
+     *
+     * اگر کاربر قبلاً وارد شده باشد،
+     * برنامه مستقیماً باز می‌شود.
+     */
+
+    try {
 
       const {
         data,
         error
-      } =
-        await supabase.auth
-          .getSession();
+      } = await supabase.auth
+        .getSession();
 
 
       if (error) {
 
         console.error(
-          'RECOVERY SESSION:',
+          'GET SESSION ERROR:',
           error
         );
 
-        showMessage(
-          'لینک بازیابی معتبر نیست یا منقضی شده است.'
-        );
-
-        setBusy(false);
-
         return;
-
       }
 
 
       if (
-        data?.session
+        data?.session?.user
       ) {
 
-        showRecovery();
-
-        return;
+        await goToApplication(
+          data.session.user
+        );
 
       }
 
-
-      showMessage(
-        'جلسه بازیابی رمز پیدا نشد. لطفاً دوباره درخواست بازیابی کنید.'
-      );
-
-      setBusy(false);
-
-      return;
-
-    }
-
-
-    /*
-    ------------------------------------------------------
-    اگر خطای Callback وجود دارد
-    ------------------------------------------------------
-    */
-
-    if (
-      url.hasError
-    ) {
-
-      const errorText =
-        url.query.error_description ||
-        url.hash.get(
-          'error_description'
-        ) ||
-        'احراز هویت انجام نشد.';
-
-
-      showMessage(
-        decodeURIComponent(
-          errorText
-        )
-      );
-
-      cleanAuthUrl();
-
-      setBusy(false);
-
-      return;
-
-    }
-
-
-    /*
-    ------------------------------------------------------
-    Session معمولی
-    ------------------------------------------------------
-    */
-
-    const {
-      data,
-      error
-    } =
-      await supabase.auth
-        .getSession();
-
-
-    if (error) {
+    } catch (error) {
 
       console.error(
-        'GET SESSION:',
+        'INITIAL AUTH ERROR:',
         error
       );
 
-      setBusy(false);
-
-      return;
-
     }
-
-
-    if (
-      data?.session?.user
-    ) {
-
-      await goToApplication(
-        data.session.user
-      );
-
-      return;
-
-    }
-
-
-    showLogin();
-
-    setBusy(false);
 
   }
 
@@ -1715,67 +1067,92 @@ Features:
      EVENTS
   ===================================================== */
 
-  loginForm
-    ?.addEventListener(
+  if (loginForm) {
+
+    loginForm.addEventListener(
       'submit',
       login
     );
 
+  }
 
-  registerForm
-    ?.addEventListener(
+
+  if (registerForm) {
+
+    registerForm.addEventListener(
       'submit',
       register
     );
 
-
-  resetForm
-    ?.addEventListener(
-      'submit',
-      updatePassword
-    );
+  }
 
 
-  loginModeBtn
-    ?.addEventListener(
+  if (loginModeBtn) {
+
+    loginModeBtn.addEventListener(
       'click',
-      showLogin
+      () => {
+
+        showLogin();
+
+      }
     );
 
+  }
 
-  registerModeBtn
-    ?.addEventListener(
+
+  if (registerModeBtn) {
+
+    registerModeBtn.addEventListener(
       'click',
-      showRegister
+      () => {
+
+        showRegister();
+
+      }
     );
 
+  }
 
-  forgotBtn
-    ?.addEventListener(
+
+  if (forgotBtn) {
+
+    forgotBtn.addEventListener(
       'click',
       forgotPassword
     );
 
+  }
 
-  magicLinkBtn
-    ?.addEventListener(
+
+  if (magicLinkBtn) {
+
+    magicLinkBtn.addEventListener(
       'click',
       sendMagicLink
     );
 
+  }
 
-  backToLoginBtn
-    ?.addEventListener(
+
+  if (backToLoginBtn) {
+
+    backToLoginBtn.addEventListener(
       'click',
       async () => {
 
-        recoveryMode =
-          false;
+        try {
 
-        await supabase.auth
-          .signOut();
+          await supabase.auth
+            .signOut();
 
-        cleanAuthUrl();
+        } catch (error) {
+
+          console.warn(
+            error
+          );
+
+        }
 
         showLogin();
 
@@ -1784,29 +1161,13 @@ Features:
       }
     );
 
+  }
+
 
   /* =====================================================
      START
   ===================================================== */
 
-  async function start() {
-
-    /*
-      اول Listener
-      سپس بررسی Session
-    */
-
-    setupAuthListener();
-
-    showLogin();
-
-    setBusy(false);
-
-    await initializeAuth();
-
-  }
-
-
-  start();
+  initialize();
 
 })();
