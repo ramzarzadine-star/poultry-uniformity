@@ -2,24 +2,29 @@
 
 /*
 =========================================================
- ADINEH POULTRY
- LOGIN / REGISTER / MAGIC LINK / PASSWORD RECOVERY
+مرکز تخصصی سلامت طیور آدینه
+
+LOGIN
+REGISTER
+MAGIC LINK
+PASSWORD RECOVERY REQUEST
+
 =========================================================
 */
 
 (() => {
+
+  /*
+  =======================================================
+  SUPABASE
+  =======================================================
+  */
 
   const supabase =
     window.adinehSupabase ||
     window.supabaseClient ||
     null;
 
-
-  /*
-  =======================================================
-  SUPABASE CHECK
-  =======================================================
-  */
 
   if (!supabase) {
 
@@ -38,43 +43,81 @@
   */
 
   const loginForm =
-    document.getElementById('loginForm');
+    document.getElementById(
+      'loginForm'
+    );
+
 
   const registerForm =
-    document.getElementById('registerForm');
+    document.getElementById(
+      'registerForm'
+    );
+
 
   const resetForm =
-    document.getElementById('resetForm');
+    document.getElementById(
+      'resetForm'
+    );
+
 
   const loginModeBtn =
-    document.getElementById('loginModeBtn');
+    document.getElementById(
+      'loginModeBtn'
+    );
+
 
   const registerModeBtn =
-    document.getElementById('registerModeBtn');
+    document.getElementById(
+      'registerModeBtn'
+    );
+
 
   const magicLinkBtn =
-    document.getElementById('magicLinkBtn');
+    document.getElementById(
+      'magicLinkBtn'
+    );
+
 
   const forgotBtn =
-    document.getElementById('forgotBtn');
+    document.getElementById(
+      'forgotBtn'
+    );
+
 
   const backToLoginBtn =
-    document.getElementById('backToLoginBtn');
+    document.getElementById(
+      'backToLoginBtn'
+    );
+
 
   const messageEl =
-    document.getElementById('message');
+    document.getElementById(
+      'message'
+    );
+
 
   const loadingEl =
-    document.getElementById('loading');
+    document.getElementById(
+      'loading'
+    );
+
 
   const modeTitle =
-    document.getElementById('modeTitle');
+    document.getElementById(
+      'modeTitle'
+    );
+
 
   const modeText =
-    document.getElementById('modeText');
+    document.getElementById(
+      'modeText'
+    );
+
 
   const modeSwitch =
-    document.getElementById('modeSwitch');
+    document.getElementById(
+      'modeSwitch'
+    );
 
 
   /*
@@ -83,9 +126,11 @@
   =======================================================
   */
 
-  let busy = false;
+  let busy =
+    false;
 
-  let redirecting = false;
+  let redirecting =
+    false;
 
 
   /*
@@ -129,7 +174,9 @@
   =======================================================
   */
 
-  function setBusy(state) {
+  function setBusy(
+    state
+  ) {
 
     busy =
       Boolean(state);
@@ -137,12 +184,14 @@
 
     document
       .querySelectorAll('button')
-      .forEach(button => {
+      .forEach(
+        button => {
 
-        button.disabled =
-          busy;
+          button.disabled =
+            busy;
 
-      });
+        }
+      );
 
 
     if (loadingEl) {
@@ -164,10 +213,13 @@
   =======================================================
   */
 
-  function getValue(id) {
+  function getValue(
+    id
+  ) {
 
     return String(
-      document.getElementById(id)?.value || ''
+      document.getElementById(id)?.value ||
+      ''
     ).trim();
 
   }
@@ -179,7 +231,9 @@
   =======================================================
   */
 
-  function getEmail(id) {
+  function getEmail(
+    id
+  ) {
 
     return getValue(id)
       .toLowerCase();
@@ -187,7 +241,9 @@
   }
 
 
-  function validEmail(email) {
+  function validEmail(
+    email
+  ) {
 
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       .test(email);
@@ -201,7 +257,9 @@
   =======================================================
   */
 
-  function validPassword(password) {
+  function validPassword(
+    password
+  ) {
 
     if (!password) {
 
@@ -224,7 +282,7 @@
 
   /*
   =======================================================
-  URLS
+  LOGIN URL
   =======================================================
   */
 
@@ -238,6 +296,12 @@
   }
 
 
+  /*
+  =======================================================
+  RESET PASSWORD URL
+  =======================================================
+  */
+
   function getResetPasswordUrl() {
 
     return new URL(
@@ -250,64 +314,7 @@
 
   /*
   =======================================================
-  PASSWORD RECOVERY URL DETECTION
-  =======================================================
-  */
-
-  function hasRecoveryParameters() {
-
-    const url =
-      new URL(
-        window.location.href
-      );
-
-
-    const hash =
-      new URLSearchParams(
-        url.hash.replace(/^#/, '')
-      );
-
-
-    const query =
-      url.searchParams;
-
-
-    /*
-     * PKCE
-     */
-    if (
-      query.has('code')
-    ) {
-
-      return true;
-
-    }
-
-
-    /*
-     * Implicit flow / old recovery links
-     */
-    if (
-      hash.has('access_token') &&
-      (
-        hash.get('type') === 'recovery' ||
-        hash.has('refresh_token')
-      )
-    ) {
-
-      return true;
-
-    }
-
-
-    return false;
-
-  }
-
-
-  /*
-  =======================================================
-  FORM - LOGIN
+  SHOW LOGIN
   =======================================================
   */
 
@@ -395,7 +402,7 @@
 
   /*
   =======================================================
-  FORM - REGISTER
+  SHOW REGISTER
   =======================================================
   */
 
@@ -490,7 +497,9 @@
   =======================================================
   */
 
-  async function getProfile(userId) {
+  async function getProfile(
+    userId
+  ) {
 
     try {
 
@@ -549,11 +558,13 @@
 
   /*
   =======================================================
-  REDIRECT
+  REDIRECT TO APPLICATION
   =======================================================
   */
 
-  async function goToApplication(user) {
+  async function goToApplication(
+    user
+  ) {
 
     if (!user) {
 
@@ -577,6 +588,10 @@
       );
 
 
+    /*
+     * پروفایل وجود ندارد
+     */
+
     if (!profile) {
 
       await supabase.auth
@@ -590,13 +605,14 @@
         'ورود انجام شد اما پروفایل کاربری شما در سامانه پیدا نشد.'
       );
 
+
       return;
 
     }
 
 
     /*
-     * اگر status وجود دارد، باید active باشد.
+     * بررسی وضعیت حساب
      */
 
     if (
@@ -626,7 +642,9 @@
 
 
       showMessage(
-        messages[profile.status] ||
+        messages[
+          profile.status
+        ] ||
         'دسترسی این حساب فعال نیست.'
       );
 
@@ -635,6 +653,10 @@
 
     }
 
+
+    /*
+     * ورود موفق
+     */
 
     redirecting =
       true;
@@ -653,7 +675,9 @@
   =======================================================
   */
 
-  async function login(event) {
+  async function login(
+    event
+  ) {
 
     event.preventDefault();
 
@@ -680,6 +704,10 @@
       );
 
 
+    /*
+     * Email
+     */
+
     if (!email) {
 
       showMessage(
@@ -701,6 +729,10 @@
 
     }
 
+
+    /*
+     * Password
+     */
 
     if (!password) {
 
@@ -744,7 +776,26 @@
 
 
         /*
-         * خطاهای واقعی Supabase
+         * ایمیل تأیید نشده
+         */
+
+        if (
+          error.code ===
+          'email_not_confirmed'
+        ) {
+
+          showMessage(
+            'ایمیل حساب شما هنوز تأیید نشده است. ایمیل تأیید Supabase را بررسی کنید.'
+          );
+
+
+          return;
+
+        }
+
+
+        /*
+         * اطلاعات ورود اشتباه
          */
 
         if (
@@ -753,36 +804,23 @@
         ) {
 
           showMessage(
-            'ایمیل یا رمز عبور اشتباه است. اگر مطمئن هستید اطلاعات درست است، احتمالاً حساب هنوز تأیید ایمیل نشده یا این ایمیل در Supabase وجود ندارد.'
+            'ایمیل یا رمز عبور اشتباه است.'
           );
 
 
-        } else if (
-          error.code ===
-          'email_not_confirmed'
-        ) {
-
-          showMessage(
-            'ایمیل حساب شما هنوز تأیید نشده است. ابتدا ایمیل تأیید Supabase را باز کنید.'
-          );
-
-
-        } else if (
-          error.message
-        ) {
-
-          showMessage(
-            error.message
-          );
-
-
-        } else {
-
-          showMessage(
-            'ورود انجام نشد.'
-          );
+          return;
 
         }
+
+
+        /*
+         * سایر خطاها
+         */
+
+        showMessage(
+          error.message ||
+          'ورود انجام نشد.'
+        );
 
 
         return;
@@ -804,6 +842,10 @@
 
       }
 
+
+      /*
+       * ورود موفق
+       */
 
       await goToApplication(
         data.user
@@ -881,6 +923,7 @@
         'فرمت ایمیل صحیح نیست.'
       );
 
+
       return;
 
     }
@@ -902,7 +945,6 @@
 
 
       const {
-        data,
         error
       } =
         await supabase.auth
@@ -915,15 +957,6 @@
             }
 
           );
-
-
-      console.log(
-        'PASSWORD RESET RESPONSE:',
-        {
-          data,
-          error
-        }
-      );
 
 
       if (error) {
@@ -952,7 +985,7 @@
 
 
       showMessage(
-        'لینک بازیابی رمز عبور ارسال شد. ایمیل خود را بررسی کنید. پوشه Spam/Junk را هم بررسی کنید.',
+        'لینک بازیابی رمز عبور ارسال شد. ایمیل خود را بررسی کنید و پوشه Spam/Junk را هم ببینید.',
         'success'
       );
 
@@ -1009,6 +1042,7 @@
         'ابتدا ایمیل خود را وارد کنید.'
       );
 
+
       return;
 
     }
@@ -1019,6 +1053,7 @@
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
+
 
       return;
 
@@ -1110,7 +1145,9 @@
   =======================================================
   */
 
-  async function register(event) {
+  async function register(
+    event
+  ) {
 
     event.preventDefault();
 
@@ -1161,6 +1198,10 @@
       );
 
 
+    /*
+     * Required
+     */
+
     if (
       !firstName ||
       !lastName ||
@@ -1172,10 +1213,15 @@
         'لطفاً اطلاعات الزامی را کامل کنید.'
       );
 
+
       return;
 
     }
 
+
+    /*
+     * Email
+     */
 
     if (!validEmail(email)) {
 
@@ -1183,10 +1229,15 @@
         'فرمت ایمیل صحیح نیست.'
       );
 
+
       return;
 
     }
 
+
+    /*
+     * Password
+     */
 
     const passwordError =
       validPassword(
@@ -1200,10 +1251,15 @@
         passwordError
       );
 
+
       return;
 
     }
 
+
+    /*
+     * Confirm Password
+     */
 
     if (
       password !==
@@ -1213,6 +1269,7 @@
       showMessage(
         'تکرار رمز عبور یکسان نیست.'
       );
+
 
       return;
 
@@ -1280,7 +1337,7 @@
 
 
       /*
-       * اگر Supabase بلافاصله Session ساخت
+       * اگر Session ساخته شد
        */
 
       if (
@@ -1292,13 +1349,14 @@
           data.user
         );
 
+
         return;
 
       }
 
 
       /*
-       * Email Confirmation
+       * نیاز به تأیید Email
        */
 
       setBusy(false);
@@ -1337,7 +1395,7 @@
 
   /*
   =======================================================
-  AUTH LISTENER
+  AUTH STATE LISTENER
   =======================================================
   */
 
@@ -1357,11 +1415,17 @@
 
 
           /*
-           * Password Recovery
+           * =================================================
+           * خیلی مهم:
            *
-           * اگر به هر دلیلی لینک Recovery
-           * به login.html آمد،
-           * کاربر را به صفحه تغییر رمز بفرست.
+           * PASSWORD_RECOVERY را اینجا Redirect نمی‌کنیم.
+           *
+           * صفحه Login نباید به reset-password.html
+           * منتقل شود.
+           *
+           * لینک بازیابی مستقیماً به
+           * reset-password.html می‌رود.
+           * =================================================
            */
 
           if (
@@ -1369,8 +1433,8 @@
             'PASSWORD_RECOVERY'
           ) {
 
-            window.location.replace(
-              getResetPasswordUrl()
+            console.log(
+              'PASSWORD_RECOVERY EVENT ON LOGIN PAGE - ignored.'
             );
 
 
@@ -1425,44 +1489,32 @@
 
   /*
   =======================================================
-  INITIAL SESSION
+  INITIALIZE
   =======================================================
   */
 
   async function initialize() {
 
     /*
-     * اگر لینک Recovery اشتباهاً وارد login.html شد،
-     * آن را به reset-password.html منتقل کن.
+     * اول صفحه Login را نمایش بده
      */
 
-    if (
-      hasRecoveryParameters()
-    ) {
-
-      window.location.replace(
-        getResetPasswordUrl() +
-        window.location.search +
-        window.location.hash
-      );
+    showLogin();
 
 
-      return;
-
-    }
+    setBusy(false);
 
 
     /*
-     * Listener باید قبل از getSession فعال شود.
+     * Listener
      */
 
     setupAuthListener();
 
 
-    showLogin();
-
-    setBusy(false);
-
+    /*
+     * Session فعلی
+     */
 
     try {
 
@@ -1486,6 +1538,10 @@
 
       }
 
+
+      /*
+       * اگر کاربر قبلاً Login کرده
+       */
 
       if (
         data?.session?.user
