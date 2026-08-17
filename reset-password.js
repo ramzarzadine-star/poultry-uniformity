@@ -2,16 +2,20 @@
 
 /*
 =========================================================
- ADINEH POULTRY
- RESET PASSWORD
+مرکز تخصصی سلامت طیور آدینه
+
+RESET PASSWORD
+
+این فایل فقط در reset-password.html اجرا می‌شود.
 =========================================================
 */
+
 
 (() => {
 
   /*
   =======================================================
-  استفاده از همان Client اصلی پروژه
+  SUPABASE CLIENT
   =======================================================
   */
 
@@ -19,6 +23,18 @@
     window.adinehSupabase ||
     window.supabaseClient ||
     null;
+
+
+  if (!supabase) {
+
+    console.error(
+      'Supabase client not found.'
+    );
+
+
+    return;
+
+  }
 
 
   /*
@@ -69,7 +85,7 @@
   =======================================================
   */
 
-  let recoveryReady =
+  let recoverySessionReady =
     false;
 
   let processing =
@@ -148,7 +164,7 @@
 
   /*
   =======================================================
-  URL
+  LOGIN URL
   =======================================================
   */
 
@@ -164,11 +180,11 @@
 
   /*
   =======================================================
-  READ SESSION
+  CHECK SESSION
   =======================================================
   */
 
-  async function getCurrentSession() {
+  async function getSession() {
 
     try {
 
@@ -215,39 +231,15 @@
 
   /*
   =======================================================
-  INITIALIZE RECOVERY
+  PASSWORD RECOVERY LISTENER
   =======================================================
   */
 
-  async function initializeRecovery() {
-
-    if (!supabase) {
-
-      showMessage(
-        'اتصال به Supabase برقرار نشد. صفحه را دوباره باز کنید.'
-      );
-
-
-      if (form) {
-
-        form.style.display =
-          'none';
-
-      }
-
-
-      return;
-
-    }
-
-
-    /*
-     * Listener باید قبل از getSession فعال شود.
-     */
+  function setupRecoveryListener() {
 
     supabase.auth
       .onAuthStateChange(
-        async (
+        (
           event,
           session
         ) => {
@@ -259,7 +251,7 @@
 
 
           /*
-           * Supabase Recovery
+           * لینک بازیابی معتبر است
            */
 
           if (
@@ -267,13 +259,15 @@
             'PASSWORD_RECOVERY'
           ) {
 
-            recoveryReady =
+            recoverySessionReady =
               Boolean(
                 session
               );
 
 
-            if (recoveryReady) {
+            if (
+              recoverySessionReady
+            ) {
 
               showMessage(
                 'لینک بازیابی معتبر است. رمز عبور جدید خود را وارد کنید.',
@@ -297,8 +291,8 @@
 
 
           /*
-           * اگر لینک Recovery باعث SIGNED_IN شد
-           * نیز Session را قبول کن.
+           * بعضی نسخه‌های Supabase
+           * Recovery را با SIGNED_IN هم اعلام می‌کنند.
            */
 
           if (
@@ -307,7 +301,7 @@
             session
           ) {
 
-            recoveryReady =
+            recoverySessionReady =
               true;
 
 
@@ -329,18 +323,35 @@
         }
       );
 
+  }
+
+
+  /*
+  =======================================================
+  INITIALIZE
+  =======================================================
+  */
+
+  async function initialize() {
 
     /*
-     * Session فعلی را بگیر
+     * Listener قبل از getSession
+     */
+
+    setupRecoveryListener();
+
+
+    /*
+     * Session فعلی
      */
 
     const session =
-      await getCurrentSession();
+      await getSession();
 
 
     if (session) {
 
-      recoveryReady =
+      recoverySessionReady =
         true;
 
 
@@ -356,27 +367,29 @@
 
 
     /*
-     * ممکن است Supabase هنوز URL را پردازش نکرده باشد.
-     *
-     * کمی صبر می‌کنیم.
+     * ممکن است Supabase هنوز
+     * Hash URL را پردازش نکرده باشد.
      */
 
     await new Promise(
-      resolve =>
+      resolve => {
+
         setTimeout(
           resolve,
           1200
-        )
+        );
+
+      }
     );
 
 
     const secondSession =
-      await getCurrentSession();
+      await getSession();
 
 
     if (secondSession) {
 
-      recoveryReady =
+      recoverySessionReady =
         true;
 
 
@@ -392,10 +405,10 @@
 
 
     /*
-     * هیچ Sessionای پیدا نشد.
+     * Session وجود ندارد
      */
 
-    recoveryReady =
+    recoverySessionReady =
       false;
 
 
@@ -408,7 +421,7 @@
 
 
     showMessage(
-      'لینک بازیابی رمز عبور معتبر نیست یا منقضی شده است. لطفاً از صفحه ورود دوباره گزینه «فراموشی رمز عبور» را بزنید.'
+      'لینک بازیابی معتبر نیست یا منقضی شده است. لطفاً از صفحه ورود دوباره گزینه «فراموشی رمز عبور» را انتخاب کنید.'
     );
 
   }
@@ -438,53 +451,41 @@
 
 
     /*
-     * Session Check
+     * Session
      */
 
-    if (!recoveryReady) {
-
-      const session =
-        await getCurrentSession();
+    let session =
+      await getSession();
 
 
-      if (!session) {
+    /*
+     * اگر Session هنوز آماده نیست
+     */
 
-        showMessage(
-          'جلسه بازیابی رمز عبور معتبر نیست. لطفاً دوباره لینک بازیابی دریافت کنید.'
-        );
+    if (!session) {
+
+      await new Promise(
+        resolve => {
+
+          setTimeout(
+            resolve,
+            500
+          );
+
+        }
+      );
 
 
-        return;
-
-      }
-
-
-      recoveryReady =
-        true;
+      session =
+        await getSession();
 
     }
 
 
-    const password =
-      String(
-        newPassword?.value || ''
-      );
-
-
-    const confirmation =
-      String(
-        confirmPassword?.value || ''
-      );
-
-
-    /*
-     * Password validation
-     */
-
-    if (!password) {
+    if (!session) {
 
       showMessage(
-        'رمز عبور جدید را وارد کنید.'
+        'لینک بازیابی معتبر نیست یا منقضی شده است. لطفاً دوباره درخواست بازیابی رمز کنید.'
       );
 
 
@@ -493,7 +494,35 @@
     }
 
 
-    if (password.length < 8) {
+    recoverySessionReady =
+      true;
+
+
+    /*
+     * Password
+     */
+
+    const password =
+      String(
+        newPassword?.value ||
+        ''
+      );
+
+
+    const confirmation =
+      String(
+        confirmPassword?.value ||
+        ''
+      );
+
+
+    /*
+     * حداقل طول
+     */
+
+    if (
+      password.length < 8
+    ) {
 
       showMessage(
         'رمز عبور باید حداقل ۸ کاراکتر باشد.'
@@ -504,6 +533,10 @@
 
     }
 
+
+    /*
+     * تطابق
+     */
 
     if (
       password !==
@@ -526,30 +559,9 @@
     try {
 
       /*
-       * آخرین بررسی Session
-       */
-
-      const session =
-        await getCurrentSession();
-
-
-      if (!session) {
-
-        setLoading(false);
-
-
-        showMessage(
-          'جلسه بازیابی رمز عبور منقضی شده است. دوباره درخواست بازیابی کنید.'
-        );
-
-
-        return;
-
-      }
-
-
-      /*
+       * =================================================
        * تغییر رمز
+       * =================================================
        */
 
       const {
@@ -559,7 +571,8 @@
         await supabase.auth
           .updateUser({
 
-            password
+            password:
+              password
 
           });
 
@@ -623,8 +636,8 @@
 
 
       /*
+       * بعد از تغییر رمز
        * Session بازیابی را ببند.
-       * کاربر بعداً با رمز جدید وارد می‌شود.
        */
 
       setTimeout(
@@ -637,7 +650,14 @@
 
           }
 
-          catch (_) {}
+          catch (error) {
+
+            console.warn(
+              'SIGN OUT AFTER RESET:',
+              error
+            );
+
+          }
 
 
           window.location.replace(
@@ -677,7 +697,7 @@
 
   /*
   =======================================================
-  EVENT
+  FORM EVENT
   =======================================================
   */
 
@@ -697,6 +717,6 @@
   =======================================================
   */
 
-  initializeRecovery();
+  initialize();
 
 })();
