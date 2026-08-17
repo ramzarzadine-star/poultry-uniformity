@@ -4,6 +4,7 @@
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
 Supabase Client
+نسخه یکپارچه احراز هویت
 =========================================================
 */
 
@@ -14,15 +15,29 @@ const SUPABASE_PUBLISHABLE_KEY =
   'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
 
 
+/*
+=========================================================
+CHECK SUPABASE LIBRARY
+=========================================================
+*/
+
 if (
   !window.supabase ||
   typeof window.supabase.createClient !== 'function'
 ) {
+
   throw new Error(
     'Supabase JavaScript library could not be loaded.'
   );
+
 }
 
+
+/*
+=========================================================
+CREATE SINGLE CLIENT
+=========================================================
+*/
 
 const client =
   window.supabase.createClient(
@@ -30,21 +45,28 @@ const client =
     SUPABASE_PUBLISHABLE_KEY,
     {
       auth: {
-        autoRefreshToken: true,
+
         persistSession: true,
-        detectSessionInUrl: true
+
+        autoRefreshToken: true,
+
+        detectSessionInUrl: true,
+
+        flowType: 'pkce'
+
       }
     }
   );
 
 
 /*
-نام اصلی
+=========================================================
+GLOBAL REFERENCES
+=========================================================
 */
-window.supabaseClient = client;
 
+window.supabaseClient =
+  client;
 
-/*
-نام سازگار با login.js
-*/
-window.adinehSupabase = client;
+window.adinehSupabase =
+  client;
