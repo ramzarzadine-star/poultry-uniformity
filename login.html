@@ -10,10 +10,14 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>
-    بازیابی رمز عبور | مرکز تخصصی سلامت طیور آدینه
-  </title>
+  <meta
+    name="theme-color"
+    content="#0b766e"
+  >
 
+  <title>
+    ورود | مرکز تخصصی سلامت طیور آدینه
+  </title>
 
   <style>
 
@@ -21,10 +25,13 @@
       box-sizing: border-box;
     }
 
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+    }
 
     body {
-
-      margin: 0;
 
       min-height: 100vh;
 
@@ -39,9 +46,9 @@
       background:
         linear-gradient(
           135deg,
-          #0b1f1a,
-          #12382f,
-          #071511
+          #062d25 0%,
+          #0b3f34 50%,
+          #06231d 100%
         );
 
       display: flex;
@@ -50,91 +57,160 @@
 
       justify-content: center;
 
-      padding: 20px;
+      padding: 24px;
+
+      color: #17352d;
 
     }
 
+    .page {
+
+      width: 100%;
+
+      max-width: 470px;
+
+    }
 
     .card {
 
       width: 100%;
 
-      max-width: 460px;
+      background:
+        rgba(255,255,255,.98);
 
-      background: #ffffff;
+      border-radius: 28px;
 
-      border-radius: 24px;
-
-      padding: 32px;
+      padding:
+        34px 28px 30px;
 
       box-shadow:
-        0 20px 60px
-        rgba(0, 0, 0, .25);
+        0 25px 70px
+        rgba(0,0,0,.30);
 
     }
 
-
     .logo {
 
-      width: 90px;
+      width: 92px;
 
-      height: 90px;
+      height: 92px;
 
       object-fit: contain;
 
       display: block;
 
       margin:
-        0 auto 20px;
+        0 auto 18px;
 
-      border-radius: 18px;
+      border-radius: 20px;
 
     }
-
 
     h1 {
 
-      margin:
-        0 0 10px;
+      margin: 0;
 
       text-align: center;
 
-      color: #17352d;
+      font-size: 27px;
 
-      font-size: 25px;
+      color: #173b32;
+
+      font-weight: 800;
 
     }
 
-
     .subtitle {
+
+      margin:
+        10px 0 25px;
 
       text-align: center;
 
-      color: #68756f;
+      color: #70807a;
 
       font-size: 14px;
 
       line-height: 2;
 
-      margin-bottom: 28px;
+    }
+
+    .mode-switch {
+
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 8px;
+
+      background: #eef3f1;
+
+      padding: 5px;
+
+      border-radius: 14px;
+
+      margin-bottom: 22px;
 
     }
 
+    .mode-switch button {
+
+      height: 44px;
+
+      border: 0;
+
+      border-radius: 11px;
+
+      background: transparent;
+
+      color: #61716b;
+
+      font-size: 14px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+    }
+
+    .mode-switch button.active {
+
+      background: #176b54;
+
+      color: white;
+
+      box-shadow:
+        0 4px 12px
+        rgba(23,107,84,.20);
+
+    }
+
+    form {
+
+      width: 100%;
+
+    }
+
+    .field {
+
+      margin-bottom: 16px;
+
+    }
 
     label {
 
       display: block;
 
-      margin-bottom: 8px;
+      margin-bottom: 7px;
 
-      color: #31423c;
+      color: #30443d;
 
       font-size: 14px;
 
       font-weight: 700;
 
     }
-
 
     input {
 
@@ -143,41 +219,42 @@
       height: 52px;
 
       border:
-        1px solid #d6dedb;
+        1px solid #d5dfdb;
 
       border-radius: 13px;
+
+      background: #fafcfb;
 
       padding:
         0 15px;
 
-      font-size: 16px;
-
       outline: none;
 
-      margin-bottom: 18px;
+      font-size: 16px;
 
-      background: #fafcfb;
+      color: #19342d;
 
       direction: ltr;
 
       text-align: left;
 
-    }
+      transition: .2s;
 
+    }
 
     input:focus {
 
-      border-color:
-        #217a62;
+      border-color: #19745a;
+
+      background: white;
 
       box-shadow:
         0 0 0 3px
-        rgba(33, 122, 98, .12);
+        rgba(25,116,90,.12);
 
     }
 
-
-    button {
+    .primary {
 
       width: 100%;
 
@@ -189,35 +266,69 @@
 
       background: #176b54;
 
-      color: #fff;
+      color: white;
 
       font-size: 16px;
 
-      font-weight: 700;
+      font-weight: 800;
 
       cursor: pointer;
 
-      transition: .2s;
+      margin-top: 5px;
 
     }
 
+    .primary:hover {
 
-    button:hover {
-
-      background: #125640;
+      background: #125a47;
 
     }
-
 
     button:disabled {
 
       opacity: .6;
 
-      cursor:
-        not-allowed;
+      cursor: not-allowed;
 
     }
 
+    .actions {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      align-items: center;
+
+      gap: 10px;
+
+      margin-top: 15px;
+
+    }
+
+    .link-button {
+
+      border: 0;
+
+      background: transparent;
+
+      color: #176b54;
+
+      font-size: 13px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+
+      padding: 5px;
+
+    }
+
+    .link-button:hover {
+
+      text-decoration: underline;
+
+    }
 
     .message {
 
@@ -225,8 +336,7 @@
 
       margin-top: 18px;
 
-      padding:
-        13px 14px;
+      padding: 13px 14px;
 
       border-radius: 12px;
 
@@ -238,13 +348,11 @@
 
     }
 
-
     .message.show {
 
       display: block;
 
     }
-
 
     .message.error {
 
@@ -254,7 +362,6 @@
 
     }
 
-
     .message.success {
 
       background: #eaf8f1;
@@ -263,21 +370,19 @@
 
     }
 
-
     .loading {
 
       display: none;
 
       text-align: center;
 
-      color: #66736e;
+      margin-top: 14px;
+
+      color: #70807a;
 
       font-size: 13px;
 
-      margin-top: 15px;
-
     }
-
 
     .loading.show {
 
@@ -285,16 +390,48 @@
 
     }
 
+    .register-only {
+
+      display: none;
+
+    }
 
     .footer {
 
       text-align: center;
 
-      margin-top: 24px;
-
-      color: #84908c;
+      color: #8a9691;
 
       font-size: 12px;
+
+      margin-top: 24px;
+
+    }
+
+    @media (
+      max-width: 480px
+    ) {
+
+      body {
+
+        padding: 15px;
+
+      }
+
+      .card {
+
+        padding:
+          28px 20px 24px;
+
+        border-radius: 24px;
+
+      }
+
+      h1 {
+
+        font-size: 24px;
+
+      }
 
     }
 
@@ -306,132 +443,320 @@
 <body>
 
 
-  <main class="card">
+  <main class="page">
+
+    <section class="card">
 
 
-    <img
-      class="logo"
-      src="IMG_4309.png"
-      alt="مرکز تخصصی سلامت طیور آدینه"
-    >
-
-
-    <h1>
-      بازیابی رمز عبور
-    </h1>
-
-
-    <div class="subtitle">
-
-      رمز عبور جدید خود را وارد کنید.
-
-      <br>
-
-      پس از ذخیره، می‌توانید با رمز جدید وارد سامانه شوید.
-
-    </div>
-
-
-    <form
-      id="resetPasswordForm"
-    >
-
-
-      <label
-        for="newPassword"
-      >
-        رمز عبور جدید
-      </label>
-
-
-      <input
-        id="newPassword"
-        type="password"
-        autocomplete="new-password"
-        minlength="8"
-        placeholder="حداقل ۸ کاراکتر"
-        required
+      <img
+        class="logo"
+        src="IMG_4309.png"
+        alt="مرکز تخصصی سلامت طیور آدینه"
       >
 
 
-      <label
-        for="confirmPassword"
+      <h1 id="modeTitle">
+        ورود امن به سامانه
+      </h1>
+
+
+      <div
+        id="modeText"
+        class="subtitle"
       >
-        تکرار رمز عبور جدید
-      </label>
+        برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.
+      </div>
 
 
-      <input
-        id="confirmPassword"
-        type="password"
-        autocomplete="new-password"
-        minlength="8"
-        placeholder="رمز عبور را دوباره وارد کنید"
-        required
+      <!-- ================================
+           LOGIN / REGISTER SWITCH
+      ================================= -->
+
+      <div
+        id="modeSwitch"
+        class="mode-switch"
       >
 
+        <button
+          id="loginModeBtn"
+          type="button"
+          class="active"
+        >
+          ورود
+        </button>
 
-      <button
-        id="savePasswordBtn"
-        type="submit"
+
+        <button
+          id="registerModeBtn"
+          type="button"
+        >
+          ثبت‌نام
+        </button>
+
+      </div>
+
+
+      <!-- ================================
+           LOGIN
+      ================================= -->
+
+      <form
+        id="loginForm"
       >
-        ذخیره رمز عبور جدید
-      </button>
+
+        <div class="field">
+
+          <label
+            for="loginEmail"
+          >
+            ایمیل
+          </label>
+
+          <input
+            id="loginEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="example@email.com"
+            required
+          >
+
+        </div>
 
 
-    </form>
+        <div class="field">
+
+          <label
+            for="loginPassword"
+          >
+            رمز عبور
+          </label>
+
+          <input
+            id="loginPassword"
+            type="password"
+            autocomplete="current-password"
+            placeholder="رمز عبور خود را وارد کنید"
+            required
+          >
+
+        </div>
 
 
-    <div
-      id="loading"
-      class="loading"
-    >
-
-      در حال بررسی و ذخیره رمز عبور...
-
-    </div>
+        <button
+          type="submit"
+          class="primary"
+        >
+          ورود به سامانه
+        </button>
 
 
-    <div
-      id="message"
-      class="message"
-    ></div>
+        <div class="actions">
+
+          <button
+            id="forgotBtn"
+            type="button"
+            class="link-button"
+          >
+            فراموشی رمز عبور
+          </button>
 
 
-    <div class="footer">
+          <button
+            id="magicLinkBtn"
+            type="button"
+            class="link-button"
+          >
+            ورود با لینک ایمیل
+          </button>
 
-      مرکز تخصصی سلامت طیور آدینه
+        </div>
 
-    </div>
+      </form>
 
+
+      <!-- ================================
+           REGISTER
+      ================================= -->
+
+      <form
+        id="registerForm"
+        hidden
+      >
+
+        <div class="field">
+
+          <label
+            for="firstName"
+          >
+            نام
+          </label>
+
+          <input
+            id="firstName"
+            type="text"
+            autocomplete="given-name"
+            placeholder="نام"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label
+            for="lastName"
+          >
+            نام خانوادگی
+          </label>
+
+          <input
+            id="lastName"
+            type="text"
+            autocomplete="family-name"
+            placeholder="نام خانوادگی"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label
+            for="registerPhone"
+          >
+            شماره تلفن
+          </label>
+
+          <input
+            id="registerPhone"
+            type="tel"
+            autocomplete="tel"
+            placeholder="09xxxxxxxxx"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label
+            for="registerEmail"
+          >
+            ایمیل
+          </label>
+
+          <input
+            id="registerEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="example@email.com"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label
+            for="registerPassword"
+          >
+            رمز عبور
+          </label>
+
+          <input
+            id="registerPassword"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            placeholder="حداقل ۸ کاراکتر"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label
+            for="registerPasswordConfirm"
+          >
+            تکرار رمز عبور
+          </label>
+
+          <input
+            id="registerPasswordConfirm"
+            type="password"
+            autocomplete="new-password"
+            minlength="8"
+            placeholder="رمز عبور را دوباره وارد کنید"
+          >
+
+        </div>
+
+
+        <button
+          type="submit"
+          class="primary"
+        >
+          ایجاد حساب کاربری
+        </button>
+
+      </form>
+
+
+      <!-- ================================
+           MESSAGE
+      ================================= -->
+
+      <div
+        id="loading"
+        class="loading"
+      >
+        در حال بررسی...
+      </div>
+
+
+      <div
+        id="message"
+        class="message"
+      ></div>
+
+
+      <div class="footer">
+
+        مرکز تخصصی سلامت طیور آدینه
+
+      </div>
+
+
+    </section>
 
   </main>
 
 
-  <!-- =================================================
-       SUPABASE LIBRARY
-  ================================================== -->
+  <!-- ================================
+       SUPABASE
+  ================================= -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
   ></script>
 
 
-  <!-- =================================================
-       SUPABASE CLIENT
-  ================================================== -->
+  <!-- ================================
+       SUPABASE CONFIG
+  ================================= -->
 
   <script
-    src="supabase.js"
+    src="supabase-config.js"
   ></script>
 
 
-  <!-- =================================================
-       RESET PASSWORD
-  ================================================== -->
+  <!-- ================================
+       LOGIN
+  ================================= -->
 
   <script
-    src="reset-password.js"
+    src="login.js"
   ></script>
 
 
