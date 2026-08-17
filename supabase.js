@@ -2,9 +2,9 @@
 
 /*
 =========================================================
-مرکز تخصصی سلامت طیور آدینه
-SUPABASE AUTH CLIENT
-GitHub Pages / Client-Side Authentication
+ ADINEH POULTRY
+ SUPABASE AUTH CLIENT
+ GitHub Pages
 =========================================================
 */
 
@@ -17,13 +17,19 @@ GitHub Pages / Client-Side Authentication
     'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
 
 
+  /*
+  =======================================================
+  بررسی کتابخانه Supabase
+  =======================================================
+  */
+
   if (
     !window.supabase ||
     typeof window.supabase.createClient !== 'function'
   ) {
 
     console.error(
-      'Supabase JavaScript library is not available.'
+      'Supabase JavaScript library is not loaded.'
     );
 
     window.ADINEH_SUPABASE_READY = false;
@@ -33,9 +39,9 @@ GitHub Pages / Client-Side Authentication
 
 
   /*
-  ---------------------------------------------------------
-  جلوگیری از ساخت Client دوم
-  ---------------------------------------------------------
+  =======================================================
+  اگر Client قبلاً ساخته شده، دوباره نساز
+  =======================================================
   */
 
   if (window.adinehSupabase) {
@@ -50,11 +56,20 @@ GitHub Pages / Client-Side Authentication
 
 
   /*
-  ---------------------------------------------------------
-  GitHub Pages یک Client-Side App است.
-  
-  برای این معماری از implicit flow استفاده می‌کنیم.
-  ---------------------------------------------------------
+  =======================================================
+  ساخت Client اصلی
+  =======================================================
+
+  از PKCE استفاده می‌کنیم.
+
+  این روش برای:
+  - Login
+  - Email verification
+  - Magic Link
+  - Password Recovery
+
+  مناسب‌تر و پایدارتر است.
+  =======================================================
   */
 
   const client =
@@ -62,28 +77,48 @@ GitHub Pages / Client-Side Authentication
       SUPABASE_URL,
       SUPABASE_PUBLISHABLE_KEY,
       {
-
         auth: {
 
+          /*
+           * Session در مرورگر ذخیره شود
+           */
           persistSession: true,
 
+          /*
+           * Refresh Token به صورت خودکار تمدید شود
+           */
           autoRefreshToken: true,
 
+          /*
+           * URL callback توسط Supabase بررسی شود
+           */
           detectSessionInUrl: true,
 
-          flowType: 'implicit',
+          /*
+           * استفاده از PKCE
+           */
+          flowType: 'pkce',
 
-          storage:
-            window.localStorage,
+          /*
+           * محل ذخیره Session
+           */
+          storage: window.localStorage,
 
-          storageKey:
-            'adineh-supabase-auth'
+          /*
+           * نام ثابت برای Session
+           */
+          storageKey: 'adineh-supabase-auth'
 
         }
-
       }
     );
 
+
+  /*
+  =======================================================
+  Global Client
+  =======================================================
+  */
 
   window.supabaseClient =
     client;
