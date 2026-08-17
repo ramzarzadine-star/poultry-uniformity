@@ -3,8 +3,8 @@
 /*
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
-SUPABASE CLIENT
-نسخه یکپارچه احراز هویت
+SUPABASE AUTH CLIENT
+نسخه یکپارچه ورود و بازیابی رمز
 =========================================================
 */
 
@@ -19,7 +19,7 @@ SUPABASE CLIENT
 
   /*
   ========================================================
-  CHECK SUPABASE LIBRARY
+  بررسی کتابخانه Supabase
   ========================================================
   */
 
@@ -32,36 +32,42 @@ SUPABASE CLIENT
       'Supabase JavaScript library is not available.'
     );
 
-    return;
+    window.ADINEH_SUPABASE_READY = false;
 
+    return;
   }
 
 
   /*
   ========================================================
-  PREVENT DUPLICATE CLIENT
+  جلوگیری از ساخت چند Client
   ========================================================
   */
 
   if (
-    window.supabaseClient
+    window.adinehSupabase
   ) {
 
-    window.adinehSupabase =
-      window.supabaseClient;
+    window.supabaseClient =
+      window.adinehSupabase;
 
     window.ADINEH_SUPABASE_READY =
       true;
 
     return;
-
   }
 
 
   /*
   ========================================================
-  CREATE SINGLE CLIENT
+  ایجاد Client
   ========================================================
+
+  PKCE برای:
+  - Magic Link
+  - Password Recovery
+  - Sign Up
+  مناسب است.
   */
 
   const client =
@@ -69,6 +75,7 @@ SUPABASE CLIENT
       SUPABASE_URL,
       SUPABASE_PUBLISHABLE_KEY,
       {
+
         auth: {
 
           persistSession: true,
@@ -77,15 +84,13 @@ SUPABASE CLIENT
 
           detectSessionInUrl: true,
 
-          flowType: 'implicit',
+          flowType: 'pkce',
 
           storage:
             window.localStorage,
 
           storageKey:
-            'adineh-supabase-auth',
-
-          lock: undefined
+            'adineh-supabase-auth'
 
         }
 
@@ -95,7 +100,7 @@ SUPABASE CLIENT
 
   /*
   ========================================================
-  GLOBAL REFERENCES
+  Global references
   ========================================================
   */
 
@@ -109,15 +114,8 @@ SUPABASE CLIENT
     true;
 
 
-  /*
-  ========================================================
-  DEBUG
-  ========================================================
-  */
-
   console.log(
-    'Adineh Supabase client initialized.'
+    'Adineh Supabase Auth initialized: PKCE'
   );
-
 
 })();
