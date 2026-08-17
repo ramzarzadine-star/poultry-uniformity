@@ -2,30 +2,45 @@
 
 /*
 =========================================================
-ADINEH POULTRY
-LOGIN.JS
+مرکز تخصصی سلامت طیور آدینه
+LOGIN AUTHENTICATION
 =========================================================
 
-Login
-Register
-Magic Link
-Forgot Password
-Password Recovery
-Password Reset
+امکانات:
 
-IMPORTANT:
-Recovery callback must NEVER redirect to index.html
-before PASSWORD_RECOVERY has been handled.
+1. ورود با ایمیل و رمز
+2. ثبت نام
+3. ورود با لینک ایمیل
+4. فراموشی رمز عبور
+5. دریافت Recovery
+6. تعیین رمز جدید
+7. کنترل حساب فعال
+8. جلوگیری از ورود خودکار اشتباه
+9. جلوگیری از Redirect هنگام Recovery
+
 =========================================================
 */
 
 (function () {
 
+
+  /* =====================================================
+     SUPABASE
+  ===================================================== */
+
   const supabase =
     window.adinehSupabase;
 
-  const $ = id =>
-    document.getElementById(id);
+
+  /* =====================================================
+     DOM HELPER
+  ===================================================== */
+
+  const $ = function (id) {
+
+    return document.getElementById(id);
+
+  };
 
 
   /* =====================================================
@@ -56,6 +71,9 @@ before PASSWORD_RECOVERY has been handled.
   const registerModeBtn =
     $('registerModeBtn');
 
+  const modeSwitch =
+    $('modeSwitch');
+
   const loading =
     $('loading');
 
@@ -70,24 +88,10 @@ before PASSWORD_RECOVERY has been handled.
   let redirecting =
     false;
 
-  /*
-    این متغیر وقتی Recovery شروع شود
-    قفل می‌شود و تا پایان Reset نباید
-    false شود.
-  */
   let recoveryMode =
     false;
 
-  /*
-    Callback URL داریم یا نه؟
-  */
-  let authCallback =
-    false;
-
-  /*
-    آیا callback هنوز در حال پردازش است؟
-  */
-  let waitingForAuthCallback =
+  let callbackMode =
     false;
 
 
@@ -97,25 +101,37 @@ before PASSWORD_RECOVERY has been handled.
 
   function showMessage(
     text,
-    type = 'error'
+    type
   ) {
 
-    if (!messageEl)
+    if (!messageEl) {
+
       return;
+
+    }
+
 
     messageEl.textContent =
       text || '';
 
+
     messageEl.className =
-      text
-        ? `login-message ${type}`
-        : 'login-message';
+      'login-message';
+
+
+    if (text) {
+
+      messageEl.classList.add(
+        type || 'error'
+      );
+
+    }
 
   }
 
 
   /* =====================================================
-     BUSY
+     LOADING
   ===================================================== */
 
   function setBusy(
@@ -125,16 +141,20 @@ before PASSWORD_RECOVERY has been handled.
     busy =
       Boolean(value);
 
+
     document
-      .querySelectorAll('button')
+      .querySelectorAll(
+        'button'
+      )
       .forEach(
-        button => {
+        function (button) {
 
           button.disabled =
             busy;
 
         }
       );
+
 
     if (loading) {
 
@@ -177,12 +197,16 @@ before PASSWORD_RECOVERY has been handled.
      PASSWORD
   ===================================================== */
 
-  function passwordError(
+  function validatePassword(
     password
   ) {
 
-    if (!password)
+    if (!password) {
+
       return 'رمز عبور را وارد کنید.';
+
+    }
+
 
     if (
       password.length < 8
@@ -191,6 +215,7 @@ before PASSWORD_RECOVERY has been handled.
       return 'رمز عبور باید حداقل ۸ کاراکتر باشد.';
 
     }
+
 
     return '';
 
@@ -209,9 +234,16 @@ before PASSWORD_RECOVERY has been handled.
         window.location.href
       );
 
+
+    /*
+      فقط مسیر login.html
+      بدون query و hash
+    */
+
     url.search = '';
 
     url.hash = '';
+
 
     return url.href;
 
@@ -219,32 +251,29 @@ before PASSWORD_RECOVERY has been handled.
 
 
   /* =====================================================
-     AUTH CALLBACK DETECTION
+     CALLBACK DETECTION
   ===================================================== */
 
-  function hasAuthCallback() {
+  function hasCallback() {
 
-    const search =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const hash =
-      new URLSearchParams(
-        window.location.hash
-          .replace(
-            /^#/,
-            ''
-          )
+    const url =
+      new URL(
+        window.location.href
       );
 
 
+    const params =
+      url.searchParams;
+
+
     /*
-      PKCE callback
+      PKCE
     */
 
     if (
-      search.has('code')
+      params.has(
+        'code'
+      )
     ) {
 
       return true;
@@ -253,26 +282,13 @@ before PASSWORD_RECOVERY has been handled.
 
 
     /*
-      Implicit / Magic Link
+      Recovery / implicit fallback
     */
 
     if (
-      hash.has('access_token') ||
-      hash.has('refresh_token')
-    ) {
-
-      return true;
-
-    }
-
-
-    /*
-      Recovery
-    */
-
-    if (
-      search.get('type') ===
-      'recovery'
+      params.has(
+        'type'
+      )
     ) {
 
       return true;
@@ -281,8 +297,31 @@ before PASSWORD_RECOVERY has been handled.
 
 
     if (
-      hash.get('type') ===
-      'recovery'
+      url.hash.includes(
+        'access_token='
+      )
+    ) {
+
+      return true;
+
+    }
+
+
+    if (
+      url.hash.includes(
+        'refresh_token='
+      )
+    ) {
+
+      return true;
+
+    }
+
+
+    if (
+      url.hash.includes(
+        'type=recovery'
+      )
     ) {
 
       return true;
@@ -295,79 +334,89 @@ before PASSWORD_RECOVERY has been handled.
   }
 
 
-  function hasExplicitRecoveryType() {
+  /* =====================================================
+     EXPLICIT RECOVERY
+  ===================================================== */
 
-    const search =
-      new URLSearchParams(
-        window.location.search
-      );
+  function hasRecoveryMarker() {
 
-    const hash =
-      new URLSearchParams(
-        window.location.hash
-          .replace(
-            /^#/,
-            ''
-          )
+    const url =
+      new URL(
+        window.location.href
       );
 
 
-    return (
-
-      search.get('type') ===
-      'recovery' ||
-
-      hash.get('type') ===
+    if (
+      url.searchParams.get(
+        'type'
+      ) ===
       'recovery'
+    ) {
 
-    );
+      return true;
+
+    }
+
+
+    if (
+      url.hash.includes(
+        'type=recovery'
+      )
+    ) {
+
+      return true;
+
+    }
+
+
+    return false;
 
   }
 
 
   /* =====================================================
-     CLEAN URL
+     CLEAN AUTH URL
   ===================================================== */
 
-  function clearAuthUrl() {
+  function cleanAuthUrl() {
 
     try {
 
-      const clean =
+      const url =
         new URL(
           window.location.href
         );
 
 
-      clean.searchParams.delete(
+      url.searchParams.delete(
         'code'
       );
 
-      clean.searchParams.delete(
+      url.searchParams.delete(
         'type'
       );
 
-      clean.searchParams.delete(
+      url.searchParams.delete(
         'error'
       );
 
-      clean.searchParams.delete(
+      url.searchParams.delete(
         'error_code'
       );
 
-      clean.searchParams.delete(
+      url.searchParams.delete(
         'error_description'
       );
 
 
-      clean.hash =
+      url.hash =
         '';
 
 
       window.history.replaceState(
         {},
         document.title,
-        clean.href
+        url.href
       );
 
     }
@@ -385,34 +434,22 @@ before PASSWORD_RECOVERY has been handled.
 
 
   /* =====================================================
-     SWITCH LOGIN / REGISTER
+     SWITCH TO LOGIN
   ===================================================== */
 
-  function switchMode(
-    mode
-  ) {
+  function showLoginMode() {
 
-    /*
-      در Recovery اجازه تغییر Mode نداریم.
-    */
-
-    if (
-      recoveryMode
-    ) {
+    if (recoveryMode) {
 
       return;
 
     }
 
 
-    const register =
-      mode === 'register';
-
-
     if (loginForm) {
 
       loginForm.hidden =
-        register;
+        false;
 
     }
 
@@ -420,7 +457,7 @@ before PASSWORD_RECOVERY has been handled.
     if (registerForm) {
 
       registerForm.hidden =
-        !register;
+        true;
 
     }
 
@@ -433,28 +470,36 @@ before PASSWORD_RECOVERY has been handled.
     }
 
 
-    loginModeBtn
-      ?.classList
-      .toggle(
-        'active',
-        !register
-      );
+    if (modeSwitch) {
+
+      modeSwitch.hidden =
+        false;
+
+    }
 
 
-    registerModeBtn
-      ?.classList
-      .toggle(
-        'active',
-        register
+    if (loginModeBtn) {
+
+      loginModeBtn.classList.add(
+        'active'
       );
+
+    }
+
+
+    if (registerModeBtn) {
+
+      registerModeBtn.classList.remove(
+        'active'
+      );
+
+    }
 
 
     if (modeTitle) {
 
       modeTitle.textContent =
-        register
-          ? 'ایجاد حساب کاربری'
-          : 'ورود امن به سامانه';
+        'ورود امن به سامانه';
 
     }
 
@@ -462,14 +507,100 @@ before PASSWORD_RECOVERY has been handled.
     if (modeText) {
 
       modeText.textContent =
-        register
-          ? 'اطلاعات خود را وارد کنید تا حساب کاربری ایجاد شود.'
-          : 'برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.';
+        'برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.';
 
     }
 
 
-    showMessage('');
+    showMessage(
+      ''
+    );
+
+  }
+
+
+  /* =====================================================
+     SHOW REGISTER
+  ===================================================== */
+
+  function showRegisterMode() {
+
+    if (recoveryMode) {
+
+      return;
+
+    }
+
+
+    if (loginForm) {
+
+      loginForm.hidden =
+        true;
+
+    }
+
+
+    if (registerForm) {
+
+      registerForm.hidden =
+        false;
+
+    }
+
+
+    if (resetForm) {
+
+      resetForm.hidden =
+        true;
+
+    }
+
+
+    if (modeSwitch) {
+
+      modeSwitch.hidden =
+        false;
+
+    }
+
+
+    if (loginModeBtn) {
+
+      loginModeBtn.classList.remove(
+        'active'
+      );
+
+    }
+
+
+    if (registerModeBtn) {
+
+      registerModeBtn.classList.add(
+        'active'
+      );
+
+    }
+
+
+    if (modeTitle) {
+
+      modeTitle.textContent =
+        'ایجاد حساب کاربری';
+
+    }
+
+
+    if (modeText) {
+
+      modeText.textContent =
+        'اطلاعات خود را وارد کنید تا حساب کاربری ایجاد شود.';
+
+    }
+
+
+    showMessage(
+      ''
+    );
 
   }
 
@@ -478,17 +609,10 @@ before PASSWORD_RECOVERY has been handled.
      SHOW RECOVERY
   ===================================================== */
 
-  function showRecoveryForm() {
-
-    /*
-      این خط بسیار مهم است.
-    */
+  function showRecoveryMode() {
 
     recoveryMode =
       true;
-
-    waitingForAuthCallback =
-      false;
 
 
     if (loginForm) {
@@ -515,18 +639,12 @@ before PASSWORD_RECOVERY has been handled.
     }
 
 
-    loginModeBtn
-      ?.classList
-      .remove(
-        'active'
-      );
+    if (modeSwitch) {
 
+      modeSwitch.hidden =
+        true;
 
-    registerModeBtn
-      ?.classList
-      .remove(
-        'active'
-      );
+    }
 
 
     if (modeTitle) {
@@ -546,19 +664,27 @@ before PASSWORD_RECOVERY has been handled.
 
 
     showMessage(
-      'لینک بازیابی معتبر است. رمز عبور جدید خود را وارد کنید.',
+      'لینک بازیابی معتبر است. رمز عبور جدید خود را تعیین کنید.',
       'success'
     );
 
 
-    setBusy(false);
+    setBusy(
+      false
+    );
 
 
     window.setTimeout(
-      () => {
+      function () {
 
-        $('resetPassword')
-          ?.focus();
+        const input =
+          $('resetPassword');
+
+        if (input) {
+
+          input.focus();
+
+        }
 
       },
       100
@@ -571,32 +697,38 @@ before PASSWORD_RECOVERY has been handled.
      PROFILE
   ===================================================== */
 
-  async function readProfile(
+  async function getProfile(
     userId
   ) {
 
-    if (!userId)
+    if (
+      !userId
+    ) {
+
       return null;
+
+    }
 
 
     try {
 
-      const {
-        data,
-        error
-      } =
+      const result =
         await supabase
-          .from('profiles')
-          .select(`
-            id,
-            username,
-            first_name,
-            last_name,
-            phone,
-            company_name,
-            role,
-            status
-          `)
+          .from(
+            'profiles'
+          )
+          .select(
+            `
+              id,
+              username,
+              first_name,
+              last_name,
+              phone,
+              company_name,
+              role,
+              status
+            `
+          )
           .eq(
             'id',
             userId
@@ -604,28 +736,35 @@ before PASSWORD_RECOVERY has been handled.
           .maybeSingle();
 
 
-      if (error) {
+      if (
+        result.error
+      ) {
 
         console.error(
-          'Profile query error:',
-          error
+          'Profile error:',
+          result.error
         );
+
 
         return null;
 
       }
 
 
-      return data || null;
+      return (
+        result.data ||
+        null
+      );
 
     }
 
     catch (error) {
 
       console.error(
-        'Profile query exception:',
+        'Profile exception:',
         error
       );
+
 
       return null;
 
@@ -635,7 +774,7 @@ before PASSWORD_RECOVERY has been handled.
 
 
   /* =====================================================
-     CONTINUE USER
+     CHECK ACTIVE USER
   ===================================================== */
 
   async function continueWithUser(
@@ -643,9 +782,7 @@ before PASSWORD_RECOVERY has been handled.
   ) {
 
     /*
-      مهم:
-      Recovery هیچ وقت نباید اینجا
-      Redirect شود.
+      Recovery نباید Redirect شود.
     */
 
     if (
@@ -653,8 +790,9 @@ before PASSWORD_RECOVERY has been handled.
     ) {
 
       console.log(
-        'Redirect blocked: recovery mode.'
+        'Recovery mode: redirect blocked.'
       );
+
 
       return;
 
@@ -662,7 +800,20 @@ before PASSWORD_RECOVERY has been handled.
 
 
     if (
-      !user ||
+      !user
+    ) {
+
+      setBusy(
+        false
+      );
+
+
+      return;
+
+    }
+
+
+    if (
       redirecting
     ) {
 
@@ -672,22 +823,23 @@ before PASSWORD_RECOVERY has been handled.
 
 
     const profile =
-      await readProfile(
+      await getProfile(
         user.id
       );
 
 
     if (!profile) {
 
-      await supabase.auth
-        .signOut();
+      await supabase.auth.signOut();
 
 
-      setBusy(false);
+      setBusy(
+        false
+      );
 
 
       showMessage(
-        'حساب شما ایجاد شده، اما پروفایل کاربری پیدا نشد. با مالک سامانه تماس بگیرید.'
+        'حساب شما پیدا شد اما پروفایل کاربری وجود ندارد. با مالک سامانه تماس بگیرید.'
       );
 
 
@@ -696,16 +848,21 @@ before PASSWORD_RECOVERY has been handled.
     }
 
 
+    const status =
+      profile.status;
+
+
     if (
-      profile.status !==
+      status !==
       'active'
     ) {
 
-      await supabase.auth
-        .signOut();
+      await supabase.auth.signOut();
 
 
-      setBusy(false);
+      setBusy(
+        false
+      );
 
 
       const messages = {
@@ -723,10 +880,8 @@ before PASSWORD_RECOVERY has been handled.
 
 
       showMessage(
-        messages[
-          profile.status
-        ] ||
-        'دسترسی حساب شما مجاز نیست.'
+        messages[status] ||
+        'دسترسی این حساب فعال نیست.'
       );
 
 
@@ -739,6 +894,9 @@ before PASSWORD_RECOVERY has been handled.
       true;
 
 
+    cleanAuthUrl();
+
+
     window.location.replace(
       'index.html'
     );
@@ -747,33 +905,43 @@ before PASSWORD_RECOVERY has been handled.
 
 
   /* =====================================================
-     NORMAL LOGIN
+     LOGIN WITH PASSWORD
   ===================================================== */
 
   async function login(
     event
   ) {
 
-    event?.preventDefault();
+    event.preventDefault();
 
 
-    if (busy)
+    if (busy) {
+
       return;
 
+    }
 
-    showMessage('');
+
+    if (recoveryMode) {
+
+      return;
+
+    }
+
+
+    showMessage(
+      ''
+    );
 
 
     const email =
       normalizeEmail(
-        $('loginEmail')
-          ?.value
+        $('loginEmail')?.value
       );
 
 
     const password =
-      $('loginPassword')
-        ?.value ||
+      $('loginPassword')?.value ||
       '';
 
 
@@ -786,57 +954,65 @@ before PASSWORD_RECOVERY has been handled.
         'ایمیل و رمز عبور را کامل وارد کنید.'
       );
 
+
       return;
 
     }
 
 
     if (
-      !isValidEmail(email)
+      !isValidEmail(
+        email
+      )
     ) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
+
       return;
 
     }
 
 
-    setBusy(true);
+    setBusy(
+      true
+    );
 
 
     try {
 
-      const {
-        data,
-        error
-      } =
-        await supabase.auth
-          .signInWithPassword({
+      const result =
+        await supabase.auth.signInWithPassword({
 
+          email:
             email,
 
+          password:
             password
 
-          });
+        });
 
 
-      if (error) {
+      if (
+        result.error
+      ) {
 
         console.error(
-          'Login error:',
-          error
+          'Sign in error:',
+          result.error
         );
 
 
-        setBusy(false);
+        setBusy(
+          false
+        );
 
 
         showMessage(
-          error.message ||
-          'ایمیل یا رمز عبور صحیح نیست.'
+          result.error.message ||
+          'ورود انجام نشد.'
         );
 
 
@@ -846,10 +1022,13 @@ before PASSWORD_RECOVERY has been handled.
 
 
       if (
-        !data?.user
+        !result.data ||
+        !result.data.user
       ) {
 
-        setBusy(false);
+        setBusy(
+          false
+        );
 
 
         showMessage(
@@ -863,7 +1042,7 @@ before PASSWORD_RECOVERY has been handled.
 
 
       await continueWithUser(
-        data.user
+        result.data.user
       );
 
     }
@@ -871,12 +1050,14 @@ before PASSWORD_RECOVERY has been handled.
     catch (error) {
 
       console.error(
-        'Login exception:',
+        'Sign in exception:',
         error
       );
 
 
-      setBusy(false);
+      setBusy(
+        false
+      );
 
 
       showMessage(
@@ -897,53 +1078,62 @@ before PASSWORD_RECOVERY has been handled.
     event
   ) {
 
-    event?.preventDefault();
+    event.preventDefault();
 
 
-    if (busy)
+    if (busy) {
+
       return;
 
+    }
 
-    showMessage('');
+
+    if (recoveryMode) {
+
+      return;
+
+    }
+
+
+    showMessage(
+      ''
+    );
 
 
     const firstName =
-      $('firstName')
-        ?.value
-        ?.trim() ||
-      '';
+      (
+        $('firstName')?.value ||
+        ''
+      ).trim();
 
 
     const lastName =
-      $('lastName')
-        ?.value
-        ?.trim() ||
-      '';
+      (
+        $('lastName')?.value ||
+        ''
+      ).trim();
 
 
     const phone =
-      $('registerPhone')
-        ?.value
-        ?.trim() ||
-      '';
+      (
+        $('registerPhone')?.value ||
+        ''
+      ).trim();
 
 
     const email =
       normalizeEmail(
-        $('registerEmail')
-          ?.value
+        $('registerEmail')?.value
       );
 
 
     const password =
-      $('registerPassword')
-        ?.value ||
+      $('registerPassword')?.value ||
       '';
 
 
     const confirm =
-      $('registerPasswordConfirm')
-        ?.value ||
+      $('registerPasswordConfirm')?.value ||
       '';
 
 
@@ -958,18 +1148,22 @@ before PASSWORD_RECOVERY has been handled.
         'نام، نام خانوادگی، ایمیل و رمز عبور الزامی است.'
       );
 
+
       return;
 
     }
 
 
     if (
-      !isValidEmail(email)
+      !isValidEmail(
+        email
+      )
     ) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
+
 
       return;
 
@@ -977,7 +1171,7 @@ before PASSWORD_RECOVERY has been handled.
 
 
     const passwordMessage =
-      passwordError(
+      validatePassword(
         password
       );
 
@@ -987,6 +1181,7 @@ before PASSWORD_RECOVERY has been handled.
       showMessage(
         passwordMessage
       );
+
 
       return;
 
@@ -1002,62 +1197,68 @@ before PASSWORD_RECOVERY has been handled.
         'تکرار رمز عبور یکسان نیست.'
       );
 
+
       return;
 
     }
 
 
-    setBusy(true);
+    setBusy(
+      true
+    );
 
 
     try {
 
-      const {
-        data,
-        error
-      } =
-        await supabase.auth
-          .signUp({
+      const result =
+        await supabase.auth.signUp({
 
+          email:
             email,
 
+          password:
             password,
 
-            options: {
+          options: {
 
-              emailRedirectTo:
-                getLoginUrl(),
+            emailRedirectTo:
+              getLoginUrl(),
 
-              data: {
+            data: {
 
-                first_name:
-                  firstName,
+              first_name:
+                firstName,
 
-                last_name:
-                  lastName,
+              last_name:
+                lastName,
 
+              phone:
                 phone
-
-              }
 
             }
 
-          });
+          }
+
+        });
 
 
-      if (error) {
+      if (
+        result.error
+      ) {
 
         console.error(
-          'Register error:',
-          error
+          'Sign up error:',
+          result.error
         );
 
 
-        setBusy(false);
+        setBusy(
+          false
+        );
 
 
         showMessage(
-          error.message ||
+          result.error.message ||
           'ثبت‌نام انجام نشد.'
         );
 
@@ -1067,26 +1268,41 @@ before PASSWORD_RECOVERY has been handled.
       }
 
 
+      /*
+        اگر Supabase بلافاصله Session داده باشد
+        حساب تأیید شده است.
+      */
+
       if (
-        data?.session
+        result.data &&
+        result.data.session &&
+        result.data.user
       ) {
 
-        await supabase.auth
-          .signOut();
+        await continueWithUser(
+          result.data.user
+        );
+
+
+        return;
 
       }
 
 
-      setBusy(false);
+      /*
+        در حالت Email Confirmation
+      */
 
-
-      switchMode(
-        'login'
+      setBusy(
+        false
       );
 
 
+      showLoginMode();
+
+
       showMessage(
-        'ثبت‌نام انجام شد و حساب شما در انتظار تأیید مالک سامانه است.',
+        'ثبت‌نام انجام شد. ایمیل خود را برای تأیید حساب بررسی کنید.',
         'success'
       );
 
@@ -1095,12 +1311,14 @@ before PASSWORD_RECOVERY has been handled.
     catch (error) {
 
       console.error(
-        'Register exception:',
+        'Sign up exception:',
         error
       );
 
 
-      setBusy(false);
+      setBusy(
+        false
+      );
 
 
       showMessage(
@@ -1117,19 +1335,30 @@ before PASSWORD_RECOVERY has been handled.
      MAGIC LINK
   ===================================================== */
 
-  async function magicLink() {
+  async function sendMagicLink() {
 
-    if (busy)
+    if (busy) {
+
       return;
 
+    }
 
-    showMessage('');
+
+    if (recoveryMode) {
+
+      return;
+
+    }
+
+
+    showMessage(
+      ''
+    );
 
 
     const email =
       normalizeEmail(
-        $('loginEmail')
-          ?.value
+        $('loginEmail')?.value
       );
 
 
@@ -1139,8 +1368,9 @@ before PASSWORD_RECOVERY has been handled.
         'ابتدا ایمیل خود را وارد کنید.'
       );
 
-      $('loginEmail')
-        ?.focus();
+
+      $('loginEmail')?.focus();
+
 
       return;
 
@@ -1148,54 +1378,64 @@ before PASSWORD_RECOVERY has been handled.
 
 
     if (
-      !isValidEmail(email)
+      !isValidEmail(
+        email
+      )
     ) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
+
       return;
 
     }
 
 
-    setBusy(true);
+    setBusy(
+      true
+    );
 
 
     try {
 
-      const {
-        error
-      } =
-        await supabase.auth
-          .signInWithOtp({
+      const result =
+        await supabase.auth.signInWithOtp({
 
+          email:
             email,
 
-            options: {
+          options: {
 
-              emailRedirectTo:
-                getLoginUrl()
+            emailRedirectTo:
+              getLoginUrl(),
 
-            }
+            shouldCreateUser:
+              false
 
-          });
+          }
+
+        });
 
 
-      setBusy(false);
-
-
-      if (error) {
+      if (
+        result.error
+      ) {
 
         console.error(
           'Magic link error:',
-          error
+          result.error
+        );
+
+
+        setBusy(
+          false
         );
 
 
         showMessage(
-          error.message ||
+          result.error.message ||
           'ارسال لینک ورود انجام نشد.'
         );
 
@@ -1205,8 +1445,13 @@ before PASSWORD_RECOVERY has been handled.
       }
 
 
+      setBusy(
+        false
+      );
+
+
       showMessage(
-        'لینک ورود ارسال شد. ایمیل خود را باز کنید.',
+        'لینک ورود به ایمیل شما ارسال شد. ایمیل را باز کنید و روی لینک ورود بزنید.',
         'success'
       );
 
@@ -1220,7 +1465,9 @@ before PASSWORD_RECOVERY has been handled.
       );
 
 
-      setBusy(false);
+      setBusy(
+        false
+      );
 
 
       showMessage(
@@ -1237,19 +1484,30 @@ before PASSWORD_RECOVERY has been handled.
      FORGOT PASSWORD
   ===================================================== */
 
-  async function resetPasswordRequest() {
+  async function sendResetLink() {
 
-    if (busy)
+    if (busy) {
+
       return;
 
+    }
 
-    showMessage('');
+
+    if (recoveryMode) {
+
+      return;
+
+    }
+
+
+    showMessage(
+      ''
+    );
 
 
     const email =
       normalizeEmail(
-        $('loginEmail')
-          ?.value
+        $('loginEmail')?.value
       );
 
 
@@ -1259,8 +1517,9 @@ before PASSWORD_RECOVERY has been handled.
         'ایمیل خود را وارد کنید.'
       );
 
-      $('loginEmail')
-        ?.focus();
+
+      $('loginEmail')?.focus();
+
 
       return;
 
@@ -1268,54 +1527,60 @@ before PASSWORD_RECOVERY has been handled.
 
 
     if (
-      !isValidEmail(email)
+      !isValidEmail(
+        email
+      )
     ) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
+
       return;
 
     }
 
 
-    setBusy(true);
+    setBusy(
+      true
+    );
 
 
     try {
 
-      const {
-        error
-      } =
-        await supabase.auth
-          .resetPasswordForEmail(
+      const result =
+        await supabase.auth.resetPasswordForEmail(
 
-            email,
+          email,
 
-            {
+          {
 
-              redirectTo:
-                getLoginUrl()
+            redirectTo:
+              getLoginUrl()
 
-            }
+          }
 
-          );
+        );
 
 
-      setBusy(false);
-
-
-      if (error) {
+      if (
+        result.error
+      ) {
 
         console.error(
-          'Reset request error:',
-          error
+          'Password reset error:',
+          result.error
+        );
+
+
+        setBusy(
+          false
         );
 
 
         showMessage(
-          error.message ||
+          result.error.message ||
           'ارسال لینک بازیابی انجام نشد.'
         );
 
@@ -1323,6 +1588,11 @@ before PASSWORD_RECOVERY has been handled.
         return;
 
       }
+
+
+      setBusy(
+        false
+      );
 
 
       showMessage(
@@ -1335,12 +1605,14 @@ before PASSWORD_RECOVERY has been handled.
     catch (error) {
 
       console.error(
-        'Reset request exception:',
+        'Password reset exception:',
         error
       );
 
 
-      setBusy(false);
+      setBusy(
+        false
+      );
 
 
       showMessage(
@@ -1361,20 +1633,22 @@ before PASSWORD_RECOVERY has been handled.
     event
   ) {
 
-    event?.preventDefault();
+    event.preventDefault();
 
 
-    if (busy)
+    if (busy) {
+
       return;
 
+    }
 
-    if (
-      !recoveryMode
-    ) {
+
+    if (!recoveryMode) {
 
       showMessage(
-        'لینک بازیابی معتبر نیست.'
+        'جلسه بازیابی رمز معتبر نیست. لطفاً دوباره درخواست بازیابی رمز کنید.'
       );
+
 
       return;
 
@@ -1382,28 +1656,27 @@ before PASSWORD_RECOVERY has been handled.
 
 
     const password =
-      $('resetPassword')
-        ?.value ||
+      $('resetPassword')?.value ||
       '';
 
 
     const confirm =
-      $('resetPasswordConfirm')
-        ?.value ||
+      $('resetPasswordConfirm')?.value ||
       '';
 
 
-    const errorMessage =
-      passwordError(
+    const passwordMessage =
+      validatePassword(
         password
       );
 
 
-    if (errorMessage) {
+    if (passwordMessage) {
 
       showMessage(
-        errorMessage
+        passwordMessage
       );
+
 
       return;
 
@@ -1419,59 +1692,46 @@ before PASSWORD_RECOVERY has been handled.
         'تکرار رمز عبور یکسان نیست.'
       );
 
+
       return;
 
     }
 
 
-    setBusy(true);
+    setBusy(
+      true
+    );
 
 
     try {
 
-      const {
-        data,
-        error
-      } =
-        await supabase.auth
-          .updateUser({
+      const result =
+        await supabase.auth.updateUser({
 
+          password:
             password
 
-          });
-
-
-      if (error) {
-
-        console.error(
-          'Update password error:',
-          error
-        );
-
-
-        setBusy(false);
-
-
-        showMessage(
-          error.message ||
-          'تغییر رمز عبور انجام نشد.'
-        );
-
-
-        return;
-
-      }
+        });
 
 
       if (
-        !data?.user
+        result.error
       ) {
 
-        setBusy(false);
+        console.error(
+          'Update password error:',
+          result.error
+        );
+
+
+        setBusy(
+          false
+        );
 
 
         showMessage(
-          'رمز تغییر کرد اما کاربر دریافت نشد.'
+          result.error.message ||
+          'تغییر رمز عبور انجام نشد.'
         );
 
 
@@ -1488,7 +1748,7 @@ before PASSWORD_RECOVERY has been handled.
         false;
 
 
-      clearAuthUrl();
+      cleanAuthUrl();
 
 
       showMessage(
@@ -1497,8 +1757,47 @@ before PASSWORD_RECOVERY has been handled.
       );
 
 
-      await continueWithUser(
-        data.user
+      /*
+        Session فعلی معتبر است.
+        بعد از تغییر رمز، حساب را بررسی می‌کنیم.
+      */
+
+      const sessionResult =
+        await supabase.auth.getSession();
+
+
+      if (
+        sessionResult.data &&
+        sessionResult.data.session &&
+        sessionResult.data.session.user
+      ) {
+
+        await continueWithUser(
+          sessionResult.data.session.user
+        );
+
+
+        return;
+
+      }
+
+
+      /*
+        اگر Session در دسترس نبود،
+        کاربر را به Login عادی برمی‌گردانیم.
+      */
+
+      setBusy(
+        false
+      );
+
+
+      showLoginMode();
+
+
+      showMessage(
+        'رمز عبور تغییر کرد. اکنون با رمز جدید وارد شوید.',
+        'success'
       );
 
     }
@@ -1511,12 +1810,14 @@ before PASSWORD_RECOVERY has been handled.
       );
 
 
-      setBusy(false);
+      setBusy(
+        false
+      );
 
 
       showMessage(
         error?.message ||
-        'تغییر رمز عبور انجام نشد.'
+        'خطا هنگام تغییر رمز عبور.'
       );
 
     }
@@ -1525,53 +1826,109 @@ before PASSWORD_RECOVERY has been handled.
 
 
   /* =====================================================
-     AUTH LISTENER
+     AUTH STATE LISTENER
   ===================================================== */
 
   function setupAuthListener() {
 
-    if (!supabase)
+    if (!supabase) {
+
       return;
 
+    }
 
-    supabase.auth
-      .onAuthStateChange(
-        (
-          event,
-          session
-        ) => {
 
-          console.log(
-            'SUPABASE AUTH EVENT:',
-            event
+    supabase.auth.onAuthStateChange(
+      function (
+        event,
+        session
+      ) {
+
+        console.log(
+          'SUPABASE AUTH EVENT:',
+          event
+        );
+
+
+        /*
+        ==================================================
+        PASSWORD RECOVERY
+        ==================================================
+        */
+
+        if (
+          event ===
+          'PASSWORD_RECOVERY'
+        ) {
+
+          recoveryMode =
+            true;
+
+
+          window.setTimeout(
+            function () {
+
+              showRecoveryMode();
+
+            },
+            0
           );
 
 
+          return;
+
+        }
+
+
+        /*
+        ==================================================
+        SIGNED_IN
+        ==================================================
+        */
+
+        if (
+          event ===
+          'SIGNED_IN'
+        ) {
+
           /*
-            PASSWORD_RECOVERY همیشه اولویت دارد.
+            اگر Recovery فعال است،
+            SIGNED_IN نباید کاربر را به
+            index.html ببرد.
           */
 
           if (
-            event ===
-            'PASSWORD_RECOVERY'
+            recoveryMode
           ) {
 
-            recoveryMode =
-              true;
+            console.log(
+              'SIGNED_IN ignored during password recovery.'
+            );
 
-            waitingForAuthCallback =
+
+            return;
+
+          }
+
+
+          /*
+            Callback مربوط به Magic Link
+          */
+
+          if (
+            callbackMode
+          ) {
+
+            callbackMode =
               false;
 
 
-            /*
-              کمی تأخیر برای اطمینان از
-              کامل شدن Session.
-            */
+            window.setTimeout(
+              function () {
 
-            setTimeout(
-              () => {
-
-                showRecoveryForm();
+                continueWithUser(
+                  session?.user
+                );
 
               },
               0
@@ -1584,75 +1941,301 @@ before PASSWORD_RECOVERY has been handled.
 
 
           /*
-            اگر در Recovery هستیم،
-            SIGNED_IN نباید Redirect کند.
+            Login معمولی را login()
+            خودش مدیریت می‌کند.
           */
 
-          if (
-            event ===
-            'SIGNED_IN'
-          ) {
+          return;
 
-            if (
-              recoveryMode
-            ) {
-
-              console.log(
-                'SIGNED_IN ignored: recovery mode.'
-              );
-
-              return;
-
-            }
+        }
 
 
-            if (
-              waitingForAuthCallback
-            ) {
+        /*
+        ==================================================
+        INITIAL SESSION
+        ==================================================
 
-              waitingForAuthCallback =
-                false;
+        بسیار مهم:
+
+        اگر کاربر قبلاً Session داشته باشد،
+        صفحه Login نباید خودکار index.html
+        را باز کند.
+
+        این جلوی مشکل قبلی را می‌گیرد.
+        */
+
+        if (
+          event ===
+          'INITIAL_SESSION'
+        ) {
+
+          console.log(
+            'Initial session detected. Staying on login page.'
+          );
 
 
-              setTimeout(
-                async () => {
+          return;
 
-                  await continueWithUser(
-                    session?.user
-                  );
-
-                },
-                0
-              );
+        }
 
 
-              return;
+        /*
+        ==================================================
+        TOKEN REFRESH
+        ==================================================
+        */
 
-            }
+        if (
+          event ===
+          'TOKEN_REFRESHED'
+        ) {
+
+          return;
+
+        }
 
 
-            /*
-              ورود عادی بعد از کلیک کاربر
-              یا Magic Link
-            */
+        /*
+        ==================================================
+        USER UPDATED
+        ==================================================
+        */
 
-            setTimeout(
-              async () => {
+        if (
+          event ===
+          'USER_UPDATED'
+        ) {
 
-                await continueWithUser(
-                  session?.user
-                );
+          return;
 
-              },
-              0
-            );
+        }
 
-          }
+      }
+    );
+
+  }
+
+
+  /* =====================================================
+     HANDLE CALLBACK
+  ===================================================== */
+
+  async function handleCallback() {
+
+    if (!hasCallback()) {
+
+      return false;
+
+    }
+
+
+    callbackMode =
+      true;
+
+
+    setBusy(
+      true
+    );
+
+
+    /*
+      اگر Recovery را در URL تشخیص دهیم،
+      اجازه Redirect نداریم.
+    */
+
+    if (
+      hasRecoveryMarker()
+    ) {
+
+      recoveryMode =
+        true;
+
+
+      /*
+        در PKCE ممکن است PASSWORD_RECOVERY
+        کمی بعد توسط Supabase ارسال شود.
+      */
+
+      showRecoveryMode();
+
+
+      return true;
+
+    }
+
+
+    /*
+      Magic Link / PKCE
+
+      Supabase با detectSessionInUrl
+      Callback را پردازش می‌کند و
+      SIGNED_IN را اعلام خواهد کرد.
+    */
+
+    showMessage(
+      'در حال تکمیل ورود امن…',
+      'success'
+    );
+
+
+    return true;
+
+  }
+
+
+  /* =====================================================
+     BUTTON EVENTS
+  ===================================================== */
+
+  function bindEvents() {
+
+
+    /*
+      Login / Register
+    */
+
+    if (loginModeBtn) {
+
+      loginModeBtn.addEventListener(
+        'click',
+        function () {
+
+          showLoginMode();
 
         }
       );
 
+    }
+
+
+    if (registerModeBtn) {
+
+      registerModeBtn.addEventListener(
+        'click',
+        function () {
+
+          showRegisterMode();
+
+        }
+      );
+
+    }
+
+
+    /*
+      Login
+    */
+
+    if (loginForm) {
+
+      loginForm.addEventListener(
+        'submit',
+        login
+      );
+
+    }
+
+
+    /*
+      Register
+    */
+
+    if (registerForm) {
+
+      registerForm.addEventListener(
+        'submit',
+        register
+      );
+
+    }
+
+
+    /*
+      Reset Password
+    */
+
+    if (resetForm) {
+
+      resetForm.addEventListener(
+        'submit',
+        updatePassword
+      );
+
+    }
+
+
+    /*
+      Magic Link
+    */
+
+    const magicLinkBtn =
+      $('magicLinkBtn');
+
+
+    if (magicLinkBtn) {
+
+      magicLinkBtn.addEventListener(
+        'click',
+        sendMagicLink
+      );
+
+    }
+
+
+    /*
+      Forgot Password
+    */
+
+    const forgotBtn =
+      $('forgotBtn');
+
+
+    if (forgotBtn) {
+
+      forgotBtn.addEventListener(
+        'click',
+        sendResetLink
+      );
+
+    }
+
+
+    /*
+      Back to Login
+    */
+
+    const backToLoginBtn =
+      $('backToLoginBtn');
+
+
+    if (backToLoginBtn) {
+
+      backToLoginBtn.addEventListener(
+        'click',
+        function () {
+
+          if (recoveryMode) {
+
+            /*
+              Session Recovery را خارج نمی‌کنیم
+              مگر کاربر دوباره Login کند.
+            */
+
+            recoveryMode =
+              false;
+
+          }
+
+
+          showLoginMode();
+
+        }
+      );
+
+    }
+
   }
+
 
   /* =====================================================
      BOOT
@@ -1660,11 +2243,22 @@ before PASSWORD_RECOVERY has been handled.
 
   async function boot() {
 
+
+    /*
+      Supabase Client موجود نیست.
+    */
+
     if (!supabase) {
 
-      showMessage(
-        'سامانه احراز هویت بارگذاری نشده است.'
+      setBusy(
+        false
       );
+
+
+      showMessage(
+        'اتصال به سرویس احراز هویت برقرار نشد. صفحه را دوباره باز کنید.'
+      );
+
 
       return;
 
@@ -1672,60 +2266,21 @@ before PASSWORD_RECOVERY has been handled.
 
 
     /*
-      -----------------------------------------------------
-      IMPORTANT
-
-      Listener باید قبل از هر بررسی Session
-      فعال شود.
-
-      در صفحه Login هرگز نباید صرفاً به خاطر
-      وجود Session قبلی، کاربر را به index.html
-      منتقل کنیم.
-
-      این موضوع مخصوصاً برای Password Recovery
-      بسیار مهم است.
-      -----------------------------------------------------
+      Listener باید قبل از Callback فعال شود.
     */
 
     setupAuthListener();
 
 
     /*
-      -----------------------------------------------------
-      بررسی Callback
-      -----------------------------------------------------
+      ابتدا Callback را بررسی می‌کنیم.
     */
 
-    authCallback =
-      hasAuthCallback();
+    const callback =
+      await handleCallback();
 
 
-    /*
-      اگر URL صراحتاً Recovery باشد،
-      از همین ابتدا حالت Recovery را قفل می‌کنیم.
-    */
-
-    if (
-      hasExplicitRecoveryType()
-    ) {
-
-      recoveryMode =
-        true;
-
-      waitingForAuthCallback =
-        true;
-
-      setBusy(true);
-
-
-      /*
-        فرم بازیابی را همین حالا نمایش می‌دهیم.
-        حتی اگر PASSWORD_RECOVERY کمی بعد
-        از طرف Supabase ارسال شود.
-      */
-
-      showRecoveryForm();
-
+    if (callback) {
 
       return;
 
@@ -1733,62 +2288,20 @@ before PASSWORD_RECOVERY has been handled.
 
 
     /*
-      -----------------------------------------------------
-      Callback بدون type=recovery
-      -----------------------------------------------------
-
-      این حالت می‌تواند مربوط به:
-
-      - Magic Link
-      - Email confirmation
-      - PKCE callback
-
-      باشد.
-
-      در این حالت هم نباید getSession()
-      باعث ورود خودکار شود.
-
-      منتظر رویداد Supabase می‌مانیم.
+      صفحه عادی Login
     */
 
-    if (
-      authCallback
-    ) {
-
-      waitingForAuthCallback =
-        true;
-
-      setBusy(true);
-
-      showMessage(
-        'در حال تکمیل ورود امن…',
-        'success'
-      );
+    showLoginMode();
 
 
-      return;
-
-    }
+    setBusy(
+      false
+    );
 
 
     /*
-      -----------------------------------------------------
-      NORMAL LOGIN PAGE
-      -----------------------------------------------------
-
-      نکته بسیار مهم:
-
-      اینجا عمداً getSession() را برای Redirect
-      استفاده نمی‌کنیم.
-
-      اگر کاربر Session قبلی داشته باشد،
-      باز هم باید صفحه Login را ببیند.
-
-      این کار جلوی ورود خودکار هنگام
-      Password Recovery را می‌گیرد.
-      -----------------------------------------------------
+      message احتمالی از auth guard
     */
-
 
     const message =
       new URLSearchParams(
@@ -1806,98 +2319,16 @@ before PASSWORD_RECOVERY has been handled.
 
     }
 
-
-    setBusy(false);
-
   }
-  /* =====================================================
-     EVENTS
-  ===================================================== */
-
-  loginModeBtn
-    ?.addEventListener(
-      'click',
-      () =>
-        switchMode(
-          'login'
-        )
-    );
-
-
-  registerModeBtn
-    ?.addEventListener(
-      'click',
-      () =>
-        switchMode(
-          'register'
-        )
-    );
-
-
-  loginForm
-    ?.addEventListener(
-      'submit',
-      login
-    );
-
-
-  registerForm
-    ?.addEventListener(
-      'submit',
-      register
-    );
-
-
-  resetForm
-    ?.addEventListener(
-      'submit',
-      updatePassword
-    );
-
-
-  $('magicLinkBtn')
-    ?.addEventListener(
-      'click',
-      magicLink
-    );
-
-
-  $('forgotBtn')
-    ?.addEventListener(
-      'click',
-      resetPasswordRequest
-    );
-
-
-  $('backToLoginBtn')
-    ?.addEventListener(
-      'click',
-      () =>
-        switchMode(
-          'login'
-        )
-    );
 
 
   /* =====================================================
-     INITIAL
+     START
   ===================================================== */
 
-    /*
-    صفحه Login به صورت عادی شروع می‌شود.
-    Recovery توسط boot / PASSWORD_RECOVERY
-    کنترل خواهد شد.
-  */
-
-  if (
-    !hasExplicitRecoveryType()
-  ) {
-
-    switchMode(
-      'login'
-    );
-
-  }
-
+  bindEvents();
 
   boot();
+
+
+})();
