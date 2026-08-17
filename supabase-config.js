@@ -1,33 +1,26 @@
 'use strict';
 
 /*
-  =========================================================
-  ADINEH POULTRY
-  Supabase Configuration
-  =========================================================
+=========================================================
+مرکز تخصصی سلامت طیور آدینه
+SUPABASE CONFIG
+=========================================================
 */
 
-const ADINEH_SUPABASE_URL =
-  'https://qxiktabmwwjygsocjcyl.supabase.co';
+/*
+این فایل فقط برای سازگاری با login.html است.
 
-const ADINEH_SUPABASE_PUBLISHABLE_KEY =
-  'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
+Client اصلی در supabase.js ساخته می‌شود.
+*/
 
-if (!window.supabase?.createClient) {
+if (!window.adinehSupabase) {
+
   throw new Error(
-    'Supabase library is not loaded.'
+    'Supabase client is not initialized.'
   );
+
 }
 
-window.adinehSupabase =
-  window.supabase.createClient(
-    ADINEH_SUPABASE_URL,
-    ADINEH_SUPABASE_PUBLISHABLE_KEY,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }
-  );
+
+window.supabaseClient =
+  window.adinehSupabase;
