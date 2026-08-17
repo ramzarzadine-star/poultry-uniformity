@@ -1654,7 +1654,6 @@ before PASSWORD_RECOVERY has been handled.
 
   }
 
-
   /* =====================================================
      BOOT
   ===================================================== */
@@ -1673,15 +1672,84 @@ before PASSWORD_RECOVERY has been handled.
 
 
     /*
-      -----------------------------------------------
-      FIRST:
-      Detect callback BEFORE getSession.
-      -----------------------------------------------
+      -----------------------------------------------------
+      IMPORTANT
+
+      Listener باید قبل از هر بررسی Session
+      فعال شود.
+
+      در صفحه Login هرگز نباید صرفاً به خاطر
+      وجود Session قبلی، کاربر را به index.html
+      منتقل کنیم.
+
+      این موضوع مخصوصاً برای Password Recovery
+      بسیار مهم است.
+      -----------------------------------------------------
+    */
+
+    setupAuthListener();
+
+
+    /*
+      -----------------------------------------------------
+      بررسی Callback
+      -----------------------------------------------------
     */
 
     authCallback =
       hasAuthCallback();
 
+
+    /*
+      اگر URL صراحتاً Recovery باشد،
+      از همین ابتدا حالت Recovery را قفل می‌کنیم.
+    */
+
+    if (
+      hasExplicitRecoveryType()
+    ) {
+
+      recoveryMode =
+        true;
+
+      waitingForAuthCallback =
+        true;
+
+      setBusy(true);
+
+
+      /*
+        فرم بازیابی را همین حالا نمایش می‌دهیم.
+        حتی اگر PASSWORD_RECOVERY کمی بعد
+        از طرف Supabase ارسال شود.
+      */
+
+      showRecoveryForm();
+
+
+      return;
+
+    }
+
+
+    /*
+      -----------------------------------------------------
+      Callback بدون type=recovery
+      -----------------------------------------------------
+
+      این حالت می‌تواند مربوط به:
+
+      - Magic Link
+      - Email confirmation
+      - PKCE callback
+
+      باشد.
+
+      در این حالت هم نباید getSession()
+      باعث ورود خودکار شود.
+
+      منتظر رویداد Supabase می‌مانیم.
+    */
 
     if (
       authCallback
@@ -1690,95 +1758,13 @@ before PASSWORD_RECOVERY has been handled.
       waitingForAuthCallback =
         true;
 
-
-      /*
-        اگر نوع Recovery صریحاً در URL وجود دارد،
-        از همین ابتدا Recovery را قفل می‌کنیم.
-      */
-
-      if (
-        hasExplicitRecoveryType()
-      ) {
-
-        recoveryMode =
-          true;
-
-      }
-
-
       setBusy(true);
 
-    }
-
-
-    /*
-      Listener باید قبل از getSession
-      فعال شود.
-    */
-
-    setupAuthListener();
-
-
-    /*
-      -----------------------------------------------
-      CALLBACK MODE
-      -----------------------------------------------
-
-      این قسمت بسیار مهم است:
-
-      اگر callback باشد، Session موجود را
-      نباید به عنوان ورود عادی تلقی کنیم.
-
-      باید صبر کنیم تا Supabase یکی از اینها
-      را اعلام کند:
-
-      PASSWORD_RECOVERY
-      یا
-      SIGNED_IN
-    */
-
-    if (
-      authCallback
-    ) {
-
-      console.log(
-        'Auth callback detected. Waiting for Supabase auth event.'
+      showMessage(
+        'در حال تکمیل ورود امن…',
+        'success'
       );
 
-
-      /*
-        اگر Recovery صریح بود، فرم را فقط
-        بعد از PASSWORD_RECOVERY نشان می‌دهیم.
-      */
-
-      if (
-        recoveryMode
-      ) {
-
-        /*
-          اگر Session از قبل وجود داشته باشد،
-          باز هم Redirect نمی‌کنیم.
-        */
-
-        showRecoveryForm();
-
-
-        /*
-          URL را فعلاً پاک نمی‌کنیم.
-          Supabase باید Callback را کامل پردازش کند.
-        */
-
-        return;
-
-      }
-
-
-      /*
-        برای Magic Link / PKCE
-        اینجا عمداً return می‌کنیم.
-
-        SIGNED_IN listener مسئول Redirect است.
-      */
 
       return;
 
@@ -1786,60 +1772,30 @@ before PASSWORD_RECOVERY has been handled.
 
 
     /*
-      -----------------------------------------------
+      -----------------------------------------------------
       NORMAL LOGIN PAGE
-      -----------------------------------------------
+      -----------------------------------------------------
 
-      اگر URL callback نیست و Session موجود است،
-      ورود خودکار قبلی را حفظ می‌کنیم.
+      نکته بسیار مهم:
+
+      اینجا عمداً getSession() را برای Redirect
+      استفاده نمی‌کنیم.
+
+      اگر کاربر Session قبلی داشته باشد،
+      باز هم باید صفحه Login را ببیند.
+
+      این کار جلوی ورود خودکار هنگام
+      Password Recovery را می‌گیرد.
+      -----------------------------------------------------
     */
 
-    try {
-
-      const {
-        data: {
-          session
-        }
-      } =
-        await supabase.auth
-          .getSession();
-
-
-      if (
-        session?.user
-      ) {
-
-        await continueWithUser(
-          session.user
-        );
-
-        return;
-
-      }
-
-    }
-
-    catch (error) {
-
-      console.error(
-        'Session check error:',
-        error
-      );
-
-    }
-
-
-    /*
-      پیام auth guard
-    */
 
     const message =
       new URLSearchParams(
         window.location.search
-      )
-        .get(
-          'message'
-        );
+      ).get(
+        'message'
+      );
 
 
     if (message) {
@@ -1854,8 +1810,6 @@ before PASSWORD_RECOVERY has been handled.
     setBusy(false);
 
   }
-
-
   /* =====================================================
      EVENTS
   ===================================================== */
@@ -1929,15 +1883,21 @@ before PASSWORD_RECOVERY has been handled.
      INITIAL
   ===================================================== */
 
-  switchMode(
-    'login'
-  );
-
-
-  /*
-    Boot
+    /*
+    صفحه Login به صورت عادی شروع می‌شود.
+    Recovery توسط boot / PASSWORD_RECOVERY
+    کنترل خواهد شد.
   */
 
-  boot();
+  if (
+    !hasExplicitRecoveryType()
+  ) {
 
-})();
+    switchMode(
+      'login'
+    );
+
+  }
+
+
+  boot();
