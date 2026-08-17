@@ -1,787 +1,85 @@
-'use strict';
+// auth.js
+import { supabase } from './supabase.js';
 
-/*
-=========================================================
-مرکز تخصصی سلامت طیور آدینه
-AUTHENTICATION GUARD
-نسخه اصلاح‌شده
-=========================================================
-*/
-
-(function () {
-
-  /*
-  ========================================================
-  SUPABASE CLIENT
-  ========================================================
-  */
-
-  const client =
-    window.supabaseClient ||
-    window.adinehSupabase ||
-    null;
-
-
-  /*
-  ========================================================
-  GLOBAL AUTH STATE
-  ========================================================
-  */
-
-  window.ADINEH_AUTH = {
-
-    ready: false,
-
-    user: null,
-
-    profile: null
-
-  };
-
-
-  let redirecting =
-    false;
-
-
-  /*
-  ========================================================
-  LOGIN REDIRECT
-  ========================================================
-  */
-
-  function goLogin(
-    message = ''
-  ) {
-
-    if (redirecting)
-      return;
-
-
-    redirecting =
-      true;
-
-
-    const url =
-      new URL(
-        'login.html',
-        window.location.href
-      );
-
-
-    if (message) {
-
-      url.searchParams.set(
-        'message',
-        message
-      );
-
-    }
-
-
-    window.location.replace(
-      url.href
-    );
-
-  }
-
-
-  /*
-  ========================================================
-  AUTH READY
-  ========================================================
-  */
-
-  function authReady(
-    user,
-    profile
-  ) {
-
-    window.ADINEH_AUTH = {
-
-      ready: true,
-
-      user,
-
-      profile
-
-    };
-
-
-    document.dispatchEvent(
-      new CustomEvent(
-        'adineh-auth-ready',
-        {
-          detail: {
-            user,
-            profile
-          }
-        }
-      )
-    );
-
-  }
-
-
-  /*
-  ========================================================
-  CLIENT CHECK
-  ========================================================
-  */
-
-  if (!client) {
-
-    console.error(
-      'Supabase client not found.'
-    );
-
-
-    goLogin(
-      'سامانه احراز هویت بارگذاری نشد.'
-    );
-
-
-    return;
-
-  }
-
-
-  /*
-  ========================================================
-  GET CURRENT USER
-  ========================================================
-  */
-
-  async function getCurrentUser() {
-
+// ثبت نام کاربر جدید
+export async function signUp(email, password) {
     try {
-
-      const {
-        data,
-        error
-      } =
-        await client.auth
-          .getUser();
-
-
-      if (error) {
-
-        console.error(
-          'getUser:',
-          error
-        );
-
-
-        return null;
-
-      }
-
-
-      return data?.user || null;
-
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password
+        });
+        
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('خطا در ثبت نام:', error);
+        return { success: false, error: error.message };
     }
+}
 
-    catch (error) {
-
-      console.error(
-        'getUser exception:',
-        error
-      );
-
-
-      return null;
-
-    }
-
-  }
-
-
-  /*
-  ========================================================
-  GET CURRENT PROFILE
-  ========================================================
-  */
-
-  async function getCurrentProfile(
-    user
-  ) {
-
-    if (!user)
-      return null;
-
-
+// ورود کاربر
+export async function signIn(email, password) {
     try {
-
-      const {
-        data,
-        error
-      } =
-        await client
-          .from('profiles')
-          .select(`
-            id,
-            username,
-            first_name,
-            last_name,
-            phone,
-            company_name,
-            role,
-            status,
-            created_at,
-            updated_at,
-            last_seen_at
-          `)
-          .eq(
-            'id',
-            user.id
-          )
-          .maybeSingle();
-
-
-      if (error) {
-
-        console.error(
-          'Profile query error:',
-          error
-        );
-
-
-        return {
-          __error: true,
-          error
-        };
-
-      }
-
-
-      return data || null;
-
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('خطا در ورود:', error);
+        return { success: false, error: error.message };
     }
+}
 
-    catch (error) {
-
-      console.error(
-        'Profile exception:',
-        error
-      );
-
-
-      return {
-        __error: true,
-        error
-      };
-
-    }
-
-  }
-
-
-  /*
-  ========================================================
-  WAIT FOR SESSION
-  ========================================================
-  */
-
-  async function waitForUser() {
-
-    /*
-      اولویت با getSession است.
-      در iPhone ممکن است Session چند لحظه
-      بعد از بارگذاری صفحه آماده شود.
-    */
-
-    for (
-      let attempt = 0;
-      attempt < 30;
-      attempt++
-    ) {
-
-      try {
-
-        const {
-          data,
-          error
-        } =
-          await client.auth
-            .getSession();
-
-
-        if (error) {
-
-          console.error(
-            'getSession:',
-            error
-          );
-
-        }
-
-
-        if (
-          data?.session?.user
-        ) {
-
-          return data.session.user;
-
-        }
-
-      }
-
-      catch (error) {
-
-        console.error(
-          'getSession exception:',
-          error
-        );
-
-      }
-
-
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            250
-          )
-      );
-
-    }
-
-
-    return getCurrentUser();
-
-  }
-
-
-  /*
-  ========================================================
-  WAIT FOR PROFILE
-  ========================================================
-  */
-
-  async function waitForProfile(
-    user
-  ) {
-
-    if (!user)
-      return null;
-
-
-    for (
-      let attempt = 0;
-      attempt < 12;
-      attempt++
-    ) {
-
-      const profile =
-        await getCurrentProfile(
-          user
-        );
-
-
-      /*
-        اگر خطای واقعی دیتابیس رخ داده،
-        دوباره آن را به عنوان profile=null
-        تفسیر نمی‌کنیم.
-      */
-
-      if (
-        profile?.__error
-      ) {
-
-        return profile;
-
-      }
-
-
-      if (profile)
-        return profile;
-
-
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            500
-          )
-      );
-
-    }
-
-
-    return null;
-
-  }
-
-
-  /*
-  ========================================================
-  ACCESS CHECK
-  ========================================================
-  */
-
-  async function checkAccess() {
-
+// خروج کاربر
+export async function signOut() {
     try {
-
-      const user =
-        await waitForUser();
-
-
-      if (!user) {
-
-        goLogin(
-          'ابتدا وارد سامانه شوید.'
-        );
-
-
-        return;
-
-      }
-
-
-      console.log(
-        'Authenticated user:',
-        user.id
-      );
-
-
-      const profile =
-        await waitForProfile(
-          user
-        );
-
-
-      console.log(
-        'Profile:',
-        profile
-      );
-
-
-      /*
-        خطای واقعی Supabase / RLS
-      */
-
-      if (
-        profile?.__error
-      ) {
-
-        console.error(
-          'Profile access error:',
-          profile.error
-        );
-
-
-        goLogin(
-          'نشست برقرار است، اما دسترسی به پروفایل کاربر امکان‌پذیر نیست.'
-        );
-
-
-        return;
-
-      }
-
-
-      /*
-        profile وجود ندارد
-      */
-
-      if (!profile) {
-
-        console.error(
-          'Profile not found:',
-          user.id
-        );
-
-
-        goLogin(
-          'پروفایل کاربر پیدا نشد. حساب شما باید در سامانه فعال شود.'
-        );
-
-
-        return;
-
-      }
-
-
-      /*
-        حساب هنوز فعال نشده
-      */
-
-      if (
-        profile.status !== 'active'
-      ) {
-
-        console.warn(
-          'Account status:',
-          profile.status
-        );
-
-
-        goLogin(
-          'حساب شما هنوز فعال نشده است.'
-        );
-
-
-        return;
-
-      }
-
-
-      /*
-      ======================================================
-      USER DATA
-      ======================================================
-      */
-
-      window.ADINEH_USER_ID =
-        user.id;
-
-
-      /*
-      ======================================================
-      USER-SPECIFIC LOCAL DATABASE
-      ======================================================
-      */
-
-      window.ADINEH_DB_KEY =
-        `adineh_poultry_db_v7_${user.id}`;
-
-
-      /*
-      ======================================================
-      AUTH READY
-      ======================================================
-      */
-
-      authReady(
-        user,
-        profile
-      );
-
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        return { success: true };
+    } catch (error) {
+        console.error('خطا در خروج:', error);
+        return { success: false, error: error.message };
     }
+}
 
-    catch (error) {
-
-      console.error(
-        'AUTH FATAL ERROR:',
-        error
-      );
-
-
-      goLogin(
-        'خطا در بررسی دسترسی.'
-      );
-
-    }
-
-  }
-
-
-  /*
-  ========================================================
-  REQUIRE ACTIVE USER
-  ========================================================
-  */
-
-  async function requireActiveUser(
-    options = {}
-  ) {
-
-    const redirect =
-      options.redirect !== false;
-
-
-    const user =
-      await waitForUser();
-
-
-    if (!user) {
-
-      if (redirect)
-        goLogin();
-
-      return null;
-
-    }
-
-
-    const profile =
-      await waitForProfile(
-        user
-      );
-
-
-    if (
-      !profile ||
-      profile.__error
-    ) {
-
-      if (redirect)
-        goLogin();
-
-      return null;
-
-    }
-
-
-    if (
-      profile.status !== 'active'
-    ) {
-
-      if (redirect)
-        goLogin();
-
-      return null;
-
-    }
-
-
-    return {
-
-      user,
-
-      profile
-
-    };
-
-  }
-
-
-  /*
-  ========================================================
-  OWNER
-  ========================================================
-  */
-
-  async function requireOwner() {
-
-    const session =
-      await requireActiveUser();
-
-
-    if (!session)
-      return null;
-
-
-    if (
-      session.profile.role !== 'owner'
-    ) {
-
-      window.location.replace(
-        'index.html'
-      );
-
-
-      return null;
-
-    }
-
-
-    return session;
-
-  }
-
-
-  /*
-  ========================================================
-  LOGOUT
-  ========================================================
-  */
-
-  async function logout() {
-
+// ارسال لینک بازیابی رمز عبور
+export async function resetPassword(email) {
     try {
-
-      await client.auth
-        .signOut();
-
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/reset-password.html'
+        });
+        
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        console.error('خطا در ارسال لینک بازیابی:', error);
+        return { success: false, error: error.message };
     }
+}
 
-    catch (error) {
-
-      console.error(
-        'Logout:',
-        error
-      );
-
+// دریافت جلسه فعلی
+export async function getSession() {
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        return { success: true, session };
+    } catch (error) {
+        console.error('خطا در دریافت جلسه:', error);
+        return { success: false, error: error.message };
     }
+}
 
-
-    window.location.replace(
-      'login.html'
-    );
-
-  }
-
-
-  /*
-  ========================================================
-  PUBLIC API
-  ========================================================
-  */
-
-  window.AdinehAuth = {
-
-    getCurrentUser,
-
-    getCurrentProfile,
-
-    requireActiveUser,
-
-    requireOwner,
-
-    logout
-
-  };
-
-
-  /*
-  ========================================================
-  AUTH STATE LISTENER
-  ========================================================
-  */
-
-  client.auth
-    .onAuthStateChange(
-      (
-        event,
-        session
-      ) => {
-
-        console.log(
-          'Auth state:',
-          event
-        );
-
-
-        if (
-          event === 'SIGNED_OUT'
-        ) {
-
-          if (
-            window.location.pathname
-              .endsWith(
-                'index.html'
-              )
-          ) {
-
-            goLogin(
-              'از سامانه خارج شده‌اید.'
-            );
-
-          }
-
-        }
-
-      }
-    );
-
-
-  /*
-  ========================================================
-  START
-  ========================================================
-  */
-
-  checkAccess();
-
-})();
+// دریافت کاربر فعلی
+export async function getUser() {
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        return { success: true, user };
+    } catch (error) {
+        console.error('خطا در دریافت کاربر:', error);
+        return { success: false, error: error.message };
+    }
+}
