@@ -4,7 +4,7 @@
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
 SUPABASE AUTH CLIENT
-نسخه یکپارچه ورود و بازیابی رمز
+GitHub Pages / Client-Side Authentication
 =========================================================
 */
 
@@ -16,12 +16,6 @@ SUPABASE AUTH CLIENT
   const SUPABASE_PUBLISHABLE_KEY =
     'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
 
-
-  /*
-  ========================================================
-  بررسی کتابخانه Supabase
-  ========================================================
-  */
 
   if (
     !window.supabase ||
@@ -39,35 +33,28 @@ SUPABASE AUTH CLIENT
 
 
   /*
-  ========================================================
-  جلوگیری از ساخت چند Client
-  ========================================================
+  ---------------------------------------------------------
+  جلوگیری از ساخت Client دوم
+  ---------------------------------------------------------
   */
 
-  if (
-    window.adinehSupabase
-  ) {
+  if (window.adinehSupabase) {
 
     window.supabaseClient =
       window.adinehSupabase;
 
-    window.ADINEH_SUPABASE_READY =
-      true;
+    window.ADINEH_SUPABASE_READY = true;
 
     return;
   }
 
 
   /*
-  ========================================================
-  ایجاد Client
-  ========================================================
-
-  PKCE برای:
-  - Magic Link
-  - Password Recovery
-  - Sign Up
-  مناسب است.
+  ---------------------------------------------------------
+  GitHub Pages یک Client-Side App است.
+  
+  برای این معماری از implicit flow استفاده می‌کنیم.
+  ---------------------------------------------------------
   */
 
   const client =
@@ -84,7 +71,7 @@ SUPABASE AUTH CLIENT
 
           detectSessionInUrl: true,
 
-          flowType: 'pkce',
+          flowType: 'implicit',
 
           storage:
             window.localStorage,
@@ -98,12 +85,6 @@ SUPABASE AUTH CLIENT
     );
 
 
-  /*
-  ========================================================
-  Global references
-  ========================================================
-  */
-
   window.supabaseClient =
     client;
 
@@ -115,7 +96,7 @@ SUPABASE AUTH CLIENT
 
 
   console.log(
-    'Adineh Supabase Auth initialized: PKCE'
+    'ADINEH SUPABASE AUTH READY'
   );
 
 })();
