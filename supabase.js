@@ -3,129 +3,64 @@
 /*
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
-SUPABASE AUTH CLIENT
+Supabase Client
 =========================================================
 */
 
-(function () {
+const SUPABASE_URL =
+  'https://qxiktabmwwjygsocjcyl.supabase.co';
 
-  const SUPABASE_URL =
-    'https://qxiktabmwwjygsocjcyl.supabase.co';
-
-  const SUPABASE_PUBLISHABLE_KEY =
-    'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
+const SUPABASE_PUBLISHABLE_KEY =
+  'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
 
 
-  /*
-  =======================================================
-  بررسی کتابخانه Supabase
-  =======================================================
-  */
-
-  if (
-    !window.supabase ||
-    typeof window.supabase.createClient !== 'function'
-  ) {
-
-    console.error(
-      'Supabase JavaScript library is not loaded.'
-    );
-
-    window.ADINEH_SUPABASE_READY = false;
-
-    return;
-  }
+if (
+  !window.supabase ||
+  typeof window.supabase.createClient !== 'function'
+) {
+  throw new Error(
+    'Supabase JavaScript library could not be loaded.'
+  );
+}
 
 
-  /*
-  =======================================================
-  جلوگیری از ساخت Client دوم
-  =======================================================
-  */
+/*
+=========================================================
+یک Client واحد برای کل پروژه
+=========================================================
+*/
 
-  if (window.adinehSupabase) {
+const client =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        autoRefreshToken: true,
 
-    window.supabaseClient =
-      window.adinehSupabase;
+        persistSession: true,
 
-    window.ADINEH_SUPABASE_READY =
-      true;
+        /*
+        بسیار مهم:
+        برای لینک Recovery و Magic Link
+        */
+        detectSessionInUrl: true,
 
-    return;
-  }
+        /*
+        ذخیره Session در LocalStorage
+        */
+        storage:
+          window.localStorage,
 
-
-  /*
-  =======================================================
-  ساخت Client اصلی
-  =======================================================
-  */
-
-  const client =
-    window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_PUBLISHABLE_KEY,
-      {
-
-        auth: {
-
-          /*
-           * Session در مرورگر ذخیره شود
-           */
-          persistSession: true,
-
-          /*
-           * Token به صورت خودکار Refresh شود
-           */
-          autoRefreshToken: true,
-
-          /*
-           * لینک‌های Auth از URL خوانده شوند
-           */
-          detectSessionInUrl: true,
-
-          /*
-           * برای GitHub Pages
-           * و لینک‌های قدیمی Supabase
-           */
-          flowType: 'implicit',
-
-          /*
-           * Storage
-           */
-          storage:
-            window.localStorage,
-
-          /*
-           * نام ثابت Session
-           */
-          storageKey:
-            'adineh-supabase-auth'
-
-        }
-
+        storageKey:
+          'adineh-supabase-auth'
       }
-    );
-
-
-  /*
-  =======================================================
-  Global Client
-  =======================================================
-  */
-
-  window.supabaseClient =
-    client;
-
-  window.adinehSupabase =
-    client;
-
-  window.ADINEH_SUPABASE_READY =
-    true;
-
-
-  console.log(
-    'ADINEH SUPABASE AUTH READY'
+    }
   );
 
-})();
+
+window.supabaseClient =
+  client;
+
+window.adinehSupabase =
+  client;
