@@ -3,7 +3,7 @@
 /*
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
-Supabase Client
+SUPABASE CLIENT
 =========================================================
 */
 
@@ -26,41 +26,27 @@ if (
 
 /*
 =========================================================
-یک Client واحد برای کل پروژه
+یک Client واحد
 =========================================================
 */
 
-const client =
+window.adinehSupabase =
   window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY,
     {
       auth: {
-        autoRefreshToken: true,
-
         persistSession: true,
 
-        /*
-        بسیار مهم:
-        برای لینک Recovery و Magic Link
-        */
+        autoRefreshToken: true,
+
         detectSessionInUrl: true,
 
-        /*
-        ذخیره Session در LocalStorage
-        */
-        storage:
-          window.localStorage,
-
-        storageKey:
-          'adineh-supabase-auth'
+        flowType: 'implicit'
       }
     }
   );
 
 
 window.supabaseClient =
-  client;
-
-window.adinehSupabase =
-  client;
+  window.adinehSupabase;
