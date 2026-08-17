@@ -1,55 +1,37 @@
 'use strict';
 
 /*
-  =========================================================
-  ADINEH POULTRY
-  Authentication / Login
-  Stable Version
-  =========================================================
-
-  امکانات:
-  - ورود با Email + Password
-  - ورود با Magic Link
-  - ثبت نام
-  - بازیابی رمز عبور
-  - پردازش صحیح callback لینک ایمیل
-  - جلوگیری از redirect زودهنگام
-  - نمایش خطای واقعی Supabase
-  - هماهنگ با auth.js
-  - هماهنگ با supabase.js
-  =========================================================
+=========================================================
+مرکز تخصصی سلامت طیور آدینه
+LOGIN / REGISTER / MAGIC LINK
+نسخه اصلاح‌شده
+=========================================================
 */
 
 (function () {
 
   /*
-    =======================================================
-    SUPABASE
-    =======================================================
+  ========================================================
+  SUPABASE
+  ========================================================
   */
 
   const supabase =
-    window.adinehSupabase ||
     window.supabaseClient ||
+    window.adinehSupabase ||
     null;
 
 
   /*
-    =======================================================
-    DOM HELPER
-    =======================================================
+  ========================================================
+  DOM
+  ========================================================
   */
 
   const $ =
     id =>
       document.getElementById(id);
 
-
-  /*
-    =======================================================
-    DOM ELEMENTS
-    =======================================================
-  */
 
   const loginForm =
     $('loginForm');
@@ -77,9 +59,9 @@
 
 
   /*
-    =======================================================
-    STATE
-    =======================================================
+  ========================================================
+  STATE
+  ========================================================
   */
 
   let redirecting =
@@ -90,9 +72,9 @@
 
 
   /*
-    =======================================================
-    MESSAGE
-    =======================================================
+  ========================================================
+  MESSAGE
+  ========================================================
   */
 
   function showMessage(
@@ -100,18 +82,11 @@
     type = 'error'
   ) {
 
-    if (!messageEl) {
-      console.warn(
-        'Login message element not found.'
-      );
-
+    if (!messageEl)
       return;
-    }
-
 
     messageEl.textContent =
       text || '';
-
 
     messageEl.className =
       text
@@ -122,9 +97,9 @@
 
 
   /*
-    =======================================================
-    BUSY
-    =======================================================
+  ========================================================
+  BUSY
+  ========================================================
   */
 
   function setBusy(
@@ -132,9 +107,7 @@
   ) {
 
     document
-      .querySelectorAll(
-        'button'
-      )
+      .querySelectorAll('button')
       .forEach(
         button => {
 
@@ -156,20 +129,12 @@
 
 
   /*
-    =======================================================
-    GET LOGIN REDIRECT URL
-    =======================================================
+  ========================================================
+  LOGIN URL
+  ========================================================
   */
 
   function getLoginRedirectUrl() {
-
-    /*
-      login.html در همان پوشه‌ای است که
-      این فایل قرار دارد.
-
-      URL مطلق ساخته می‌شود تا Supabase
-      دقیقاً همان آدرس را دریافت کند.
-    */
 
     return new URL(
       'login.html',
@@ -180,16 +145,15 @@
 
 
   /*
-    =======================================================
-    OPEN APP
-    =======================================================
+  ========================================================
+  OPEN APP
+  ========================================================
   */
 
   function openApp() {
 
-    if (redirecting) {
+    if (redirecting)
       return;
-    }
 
 
     redirecting =
@@ -199,29 +163,17 @@
     setBusy(true);
 
 
-    /*
-      کمی فرصت می‌دهیم Session در
-      localStorage ثبت شود.
-    */
-
-    setTimeout(
-      () => {
-
-        window.location.replace(
-          'index.html'
-        );
-
-      },
-      200
+    window.location.replace(
+      'index.html'
     );
 
   }
 
 
   /*
-    =======================================================
-    SWITCH LOGIN / REGISTER
-    =======================================================
+  ========================================================
+  SWITCH MODE
+  ========================================================
   */
 
   function switchMode(
@@ -250,24 +202,20 @@
 
     if (loginModeBtn) {
 
-      loginModeBtn
-        .classList
-        .toggle(
-          'active',
-          !register
-        );
+      loginModeBtn.classList.toggle(
+        'active',
+        !register
+      );
 
     }
 
 
     if (registerModeBtn) {
 
-      registerModeBtn
-        .classList
-        .toggle(
-          'active',
-          register
-        );
+      registerModeBtn.classList.toggle(
+        'active',
+        register
+      );
 
     }
 
@@ -276,9 +224,7 @@
 
       modeTitle.textContent =
         register
-
           ? 'ایجاد حساب کاربری'
-
           : 'ورود امن به سامانه';
 
     }
@@ -288,9 +234,7 @@
 
       modeText.textContent =
         register
-
           ? 'پس از ثبت‌نام، فعال‌سازی حساب توسط مالک سامانه انجام می‌شود.'
-
           : 'برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.';
 
     }
@@ -302,23 +246,250 @@
 
 
   /*
-    =======================================================
-    PASSWORD LOGIN
-    =======================================================
+  ========================================================
+  GET SESSION
+  ========================================================
+  */
+
+  async function getSession() {
+
+    if (!supabase)
+      return null;
+
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabase.auth.getSession();
+
+
+      if (error) {
+
+        console.error(
+          'getSession error:',
+          error
+        );
+
+        return null;
+
+      }
+
+
+      return data?.session || null;
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'getSession exception:',
+        error
+      );
+
+      return null;
+
+    }
+
+  }
+
+
+  /*
+  ========================================================
+  GET PROFILE
+  ========================================================
+  */
+
+  async function getProfile(
+    user
+  ) {
+
+    if (!user || !supabase)
+      return null;
+
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabase
+          .from('profiles')
+          .select(`
+            id,
+            username,
+            first_name,
+            last_name,
+            phone,
+            company_name,
+            role,
+            status,
+            created_at,
+            updated_at,
+            last_seen_at
+          `)
+          .eq(
+            'id',
+            user.id
+          )
+          .maybeSingle();
+
+
+      if (error) {
+
+        console.error(
+          'Profile query error:',
+          error
+        );
+
+        return {
+          __error: true,
+          error
+        };
+
+      }
+
+
+      return data || null;
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'Profile exception:',
+        error
+      );
+
+      return {
+        __error: true,
+        error
+      };
+
+    }
+
+  }
+
+
+  /*
+  ========================================================
+  CHECK EXISTING SESSION
+  ========================================================
+  */
+
+  async function checkExistingSession() {
+
+    const session =
+      await getSession();
+
+
+    if (!session?.user)
+      return false;
+
+
+    /*
+      Session وجود دارد.
+      اما قبل از index.html باید وضعیت
+      پروفایل بررسی شود.
+    */
+
+    const profile =
+      await getProfile(
+        session.user
+      );
+
+
+    /*
+      خطای واقعی دیتابیس را با
+      "پروفایل وجود ندارد" اشتباه نگیریم.
+    */
+
+    if (
+      profile?.__error
+    ) {
+
+      console.error(
+        'Existing session profile error:',
+        profile.error
+      );
+
+
+      setBusy(false);
+
+
+      showMessage(
+        'ورود انجام شده است، اما بررسی پروفایل کاربر با خطا مواجه شد. لطفاً اتصال سامانه را بررسی کنید.'
+      );
+
+
+      return true;
+
+    }
+
+
+    if (!profile) {
+
+      /*
+        Session معتبر است ولی profile وجود ندارد.
+        در این حالت نباید loop ایجاد شود.
+      */
+
+      setBusy(false);
+
+
+      showMessage(
+        'حساب شما ایجاد شده است، اما پروفایل کاربری برای آن پیدا نشد. لطفاً حساب را در بخش مدیریت فعال کنید.'
+      );
+
+
+      return true;
+
+    }
+
+
+    if (
+      profile.status !== 'active'
+    ) {
+
+      setBusy(false);
+
+
+      showMessage(
+        'حساب شما هنوز فعال نشده است.'
+      );
+
+
+      return true;
+
+    }
+
+
+    openApp();
+
+    return true;
+
+  }
+
+
+  /*
+  ========================================================
+  PASSWORD LOGIN
+  ========================================================
   */
 
   async function login(
     event
   ) {
 
-    if (event) {
+    if (event)
       event.preventDefault();
-    }
 
 
-    if (redirecting) {
+    if (redirecting)
       return;
-    }
 
 
     showMessage('');
@@ -404,9 +575,7 @@
       }
 
 
-      if (
-        !data?.user
-      ) {
+      if (!data?.user) {
 
         setBusy(false);
 
@@ -421,15 +590,66 @@
       }
 
 
-      console.log(
-        'Password login successful:',
-        data.user.id
-      );
-
-
       /*
-        Session توسط Supabase ذخیره شده است.
+        Session ساخته شده است.
+        وضعیت profile را قبل از انتقال
+        بررسی می‌کنیم.
       */
+
+      const profile =
+        await getProfile(
+          data.user
+        );
+
+
+      if (
+        profile?.__error
+      ) {
+
+        setBusy(false);
+
+
+        showMessage(
+          'ورود انجام شد، اما بررسی پروفایل با خطا مواجه شد.'
+        );
+
+
+        return;
+
+      }
+
+
+      if (!profile) {
+
+        setBusy(false);
+
+
+        showMessage(
+          'ورود انجام شد، اما پروفایل این کاربر در سامانه وجود ندارد.'
+        );
+
+
+        return;
+
+      }
+
+
+      if (
+        profile.status !== 'active'
+      ) {
+
+        setBusy(false);
+
+
+        showMessage(
+          'رمز صحیح است، اما حساب شما هنوز فعال نشده است.'
+        );
+
+
+        return;
+
+      }
+
 
       openApp();
 
@@ -457,23 +677,21 @@
 
 
   /*
-    =======================================================
-    REGISTER
-    =======================================================
+  ========================================================
+  REGISTER
+  ========================================================
   */
 
   async function register(
     event
   ) {
 
-    if (event) {
+    if (event)
       event.preventDefault();
-    }
 
 
-    if (redirecting) {
+    if (redirecting)
       return;
-    }
 
 
     showMessage('');
@@ -582,12 +800,6 @@
         getLoginRedirectUrl();
 
 
-      console.log(
-        'Registration redirect:',
-        redirectTo
-      );
-
-
       const {
         data,
         error
@@ -644,9 +856,8 @@
 
 
       /*
-        اگر Supabase Session ساخته باشد،
-        چون حساب هنوز ممکن است نیاز به
-        تأیید مالک داشته باشد، Logout می‌کنیم.
+        اگر Session ایجاد شده باشد،
+        حساب هنوز باید توسط مالک فعال شود.
       */
 
       if (data?.session) {
@@ -658,31 +869,14 @@
 
         }
 
-        catch (signOutError) {
+        catch (error) {
 
           console.error(
             'Registration signOut error:',
-            signOutError
+            error
           );
 
         }
-
-
-        setBusy(false);
-
-
-        showMessage(
-          'ثبت‌نام انجام شد. حساب شما در انتظار تأیید مالک سامانه است.',
-          'success'
-        );
-
-
-        switchMode(
-          'login'
-        );
-
-
-        return;
 
       }
 
@@ -690,14 +884,14 @@
       setBusy(false);
 
 
-      showMessage(
-        'ثبت‌نام انجام شد. ایمیل تأیید را بررسی کنید؛ سپس حساب برای فعال‌سازی به مالک سامانه ارسال می‌شود.',
-        'success'
+      switchMode(
+        'login'
       );
 
 
-      switchMode(
-        'login'
+      showMessage(
+        'ثبت‌نام انجام شد. حساب شما در انتظار تأیید و فعال‌سازی مالک سامانه است.',
+        'success'
       );
 
     }
@@ -724,16 +918,15 @@
 
 
   /*
-    =======================================================
-    MAGIC LINK
-    =======================================================
+  ========================================================
+  MAGIC LINK
+  ========================================================
   */
 
   async function magicLink() {
 
-    if (redirecting) {
+    if (redirecting)
       return;
-    }
 
 
     showMessage('');
@@ -778,12 +971,6 @@
         getLoginRedirectUrl();
 
 
-      console.log(
-        'Magic Link redirect URL:',
-        redirectTo
-      );
-
-
       const {
         data,
         error
@@ -794,11 +981,6 @@
             email,
 
             options: {
-
-              /*
-                برای ورود با لینک ایمیل
-                حساب جدید ایجاد نمی‌کنیم.
-              */
 
               shouldCreateUser:
                 false,
@@ -822,11 +1004,6 @@
         );
 
 
-        /*
-          این بار پیام واقعی Supabase
-          نمایش داده می‌شود.
-        */
-
         showMessage(
           `ارسال لینک ورود انجام نشد: ${
             error.message ||
@@ -841,13 +1018,13 @@
 
 
       console.log(
-        'Magic Link request successful:',
+        'Magic link sent:',
         data
       );
 
 
       showMessage(
-        'لینک ورود به ایمیل شما ارسال شد. ایمیل را باز کنید و روی لینک ورود بزنید.',
+        'لینک ورود به ایمیل شما ارسال شد. پس از باز کردن لینک، منتظر بررسی حساب بمانید.',
         'success'
       );
 
@@ -877,16 +1054,15 @@
 
 
   /*
-    =======================================================
-    PASSWORD RESET
-    =======================================================
+  ========================================================
+  PASSWORD RESET
+  ========================================================
   */
 
   async function resetPassword() {
 
-    if (redirecting) {
+    if (redirecting)
       return;
-    }
 
 
     showMessage('');
@@ -931,12 +1107,6 @@
         getLoginRedirectUrl();
 
 
-      console.log(
-        'Password reset redirect:',
-        redirectTo
-      );
-
-
       const {
         data,
         error
@@ -975,7 +1145,7 @@
 
 
       console.log(
-        'Password reset request successful:',
+        'Password reset request:',
         data
       );
 
@@ -1011,9 +1181,9 @@
 
 
   /*
-    =======================================================
-    CHECK URL AUTH ERROR
-    =======================================================
+  ========================================================
+  URL ERROR
+  ========================================================
   */
 
   function checkUrlError() {
@@ -1034,30 +1204,18 @@
 
 
     const error =
-      search.get(
-        'error'
-      ) ||
-      hash.get(
-        'error'
-      );
+      search.get('error') ||
+      hash.get('error');
 
 
     const errorDescription =
-      search.get(
-        'error_description'
-      ) ||
-      hash.get(
-        'error_description'
-      );
+      search.get('error_description') ||
+      hash.get('error_description');
 
 
     const errorCode =
-      search.get(
-        'error_code'
-      ) ||
-      hash.get(
-        'error_code'
-      );
+      search.get('error_code') ||
+      hash.get('error_code');
 
 
     if (
@@ -1066,7 +1224,7 @@
     ) {
 
       console.error(
-        'Supabase URL authentication error:',
+        'Supabase authentication error:',
         {
           error,
           errorCode,
@@ -1093,9 +1251,9 @@
 
 
   /*
-    =======================================================
-    CHECK CALLBACK
-    =======================================================
+  ========================================================
+  CALLBACK DETECTION
+  ========================================================
   */
 
   function hasAuthCallback() {
@@ -1131,73 +1289,16 @@
 
 
   /*
-    =======================================================
-    GET SESSION
-    =======================================================
-  */
-
-  async function getSession() {
-
-    try {
-
-      const {
-        data,
-        error
-      } =
-        await supabase.auth
-          .getSession();
-
-
-      if (error) {
-
-        console.error(
-          'getSession error:',
-          error
-        );
-
-
-        return null;
-
-      }
-
-
-      return (
-        data?.session ||
-        null
-      );
-
-    }
-
-    catch (error) {
-
-      console.error(
-        'getSession exception:',
-        error
-      );
-
-
-      return null;
-
-    }
-
-  }
-
-
-  /*
-    =======================================================
-    WAIT FOR MAGIC LINK SESSION
-    =======================================================
+  ========================================================
+  WAIT FOR CALLBACK SESSION
+  ========================================================
   */
 
   async function waitForCallbackSession() {
 
-    /*
-      حداکثر حدود ۶ ثانیه صبر می‌کنیم.
-    */
-
     for (
       let attempt = 0;
-      attempt < 20;
+      attempt < 30;
       attempt++
     ) {
 
@@ -1231,16 +1332,15 @@
 
 
   /*
-    =======================================================
-    AUTH STATE LISTENER
-    =======================================================
+  ========================================================
+  AUTH STATE LISTENER
+  ========================================================
   */
 
   function listenForAuthChanges() {
 
-    if (!supabase) {
+    if (!supabase)
       return;
-    }
 
 
     try {
@@ -1261,11 +1361,8 @@
 
 
             /*
-              فقط وقتی Session واقعی ایجاد شد
-              وارد برنامه شو.
-
-              SIGNED_IN ممکن است هنگام callback
-              رخ دهد.
+              اینجا مستقیماً redirect نمی‌کنیم.
+              ابتدا profile باید بررسی شود.
             */
 
             if (
@@ -1273,25 +1370,73 @@
               session?.user
             ) {
 
-              openApp();
+              setTimeout(
+                async () => {
 
-              return;
+                  if (redirecting)
+                    return;
 
-            }
+
+                  const profile =
+                    await getProfile(
+                      session.user
+                    );
 
 
-            /*
-              TOKEN_REFRESHED:
-              Session معتبر است؛
-              هیچ redirect لازم نیست.
-            */
+                  if (
+                    profile?.__error
+                  ) {
 
-            if (
-              event === 'TOKEN_REFRESHED' &&
-              session?.user
-            ) {
+                    setBusy(false);
 
-              return;
+
+                    showMessage(
+                      'ورود انجام شد، اما بررسی پروفایل با خطا مواجه شد.'
+                    );
+
+
+                    return;
+
+                  }
+
+
+                  if (!profile) {
+
+                    setBusy(false);
+
+
+                    showMessage(
+                      'حساب شما وجود دارد، اما پروفایل کاربری برای آن پیدا نشد.'
+                    );
+
+
+                    return;
+
+                  }
+
+
+                  if (
+                    profile.status !== 'active'
+                  ) {
+
+                    setBusy(false);
+
+
+                    showMessage(
+                      'حساب شما هنوز فعال نشده است.'
+                    );
+
+
+                    return;
+
+                  }
+
+
+                  openApp();
+
+                },
+                0
+              );
 
             }
 
@@ -1313,16 +1458,15 @@
 
 
   /*
-    =======================================================
-    BOOT
-    =======================================================
+  ========================================================
+  BOOT
+  ========================================================
   */
 
   async function boot() {
 
-    if (bootFinished) {
+    if (bootFinished)
       return;
-    }
 
 
     bootFinished =
@@ -1344,9 +1488,7 @@
     try {
 
       /*
-        ---------------------------------------------------
-        1. خطای callback
-        ---------------------------------------------------
+        خطای callback
       */
 
       if (
@@ -1361,46 +1503,14 @@
 
 
       /*
-        ---------------------------------------------------
-        2. Session موجود
-        ---------------------------------------------------
-      */
-
-      const existingSession =
-        await getSession();
-
-
-      if (
-        existingSession?.user
-      ) {
-
-        console.log(
-          'Existing session found:',
-          existingSession.user.id
-        );
-
-
-        openApp();
-
-        return;
-
-      }
-
-
-      /*
-        ---------------------------------------------------
-        3. Magic Link callback
-        ---------------------------------------------------
+        اگر callback داریم،
+        ابتدا اجازه می‌دهیم Supabase
+        Session را پردازش کند.
       */
 
       if (
         hasAuthCallback()
       ) {
-
-        console.log(
-          'Authentication callback detected.'
-        );
-
 
         setBusy(true);
 
@@ -1413,10 +1523,59 @@
           callbackSession?.user
         ) {
 
-          console.log(
-            'Magic Link session established:',
-            callbackSession.user.id
-          );
+          const profile =
+            await getProfile(
+              callbackSession.user
+            );
+
+
+          if (
+            profile?.__error
+          ) {
+
+            setBusy(false);
+
+
+            showMessage(
+              'لینک صحیح است، اما بررسی پروفایل کاربر با خطا مواجه شد.'
+            );
+
+
+            return;
+
+          }
+
+
+          if (!profile) {
+
+            setBusy(false);
+
+
+            showMessage(
+              'ورود با لینک انجام شد، اما پروفایل کاربر پیدا نشد.'
+            );
+
+
+            return;
+
+          }
+
+
+          if (
+            profile.status !== 'active'
+          ) {
+
+            setBusy(false);
+
+
+            showMessage(
+              'ورود با لینک انجام شد، اما حساب شما هنوز فعال نشده است.'
+            );
+
+
+            return;
+
+          }
 
 
           openApp();
@@ -1430,7 +1589,7 @@
 
 
         showMessage(
-          'لینک ورود دریافت شد، اما نشست کاربری ایجاد نشد. لطفاً لینک را دوباره باز کنید یا یک لینک جدید درخواست کنید.'
+          'لینک ورود دریافت شد، اما نشست کاربری ایجاد نشد. لطفاً لینک جدید درخواست کنید.'
         );
 
 
@@ -1440,17 +1599,25 @@
 
 
       /*
-        ---------------------------------------------------
-        4. پیام auth.js
-        ---------------------------------------------------
+        Session قبلی
+      */
+
+      const handled =
+        await checkExistingSession();
+
+
+      if (handled)
+        return;
+
+
+      /*
+        پیام auth
       */
 
       const message =
         new URLSearchParams(
           window.location.search
-        ).get(
-          'message'
-        );
+        ).get('message');
 
 
       if (message) {
@@ -1487,63 +1654,59 @@
 
 
   /*
-    =======================================================
-    INITIALIZATION
-    =======================================================
+  ========================================================
+  EVENT BINDING
+  ========================================================
   */
 
   if (loginModeBtn) {
 
-    loginModeBtn
-      .addEventListener(
-        'click',
-        () => {
+    loginModeBtn.addEventListener(
+      'click',
+      () => {
 
-          switchMode(
-            'login'
-          );
+        switchMode(
+          'login'
+        );
 
-        }
-      );
+      }
+    );
 
   }
 
 
   if (registerModeBtn) {
 
-    registerModeBtn
-      .addEventListener(
-        'click',
-        () => {
+    registerModeBtn.addEventListener(
+      'click',
+      () => {
 
-          switchMode(
-            'register'
-          );
+        switchMode(
+          'register'
+        );
 
-        }
-      );
+      }
+    );
 
   }
 
 
   if (loginForm) {
 
-    loginForm
-      .addEventListener(
-        'submit',
-        login
-      );
+    loginForm.addEventListener(
+      'submit',
+      login
+    );
 
   }
 
 
   if (registerForm) {
 
-    registerForm
-      .addEventListener(
-        'submit',
-        register
-      );
+    registerForm.addEventListener(
+      'submit',
+      register
+    );
 
   }
 
@@ -1554,11 +1717,10 @@
 
   if (magicButton) {
 
-    magicButton
-      .addEventListener(
-        'click',
-        magicLink
-      );
+    magicButton.addEventListener(
+      'click',
+      magicLink
+    );
 
   }
 
@@ -1569,17 +1731,18 @@
 
   if (forgotButton) {
 
-    forgotButton
-      .addEventListener(
-        'click',
-        resetPassword
-      );
+    forgotButton.addEventListener(
+      'click',
+      resetPassword
+    );
 
   }
 
 
   /*
-    حالت اولیه صفحه
+  ========================================================
+  INITIAL STATE
+  ========================================================
   */
 
   switchMode(
@@ -1588,18 +1751,17 @@
 
 
   /*
-    بسیار مهم:
-    Listener قبل از boot فعال شود.
+  مهم:
+  Listener قبل از boot
   */
 
   listenForAuthChanges();
 
 
   /*
-    شروع Auth
+  شروع
   */
 
   boot();
-
 
 })();
