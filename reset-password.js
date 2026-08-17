@@ -1,140 +1,496 @@
 'use strict';
 
-const SUPABASE_URL =
-  'https://qxiktabmwwjygsocjcyl.supabase.co';
+/*
+=========================================================
+ ADINEH POULTRY
+ RESET PASSWORD
+=========================================================
+*/
 
-const SUPABASE_KEY =
-  'sb_publishable_sZvkwvD50rkboFtZzTElAQ_bxGDw-Ye';
+(() => {
+
+  /*
+  =======================================================
+  استفاده از همان Client اصلی پروژه
+  =======================================================
+  */
+
+  const supabase =
+    window.adinehSupabase ||
+    window.supabaseClient ||
+    null;
 
 
-const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-        flowType: 'implicit'
-      }
+  /*
+  =======================================================
+  DOM
+  =======================================================
+  */
+
+  const form =
+    document.getElementById(
+      'resetPasswordForm'
+    );
+
+
+  const newPassword =
+    document.getElementById(
+      'newPassword'
+    );
+
+
+  const confirmPassword =
+    document.getElementById(
+      'confirmPassword'
+    );
+
+
+  const saveButton =
+    document.getElementById(
+      'savePasswordBtn'
+    );
+
+
+  const message =
+    document.getElementById(
+      'message'
+    );
+
+
+  const loading =
+    document.getElementById(
+      'loading'
+    );
+
+
+  /*
+  =======================================================
+  STATE
+  =======================================================
+  */
+
+  let recoveryReady =
+    false;
+
+  let processing =
+    false;
+
+
+  /*
+  =======================================================
+  MESSAGE
+  =======================================================
+  */
+
+  function showMessage(
+    text = '',
+    type = 'error'
+  ) {
+
+    if (!message) {
+      return;
     }
-  );
 
 
-const form =
-  document.getElementById(
-    'resetPasswordForm'
-  );
-
-const newPassword =
-  document.getElementById(
-    'newPassword'
-  );
-
-const confirmPassword =
-  document.getElementById(
-    'confirmPassword'
-  );
-
-const saveButton =
-  document.getElementById(
-    'savePasswordBtn'
-  );
-
-const message =
-  document.getElementById(
-    'message'
-  );
-
-const loading =
-  document.getElementById(
-    'loading'
-  );
+    message.textContent =
+      text;
 
 
-function showMessage(
-  text,
-  type = 'error'
-) {
-
-  message.textContent =
-    text;
-
-  message.className =
-    'message show ' + type;
-
-}
+    message.className =
+      'message';
 
 
-function setLoading(
-  state
-) {
+    if (text) {
 
-  saveButton.disabled =
-    state;
+      message.classList.add(
+        'show',
+        type
+      );
 
-  loading.classList.toggle(
-    'show',
+    }
+
+  }
+
+
+  /*
+  =======================================================
+  LOADING
+  =======================================================
+  */
+
+  function setLoading(
     state
-  );
+  ) {
 
-}
-
-
-async function checkRecoverySession() {
-
-  const {
-    data,
-    error
-  } =
-    await supabaseClient.auth
-      .getSession();
+    processing =
+      Boolean(state);
 
 
-  if (error) {
+    if (saveButton) {
 
-    showMessage(
-      'خطا در بررسی لینک بازیابی. لطفاً دوباره درخواست بازیابی رمز کنید.'
-    );
+      saveButton.disabled =
+        processing;
 
-    return false;
-
-  }
+    }
 
 
-  if (!data.session) {
+    if (loading) {
 
-    showMessage(
-      'لینک بازیابی معتبر نیست یا منقضی شده است. لطفاً دوباره درخواست بازیابی رمز کنید.'
-    );
+      loading.classList.toggle(
+        'show',
+        processing
+      );
 
-    form.style.display =
-      'none';
-
-    return false;
+    }
 
   }
 
 
-  return true;
+  /*
+  =======================================================
+  URL
+  =======================================================
+  */
 
-}
+  function getLoginUrl() {
+
+    return new URL(
+      'login.html',
+      window.location.href
+    ).href;
+
+  }
 
 
-form.addEventListener(
-  'submit',
-  async function(event) {
+  /*
+  =======================================================
+  READ SESSION
+  =======================================================
+  */
+
+  async function getCurrentSession() {
+
+    try {
+
+      const {
+        data,
+        error
+      } =
+        await supabase.auth
+          .getSession();
+
+
+      if (error) {
+
+        console.error(
+          'GET SESSION ERROR:',
+          error
+        );
+
+
+        return null;
+
+      }
+
+
+      return data?.session ||
+        null;
+
+    }
+
+    catch (error) {
+
+      console.error(
+        'GET SESSION EXCEPTION:',
+        error
+      );
+
+
+      return null;
+
+    }
+
+  }
+
+
+  /*
+  =======================================================
+  INITIALIZE RECOVERY
+  =======================================================
+  */
+
+  async function initializeRecovery() {
+
+    if (!supabase) {
+
+      showMessage(
+        'اتصال به Supabase برقرار نشد. صفحه را دوباره باز کنید.'
+      );
+
+
+      if (form) {
+
+        form.style.display =
+          'none';
+
+      }
+
+
+      return;
+
+    }
+
+
+    /*
+     * Listener باید قبل از getSession فعال شود.
+     */
+
+    supabase.auth
+      .onAuthStateChange(
+        async (
+          event,
+          session
+        ) => {
+
+          console.log(
+            'RESET AUTH EVENT:',
+            event
+          );
+
+
+          /*
+           * Supabase Recovery
+           */
+
+          if (
+            event ===
+            'PASSWORD_RECOVERY'
+          ) {
+
+            recoveryReady =
+              Boolean(
+                session
+              );
+
+
+            if (recoveryReady) {
+
+              showMessage(
+                'لینک بازیابی معتبر است. رمز عبور جدید خود را وارد کنید.',
+                'success'
+              );
+
+
+              if (form) {
+
+                form.style.display =
+                  '';
+
+              }
+
+            }
+
+
+            return;
+
+          }
+
+
+          /*
+           * اگر لینک Recovery باعث SIGNED_IN شد
+           * نیز Session را قبول کن.
+           */
+
+          if (
+            event ===
+            'SIGNED_IN' &&
+            session
+          ) {
+
+            recoveryReady =
+              true;
+
+
+            showMessage(
+              'لینک بازیابی معتبر است. رمز عبور جدید خود را وارد کنید.',
+              'success'
+            );
+
+
+            if (form) {
+
+              form.style.display =
+                '';
+
+            }
+
+          }
+
+        }
+      );
+
+
+    /*
+     * Session فعلی را بگیر
+     */
+
+    const session =
+      await getCurrentSession();
+
+
+    if (session) {
+
+      recoveryReady =
+        true;
+
+
+      showMessage(
+        'لینک بازیابی معتبر است. رمز عبور جدید خود را وارد کنید.',
+        'success'
+      );
+
+
+      return;
+
+    }
+
+
+    /*
+     * ممکن است Supabase هنوز URL را پردازش نکرده باشد.
+     *
+     * کمی صبر می‌کنیم.
+     */
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          1200
+        )
+    );
+
+
+    const secondSession =
+      await getCurrentSession();
+
+
+    if (secondSession) {
+
+      recoveryReady =
+        true;
+
+
+      showMessage(
+        'لینک بازیابی معتبر است. رمز عبور جدید خود را وارد کنید.',
+        'success'
+      );
+
+
+      return;
+
+    }
+
+
+    /*
+     * هیچ Sessionای پیدا نشد.
+     */
+
+    recoveryReady =
+      false;
+
+
+    if (form) {
+
+      form.style.display =
+        'none';
+
+    }
+
+
+    showMessage(
+      'لینک بازیابی رمز عبور معتبر نیست یا منقضی شده است. لطفاً از صفحه ورود دوباره گزینه «فراموشی رمز عبور» را بزنید.'
+    );
+
+  }
+
+
+  /*
+  =======================================================
+  UPDATE PASSWORD
+  =======================================================
+  */
+
+  async function updatePassword(
+    event
+  ) {
 
     event.preventDefault();
 
+
+    if (processing) {
+
+      return;
+
+    }
+
+
     showMessage('');
 
+
+    /*
+     * Session Check
+     */
+
+    if (!recoveryReady) {
+
+      const session =
+        await getCurrentSession();
+
+
+      if (!session) {
+
+        showMessage(
+          'جلسه بازیابی رمز عبور معتبر نیست. لطفاً دوباره لینک بازیابی دریافت کنید.'
+        );
+
+
+        return;
+
+      }
+
+
+      recoveryReady =
+        true;
+
+    }
+
+
     const password =
-      newPassword.value;
+      String(
+        newPassword?.value || ''
+      );
+
 
     const confirmation =
-      confirmPassword.value;
+      String(
+        confirmPassword?.value || ''
+      );
+
+
+    /*
+     * Password validation
+     */
+
+    if (!password) {
+
+      showMessage(
+        'رمز عبور جدید را وارد کنید.'
+      );
+
+
+      return;
+
+    }
 
 
     if (password.length < 8) {
@@ -143,16 +499,21 @@ form.addEventListener(
         'رمز عبور باید حداقل ۸ کاراکتر باشد.'
       );
 
+
       return;
 
     }
 
 
-    if (password !== confirmation) {
+    if (
+      password !==
+      confirmation
+    ) {
 
       showMessage(
         'رمز عبور و تکرار آن یکسان نیست.'
       );
+
 
       return;
 
@@ -164,26 +525,42 @@ form.addEventListener(
 
     try {
 
-      const validSession =
-        await checkRecoverySession();
+      /*
+       * آخرین بررسی Session
+       */
+
+      const session =
+        await getCurrentSession();
 
 
-      if (!validSession) {
+      if (!session) {
 
         setLoading(false);
+
+
+        showMessage(
+          'جلسه بازیابی رمز عبور منقضی شده است. دوباره درخواست بازیابی کنید.'
+        );
+
 
         return;
 
       }
 
 
+      /*
+       * تغییر رمز
+       */
+
       const {
         data,
         error
       } =
-        await supabaseClient.auth
+        await supabase.auth
           .updateUser({
-            password: password
+
+            password
+
           });
 
 
@@ -194,12 +571,15 @@ form.addEventListener(
           error
         );
 
+
+        setLoading(false);
+
+
         showMessage(
           error.message ||
           'تغییر رمز عبور انجام نشد.'
         );
 
-        setLoading(false);
 
         return;
 
@@ -208,51 +588,115 @@ form.addEventListener(
 
       if (!data?.user) {
 
+        setLoading(false);
+
+
         showMessage(
           'تغییر رمز عبور تأیید نشد.'
         );
 
-        setLoading(false);
 
         return;
 
       }
 
 
+      /*
+       * موفق
+       */
+
       showMessage(
-        'رمز عبور با موفقیت تغییر کرد. در حال ورود به سامانه...',
+        'رمز عبور با موفقیت تغییر کرد. در حال انتقال به صفحه ورود...',
         'success'
       );
 
 
-      form.style.display =
-        'none';
+      if (form) {
 
+        form.style.display =
+          'none';
+
+      }
+
+
+      setLoading(false);
+
+
+      /*
+       * Session بازیابی را ببند.
+       * کاربر بعداً با رمز جدید وارد می‌شود.
+       */
 
       setTimeout(
-        function() {
+        async () => {
 
-          window.location.href =
-            'index.html';
+          try {
+
+            await supabase.auth
+              .signOut();
+
+          }
+
+          catch (_) {}
+
+
+          window.location.replace(
+            getLoginUrl() +
+            '?message=' +
+            encodeURIComponent(
+              'رمز عبور با موفقیت تغییر کرد. اکنون با رمز جدید وارد شوید.'
+            )
+          );
 
         },
         1500
       );
 
+    }
 
-    } catch (error) {
+    catch (error) {
 
       console.error(
+        'UPDATE PASSWORD EXCEPTION:',
         error
       );
 
-      showMessage(
-        'خطایی هنگام تغییر رمز عبور رخ داد. دوباره تلاش کنید.'
-      );
 
       setLoading(false);
+
+
+      showMessage(
+        error?.message ||
+        'خطایی هنگام تغییر رمز عبور رخ داد. دوباره تلاش کنید.'
+      );
 
     }
 
   }
-);
+
+
+  /*
+  =======================================================
+  EVENT
+  =======================================================
+  */
+
+  if (form) {
+
+    form.addEventListener(
+      'submit',
+      updatePassword
+    );
+
+  }
+
+
+  /*
+  =======================================================
+  START
+  =======================================================
+  */
+
+  initializeRecovery();
+
+})();
