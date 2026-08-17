@@ -1,119 +1,198 @@
 'use strict';
 
+/*
+=========================================================
+ADINEH POULTRY
+PROFESSIONAL SUPABASE AUTH SYSTEM
 
-/* =========================================================
-   ADINEH POULTRY - AUTH SYSTEM
-   Supabase Auth / PKCE / Password Recovery
-   ========================================================= */
+Features:
+- Email / Password Login
+- Signup
+- Magic Link
+- Forgot Password
+- Password Recovery
+- Session Detection
+- Session Persistence
+- Safe Redirect
+- Profile Validation
+=========================================================
+*/
 
 (() => {
 
-  const supabase = window.adinehSupabase;
+  const supabase =
+    window.adinehSupabase;
+
 
   if (!supabase) {
-    console.error('Supabase client not found.');
+
+    console.error(
+      'ADINEH: Supabase client not available.'
+    );
+
     return;
   }
 
-  /* =======================================================
+
+  /* =====================================================
      DOM
-     ======================================================= */
+  ===================================================== */
 
-  const loginForm = document.getElementById('loginForm');
-  const registerForm = document.getElementById('registerForm');
-  const resetForm = document.getElementById('resetForm');
+  const loginForm =
+    document.getElementById('loginForm');
 
-  const loginModeBtn = document.getElementById('loginModeBtn');
-  const registerModeBtn = document.getElementById('registerModeBtn');
+  const registerForm =
+    document.getElementById('registerForm');
 
-  const magicLinkBtn = document.getElementById('magicLinkBtn');
-  const forgotBtn = document.getElementById('forgotBtn');
-  const backToLoginBtn = document.getElementById('backToLoginBtn');
+  const resetForm =
+    document.getElementById('resetForm');
 
-  const messageEl = document.getElementById('message');
-  const loadingEl = document.getElementById('loading');
+  const loginModeBtn =
+    document.getElementById('loginModeBtn');
 
-  const modeTitle = document.getElementById('modeTitle');
-  const modeText = document.getElementById('modeText');
-  const modeSwitch = document.getElementById('modeSwitch');
+  const registerModeBtn =
+    document.getElementById('registerModeBtn');
+
+  const magicLinkBtn =
+    document.getElementById('magicLinkBtn');
+
+  const forgotBtn =
+    document.getElementById('forgotBtn');
+
+  const backToLoginBtn =
+    document.getElementById('backToLoginBtn');
+
+  const messageEl =
+    document.getElementById('message');
+
+  const loadingEl =
+    document.getElementById('loading');
+
+  const modeTitle =
+    document.getElementById('modeTitle');
+
+  const modeText =
+    document.getElementById('modeText');
+
+  const modeSwitch =
+    document.getElementById('modeSwitch');
 
 
-  /* =======================================================
+  /* =====================================================
      STATE
-     ======================================================= */
+  ===================================================== */
 
   let busy = false;
+
   let recoveryMode = false;
+
   let redirecting = false;
 
 
-  /* =======================================================
-     STORAGE KEYS
-     ======================================================= */
-
-  const AUTH_INTENT = 'adineh_auth_intent';
-  const RECOVERY_INTENT = 'recovery';
-
-  const INTENT_TTL = 30 * 60 * 1000;
-
-
-  /* =======================================================
+  /* =====================================================
      HELPERS
-     ======================================================= */
+  ===================================================== */
 
-  function emailValue(id) {
-    return String(
-      document.getElementById(id)?.value || ''
-    ).trim().toLowerCase();
-  }
-
-
-  function showMessage(text = '', type = 'error') {
+  function showMessage(
+    text = '',
+    type = 'error'
+  ) {
 
     if (!messageEl) return;
 
-    messageEl.textContent = text;
+    messageEl.textContent =
+      text;
 
-    messageEl.className = 'login-message';
+    messageEl.className =
+      'login-message';
 
     if (text) {
-      messageEl.classList.add(type);
+
+      messageEl.classList.add(
+        type
+      );
+
     }
+
   }
 
 
-  function setBusy(value) {
+  function setBusy(
+    value
+  ) {
 
-    busy = Boolean(value);
+    busy =
+      Boolean(value);
 
     document
-      .querySelectorAll('button')
-      .forEach(button => {
-        button.disabled = busy;
-      });
+      .querySelectorAll(
+        'button'
+      )
+      .forEach(
+        button => {
+
+          button.disabled =
+            busy;
+
+        }
+      );
 
     if (loadingEl) {
-      loadingEl.hidden = !busy;
-      loadingEl.style.display = busy ? '' : 'none';
+
+      loadingEl.hidden =
+        !busy;
+
+      loadingEl.style.display =
+        busy
+          ? ''
+          : 'none';
+
     }
-  }
-
-
-  function validEmail(email) {
-
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   }
 
 
-  function validPassword(password) {
+  function getEmail(
+    id
+  ) {
+
+    return String(
+      document
+        .getElementById(id)
+        ?.value || ''
+    )
+      .trim()
+      .toLowerCase();
+
+  }
+
+
+  function validEmail(
+    email
+  ) {
+
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      .test(email);
+
+  }
+
+
+  function validPassword(
+    password
+  ) {
 
     if (!password) {
+
       return 'رمز عبور را وارد کنید.';
+
     }
 
-    if (password.length < 8) {
+    if (
+      password.length < 8
+    ) {
+
       return 'رمز عبور باید حداقل ۸ کاراکتر باشد.';
+
     }
 
     return '';
@@ -121,79 +200,7 @@
   }
 
 
-  /* =======================================================
-     AUTH INTENT
-     ======================================================= */
-
-  function setIntent(value) {
-
-    try {
-
-      localStorage.setItem(
-        AUTH_INTENT,
-        JSON.stringify({
-          value,
-          time: Date.now()
-        })
-      );
-
-    } catch (e) {
-      console.warn('Cannot save auth intent.', e);
-    }
-
-  }
-
-
-  function getIntent() {
-
-    try {
-
-      const raw =
-        localStorage.getItem(AUTH_INTENT);
-
-      if (!raw) return null;
-
-      const data = JSON.parse(raw);
-
-      if (!data?.time || !data?.value) {
-        return null;
-      }
-
-      if (
-        Date.now() - data.time >
-        INTENT_TTL
-      ) {
-        clearIntent();
-        return null;
-      }
-
-      return data.value;
-
-    } catch (e) {
-
-      return null;
-
-    }
-
-  }
-
-
-  function clearIntent() {
-
-    try {
-      localStorage.removeItem(AUTH_INTENT);
-    } catch (e) {
-      console.warn(e);
-    }
-
-  }
-
-
-  /* =======================================================
-     URL
-     ======================================================= */
-
-  function currentLoginUrl() {
+  function loginUrl() {
 
     return new URL(
       'login.html',
@@ -203,31 +210,72 @@
   }
 
 
-  function hasCodeInUrl() {
+  /* =====================================================
+     URL / CALLBACK DETECTION
+  ===================================================== */
 
-    return new URL(
-      window.location.href
-    ).searchParams.has('code');
+  function getUrlData() {
+
+    const url =
+      new URL(
+        window.location.href
+      );
+
+    const query =
+      Object.fromEntries(
+        url.searchParams.entries()
+      );
+
+    const hashText =
+      url.hash.startsWith('#')
+        ? url.hash.substring(1)
+        : url.hash;
+
+    const hash =
+      new URLSearchParams(
+        hashText
+      );
+
+    return {
+
+      query,
+
+      hash,
+
+      hasRecovery:
+        query.type === 'recovery' ||
+        hash.get('type') === 'recovery',
+
+      hasAccessToken:
+        Boolean(
+          hash.get(
+            'access_token'
+          )
+        ),
+
+      hasError:
+        Boolean(
+          query.error ||
+          hash.get('error')
+        )
+
+    };
 
   }
 
 
-  function cleanCodeFromUrl() {
+  function cleanAuthUrl() {
 
     try {
 
       const url =
-        new URL(window.location.href);
+        new URL(
+          window.location.href
+        );
 
-      url.searchParams.delete('code');
+      url.search = '';
 
-      url.searchParams.delete('type');
-
-      url.searchParams.delete('error');
-
-      url.searchParams.delete('error_code');
-
-      url.searchParams.delete('error_description');
+      url.hash = '';
 
       window.history.replaceState(
         {},
@@ -235,57 +283,95 @@
         url.pathname
       );
 
-    } catch (e) {
-      console.warn(e);
+    } catch (error) {
+
+      console.warn(
+        'URL cleanup failed:',
+        error
+      );
+
     }
 
   }
 
 
-  /* =======================================================
-     FORM MODES
-     ======================================================= */
+  /* =====================================================
+     FORM CONTROL
+  ===================================================== */
 
   function showLogin() {
 
-    recoveryMode = false;
+    recoveryMode =
+      false;
 
     if (loginForm) {
-      loginForm.hidden = false;
-      loginForm.style.display = '';
+
+      loginForm.hidden =
+        false;
+
+      loginForm.style.display =
+        '';
+
     }
 
     if (registerForm) {
-      registerForm.hidden = true;
-      registerForm.style.display = 'none';
+
+      registerForm.hidden =
+        true;
+
+      registerForm.style.display =
+        'none';
+
     }
 
     if (resetForm) {
-      resetForm.hidden = true;
-      resetForm.style.display = 'none';
+
+      resetForm.hidden =
+        true;
+
+      resetForm.style.display =
+        'none';
+
     }
 
     if (modeSwitch) {
-      modeSwitch.hidden = false;
-      modeSwitch.style.display = '';
+
+      modeSwitch.hidden =
+        false;
+
+      modeSwitch.style.display =
+        '';
+
     }
 
     if (modeTitle) {
+
       modeTitle.textContent =
         'ورود امن به سامانه';
+
     }
 
     if (modeText) {
+
       modeText.textContent =
         'برای ورود از ایمیل و رمز عبور حساب خود استفاده کنید.';
+
     }
 
     if (loginModeBtn) {
-      loginModeBtn.classList.add('active');
+
+      loginModeBtn.classList.add(
+        'active'
+      );
+
     }
 
     if (registerModeBtn) {
-      registerModeBtn.classList.remove('active');
+
+      registerModeBtn.classList.remove(
+        'active'
+      );
+
     }
 
   }
@@ -293,44 +379,78 @@
 
   function showRegister() {
 
-    if (recoveryMode) return;
+    if (recoveryMode) {
+      return;
+    }
 
     if (loginForm) {
-      loginForm.hidden = true;
-      loginForm.style.display = 'none';
+
+      loginForm.hidden =
+        true;
+
+      loginForm.style.display =
+        'none';
+
     }
 
     if (registerForm) {
-      registerForm.hidden = false;
-      registerForm.style.display = '';
+
+      registerForm.hidden =
+        false;
+
+      registerForm.style.display =
+        '';
+
     }
 
     if (resetForm) {
-      resetForm.hidden = true;
-      resetForm.style.display = 'none';
+
+      resetForm.hidden =
+        true;
+
+      resetForm.style.display =
+        'none';
+
     }
 
     if (modeSwitch) {
-      modeSwitch.hidden = false;
-      modeSwitch.style.display = '';
+
+      modeSwitch.hidden =
+        false;
+
+      modeSwitch.style.display =
+        '';
+
     }
 
     if (modeTitle) {
+
       modeTitle.textContent =
         'ایجاد حساب کاربری';
+
     }
 
     if (modeText) {
+
       modeText.textContent =
         'اطلاعات خود را برای ایجاد حساب وارد کنید.';
+
     }
 
     if (loginModeBtn) {
-      loginModeBtn.classList.remove('active');
+
+      loginModeBtn.classList.remove(
+        'active'
+      );
+
     }
 
     if (registerModeBtn) {
-      registerModeBtn.classList.add('active');
+
+      registerModeBtn.classList.add(
+        'active'
+      );
+
     }
 
     showMessage('');
@@ -340,67 +460,101 @@
 
   function showRecovery() {
 
-    recoveryMode = true;
+    recoveryMode =
+      true;
 
-    /*
-      در Recovery هیچ فرم دیگری نباید دیده شود.
-    */
+    redirecting =
+      false;
 
     if (loginForm) {
-      loginForm.hidden = true;
-      loginForm.style.display = 'none';
+
+      loginForm.hidden =
+        true;
+
+      loginForm.style.display =
+        'none';
+
     }
 
     if (registerForm) {
-      registerForm.hidden = true;
-      registerForm.style.display = 'none';
+
+      registerForm.hidden =
+        true;
+
+      registerForm.style.display =
+        'none';
+
     }
 
     if (resetForm) {
-      resetForm.hidden = false;
-      resetForm.style.display = '';
+
+      resetForm.hidden =
+        false;
+
+      resetForm.style.display =
+        '';
+
     }
 
     if (modeSwitch) {
-      modeSwitch.hidden = true;
-      modeSwitch.style.display = 'none';
+
+      modeSwitch.hidden =
+        true;
+
+      modeSwitch.style.display =
+        'none';
+
     }
 
     if (modeTitle) {
+
       modeTitle.textContent =
         'تعیین رمز عبور جدید';
+
     }
 
     if (modeText) {
+
       modeText.textContent =
-        'رمز عبور جدید خود را وارد کنید.';
+        'رمز عبور جدید خود را انتخاب کنید.';
+
     }
 
     showMessage(
-      'لینک بازیابی معتبر است. رمز جدید خود را تعیین کنید.',
+      'هویت شما تأیید شد. رمز عبور جدید را وارد کنید.',
       'success'
     );
 
     setBusy(false);
 
-    setTimeout(() => {
+    setTimeout(
+      () => {
 
-      document
-        .getElementById('resetPassword')
-        ?.focus();
+        document
+          .getElementById(
+            'resetPassword'
+          )
+          ?.focus();
 
-    }, 100);
+      },
+      150
+    );
 
   }
 
 
-  /* =======================================================
+  /* =====================================================
      PROFILE
-     ======================================================= */
+  ===================================================== */
 
-  async function getProfile(userId) {
+  async function getProfile(
+    userId
+  ) {
 
-    const { data, error } =
+    const {
+      data,
+      error
+    } =
       await supabase
         .from('profiles')
         .select(`
@@ -413,8 +567,12 @@
           role,
           status
         `)
-        .eq('id', userId)
+        .eq(
+          'id',
+          userId
+        )
         .maybeSingle();
+
 
     if (error) {
 
@@ -432,86 +590,98 @@
   }
 
 
-  /* =======================================================
-     REDIRECT AFTER NORMAL LOGIN
-     ======================================================= */
+  /* =====================================================
+     GO TO APPLICATION
+  ===================================================== */
 
-  async function continueToApp(user) {
+  async function goToApplication(
+    user
+  ) {
 
     if (!user) {
+
       setBusy(false);
+
       return;
+
     }
 
-    /*
-      Recovery هرگز از این مسیر Redirect نمی‌شود.
-    */
 
     if (recoveryMode) {
-      return;
-    }
 
-    if (
-      getIntent() === RECOVERY_INTENT
-    ) {
-
-      showRecovery();
       return;
 
     }
+
 
     if (redirecting) {
+
       return;
+
     }
 
+
     const profile =
-      await getProfile(user.id);
+      await getProfile(
+        user.id
+      );
+
 
     if (!profile) {
 
-      await supabase.auth.signOut();
+      await supabase.auth
+        .signOut();
 
       setBusy(false);
 
       showMessage(
-        'حساب احراز شد اما پروفایل کاربری شما در سامانه وجود ندارد.'
+        'ورود احراز شد اما پروفایل کاربری شما در سامانه پیدا نشد.'
       );
 
       return;
 
     }
 
+
     if (
-      profile.status !== 'active'
+      profile.status !==
+      'active'
     ) {
 
-      await supabase.auth.signOut();
+      await supabase.auth
+        .signOut();
 
       setBusy(false);
 
       const messages = {
+
         pending:
           'حساب شما هنوز توسط مالک سامانه تأیید نشده است.',
+
         suspended:
           'دسترسی حساب شما متوقف شده است.',
+
         disabled:
           'حساب شما غیرفعال شده است.'
+
       };
 
       showMessage(
-        messages[profile.status] ||
-        'دسترسی حساب شما فعال نیست.'
+        messages[
+          profile.status
+        ] ||
+        'دسترسی این حساب فعال نیست.'
       );
 
       return;
 
     }
 
-    redirecting = true;
 
-    clearIntent();
+    redirecting =
+      true;
 
-    cleanCodeFromUrl();
+    cleanAuthUrl();
 
     window.location.replace(
       'index.html'
@@ -520,46 +690,77 @@
   }
 
 
-  /* =======================================================
-     NORMAL LOGIN
-     ======================================================= */
+  /* =====================================================
+     EMAIL / PASSWORD LOGIN
+  ===================================================== */
 
-  async function login(event) {
+  async function login(
+    event
+  ) {
 
     event.preventDefault();
 
-    if (busy || recoveryMode) {
+    if (
+      busy ||
+      recoveryMode
+    ) {
+
       return;
+
     }
 
     showMessage('');
 
     const email =
-      emailValue('loginEmail');
+      getEmail(
+        'loginEmail'
+      );
 
     const password =
-      document.getElementById(
-        'loginPassword'
-      )?.value || '';
+      document
+        .getElementById(
+          'loginPassword'
+        )
+        ?.value || '';
+
 
     if (!email) {
-      showMessage('ایمیل را وارد کنید.');
+
+      showMessage(
+        'ایمیل را وارد کنید.'
+      );
+
       return;
+
     }
 
-    if (!validEmail(email)) {
-      showMessage('فرمت ایمیل صحیح نیست.');
+
+    if (
+      !validEmail(email)
+    ) {
+
+      showMessage(
+        'فرمت ایمیل صحیح نیست.'
+      );
+
       return;
+
     }
+
 
     if (!password) {
-      showMessage('رمز عبور را وارد کنید.');
+
+      showMessage(
+        'رمز عبور را وارد کنید.'
+      );
+
       return;
+
     }
+
 
     setBusy(true);
 
-    clearIntent();
 
     try {
 
@@ -569,47 +770,36 @@
       } =
         await supabase.auth
           .signInWithPassword({
+
             email,
+
             password
+
           });
+
 
       if (error) {
 
         console.error(
-          'SUPABASE LOGIN ERROR:',
+          'LOGIN:',
           error
         );
 
         setBusy(false);
 
-        /*
-          پیام واقعی‌تر برای کاربر
-        */
-
-        if (
-          error.code ===
-          'invalid_credentials'
-        ) {
-
-          showMessage(
-            'ایمیل یا رمز عبور صحیح نیست.'
-          );
-
-        } else {
-
-          showMessage(
-            error.message ||
-            'ورود انجام نشد.'
-          );
-
-        }
+        showMessage(
+          'ایمیل یا رمز عبور صحیح نیست.'
+        );
 
         return;
+
       }
 
-      await continueToApp(
+
+      await goToApplication(
         data.user
       );
+
 
     } catch (error) {
 
@@ -621,8 +811,7 @@
       setBusy(false);
 
       showMessage(
-        error.message ||
-        'خطا هنگام ورود به سامانه.'
+        'خطایی هنگام ورود رخ داد. دوباره تلاش کنید.'
       );
 
     }
@@ -630,20 +819,30 @@
   }
 
 
-  /* =======================================================
-     PASSWORD RECOVERY REQUEST
-     ======================================================= */
+  /* =====================================================
+     FORGOT PASSWORD
+  ===================================================== */
 
-  async function requestPasswordReset() {
+  async function forgotPassword() {
 
-    if (busy || recoveryMode) {
+    if (
+      busy ||
+      recoveryMode
+    ) {
+
       return;
+
     }
+
 
     showMessage('');
 
+
     const email =
-      emailValue('loginEmail');
+      getEmail(
+        'loginEmail'
+      );
+
 
     if (!email) {
 
@@ -652,31 +851,31 @@
       );
 
       document
-        .getElementById('loginEmail')
+        .getElementById(
+          'loginEmail'
+        )
         ?.focus();
 
       return;
+
     }
 
-    if (!validEmail(email)) {
+
+    if (
+      !validEmail(email)
+    ) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
       return;
+
     }
+
 
     setBusy(true);
 
-    /*
-      قبل از ارسال لینک،
-      نوع Callback را ذخیره می‌کنیم.
-    */
-
-    setIntent(
-      RECOVERY_INTENT
-    );
 
     try {
 
@@ -688,28 +887,28 @@
             email,
             {
               redirectTo:
-                currentLoginUrl()
+                loginUrl()
             }
           );
 
+
       if (error) {
 
-        clearIntent();
-
         console.error(
-          'RESET REQUEST ERROR:',
+          'PASSWORD RESET:',
           error
         );
 
         setBusy(false);
 
         showMessage(
-          error.message ||
           'ارسال لینک بازیابی انجام نشد.'
         );
 
         return;
+
       }
+
 
       setBusy(false);
 
@@ -718,17 +917,17 @@
         'success'
       );
 
+
     } catch (error) {
 
-      clearIntent();
+      console.error(
+        error
+      );
 
       setBusy(false);
 
-      console.error(error);
-
       showMessage(
-        error.message ||
-        'خطا هنگام ارسال لینک بازیابی.'
+        'خطایی هنگام ارسال لینک بازیابی رخ داد.'
       );
 
     }
@@ -736,39 +935,48 @@
   }
 
 
-  /* =======================================================
-     PASSWORD UPDATE
-     ======================================================= */
+  /* =====================================================
+     UPDATE PASSWORD
+  ===================================================== */
 
-  async function updatePassword(event) {
+  async function updatePassword(
+    event
+  ) {
 
     event.preventDefault();
 
-    if (busy) {
-      return;
-    }
 
-    if (!recoveryMode) {
-
-      showMessage(
-        'جلسه بازیابی رمز معتبر نیست. دوباره درخواست بازیابی کنید.'
-      );
+    if (
+      busy ||
+      !recoveryMode
+    ) {
 
       return;
+
     }
+
 
     const password =
-      document.getElementById(
-        'resetPassword'
-      )?.value || '';
+      document
+        .getElementById(
+          'resetPassword'
+        )
+        ?.value || '';
 
-    const confirm =
-      document.getElementById(
-        'resetPasswordConfirm'
-      )?.value || '';
+
+    const confirmation =
+      document
+        .getElementById(
+          'resetPasswordConfirm'
+        )
+        ?.value || '';
+
 
     const passwordError =
-      validPassword(password);
+      validPassword(
+        password
+      );
+
 
     if (passwordError) {
 
@@ -777,25 +985,28 @@
       );
 
       return;
+
     }
 
-    if (password !== confirm) {
+
+    if (
+      password !==
+      confirmation
+    ) {
 
       showMessage(
         'تکرار رمز عبور یکسان نیست.'
       );
 
       return;
+
     }
+
 
     setBusy(true);
 
-    try {
 
-      /*
-        این دقیقاً API رسمی Supabase
-        برای تغییر رمز کاربر احراز‌شده است.
-      */
+    try {
 
       const {
         data,
@@ -803,13 +1014,16 @@
       } =
         await supabase.auth
           .updateUser({
+
             password
+
           });
+
 
       if (error) {
 
         console.error(
-          'UPDATE PASSWORD ERROR:',
+          'UPDATE PASSWORD:',
           error
         );
 
@@ -821,48 +1035,56 @@
         );
 
         return;
+
       }
+
 
       if (!data?.user) {
 
         setBusy(false);
 
         showMessage(
-          'رمز تغییر نکرد. لطفاً دوباره تلاش کنید.'
+          'تغییر رمز عبور تأیید نشد.'
         );
 
         return;
+
       }
 
-      /*
-        رمز با موفقیت تغییر کرد.
-      */
 
-      recoveryMode = false;
+      recoveryMode =
+        false;
 
-      clearIntent();
+      cleanAuthUrl();
 
       showMessage(
-        'رمز عبور با موفقیت تغییر کرد. در حال ورود…',
+        'رمز عبور با موفقیت تغییر کرد.',
         'success'
       );
 
-      await continueToApp(
-        data.user
+
+      setTimeout(
+        async () => {
+
+          await goToApplication(
+            data.user
+          );
+
+        },
+        700
       );
+
 
     } catch (error) {
 
       console.error(
-        'UPDATE PASSWORD EXCEPTION:',
         error
       );
 
       setBusy(false);
 
       showMessage(
-        error.message ||
-        'خطا هنگام تغییر رمز عبور.'
+        'خطایی هنگام تغییر رمز عبور رخ داد.'
       );
 
     }
@@ -870,124 +1092,9 @@
   }
 
 
-  /* =======================================================
-     AUTH STATE CHANGE
-     ======================================================= */
-
-  function setupAuthListener() {
-
-    supabase.auth.onAuthStateChange(
-      (event, session) => {
-
-        console.log(
-          'ADINEH AUTH EVENT:',
-          event
-        );
-
-        /*
-          طبق مستندات Supabase:
-          PASSWORD_RECOVERY رویداد اصلی
-          برای نمایش صفحه تعیین رمز است.
-        */
-
-        if (
-          event ===
-          'PASSWORD_RECOVERY'
-        ) {
-
-          setIntent(
-            RECOVERY_INTENT
-          );
-
-          showRecovery();
-
-          return;
-        }
-
-
-        /*
-          اگر Session مربوط به Recovery است،
-          SIGNED_IN نباید کاربر را به index.html ببرد.
-        */
-
-        if (
-          event === 'SIGNED_IN' &&
-          (
-            recoveryMode ||
-            getIntent() === RECOVERY_INTENT
-          )
-        ) {
-
-          showRecovery();
-
-          return;
-        }
-
-
-        /*
-          Magic Link یا ورود معمولی.
-        */
-
-        if (
-          event === 'SIGNED_IN'
-        ) {
-
-          if (
-            session?.user &&
-            !recoveryMode
-          ) {
-
-            /*
-              اجازه می‌دهیم تابع Login/Magic
-              مسیر خودش را مدیریت کند.
-            */
-
-            if (
-              getIntent() === 'magic'
-            ) {
-
-              clearIntent();
-
-              setTimeout(() => {
-
-                continueToApp(
-                  session.user
-                );
-
-              }, 0);
-
-            }
-
-          }
-
-          return;
-        }
-
-
-        if (
-          event === 'SIGNED_OUT'
-        ) {
-
-          recoveryMode = false;
-          redirecting = false;
-
-          clearIntent();
-
-          setBusy(false);
-
-          showLogin();
-
-        }
-
-      }
-    );
-
-  }
-
-
-  /* =======================================================
+  /* =====================================================
      MAGIC LINK
-     ======================================================= */
+  ===================================================== */
 
   async function sendMagicLink() {
 
@@ -995,11 +1102,17 @@
       busy ||
       recoveryMode
     ) {
+
       return;
+
     }
 
+
     const email =
-      emailValue('loginEmail');
+      getEmail(
+        'loginEmail'
+      );
+
 
     if (!email) {
 
@@ -1008,20 +1121,25 @@
       );
 
       return;
+
     }
 
-    if (!validEmail(email)) {
+
+    if (
+      !validEmail(email)
+    ) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
       return;
+
     }
+
 
     setBusy(true);
 
-    setIntent('magic');
 
     try {
 
@@ -1030,28 +1148,39 @@
       } =
         await supabase.auth
           .signInWithOtp({
+
             email,
+
             options: {
+
               emailRedirectTo:
-                currentLoginUrl(),
+                loginUrl(),
+
               shouldCreateUser:
                 false
+
             }
+
           });
+
 
       if (error) {
 
-        clearIntent();
+        console.error(
+          'MAGIC LINK:',
+          error
+        );
 
         setBusy(false);
 
         showMessage(
-          error.message ||
           'ارسال لینک ورود انجام نشد.'
         );
 
         return;
+
       }
+
 
       setBusy(false);
 
@@ -1060,15 +1189,17 @@
         'success'
       );
 
+
     } catch (error) {
 
-      clearIntent();
+      console.error(
+        error
+      );
 
       setBusy(false);
 
       showMessage(
-        error.message ||
-        'خطا هنگام ارسال لینک ورود.'
+        'خطایی هنگام ارسال لینک ورود رخ داد.'
       );
 
     }
@@ -1076,58 +1207,78 @@
   }
 
 
-  /* =======================================================
+  /* =====================================================
      REGISTER
-     ======================================================= */
+  ===================================================== */
 
-  async function register(event) {
+  async function register(
+    event
+  ) {
 
     event.preventDefault();
+
 
     if (
       busy ||
       recoveryMode
     ) {
+
       return;
+
     }
+
 
     showMessage('');
 
+
     const firstName =
-      String(
-        document.getElementById(
+      document
+        .getElementById(
           'firstName'
-        )?.value || ''
-      ).trim();
+        )
+        ?.value
+        .trim() || '';
+
 
     const lastName =
-      String(
-        document.getElementById(
+      document
+        .getElementById(
           'lastName'
-        )?.value || ''
-      ).trim();
+        )
+        ?.value
+        .trim() || '';
+
 
     const phone =
-      String(
-        document.getElementById(
+      document
+        .getElementById(
           'registerPhone'
-        )?.value || ''
-      ).trim();
+        )
+        ?.value
+        .trim() || '';
+
 
     const email =
-      emailValue(
+      getEmail(
         'registerEmail'
       );
 
-    const password =
-      document.getElementById(
-        'registerPassword'
-      )?.value || '';
 
-    const confirm =
-      document.getElementById(
-        'registerPasswordConfirm'
-      )?.value || '';
+    const password =
+      document
+        .getElementById(
+          'registerPassword'
+        )
+        ?.value || '';
+
+
+    const confirmation =
+      document
+        .getElementById(
+          'registerPasswordConfirm'
+        )
+        ?.value || '';
+
 
     if (
       !firstName ||
@@ -1137,23 +1288,32 @@
     ) {
 
       showMessage(
-        'نام، نام خانوادگی، ایمیل و رمز عبور الزامی است.'
+        'لطفاً اطلاعات الزامی را کامل کنید.'
       );
 
       return;
+
     }
 
-    if (!validEmail(email)) {
+
+    if (
+      !validEmail(email)
+    ) {
 
       showMessage(
         'فرمت ایمیل صحیح نیست.'
       );
 
       return;
+
     }
 
+
     const passwordError =
-      validPassword(password);
+      validPassword(
+        password
+      );
+
 
     if (passwordError) {
 
@@ -1162,18 +1322,26 @@
       );
 
       return;
+
     }
 
-    if (password !== confirm) {
+
+    if (
+      password !==
+      confirmation
+    ) {
 
       showMessage(
         'تکرار رمز عبور یکسان نیست.'
       );
 
       return;
+
     }
 
+
     setBusy(true);
+
 
     try {
 
@@ -1183,22 +1351,39 @@
       } =
         await supabase.auth
           .signUp({
+
             email,
+
             password,
+
             options: {
+
               emailRedirectTo:
-                currentLoginUrl(),
+                loginUrl(),
+
               data: {
+
                 first_name:
                   firstName,
+
                 last_name:
                   lastName,
+
                 phone
+
               }
+
             }
+
           });
 
+
       if (error) {
+
+        console.error(
+          'REGISTER:',
+          error
+        );
 
         setBusy(false);
 
@@ -1208,19 +1393,23 @@
         );
 
         return;
+
       }
+
 
       if (
         data?.session &&
         data?.user
       ) {
 
-        await continueToApp(
+        await goToApplication(
           data.user
         );
 
         return;
+
       }
+
 
       setBusy(false);
 
@@ -1231,13 +1420,17 @@
         'success'
       );
 
+
     } catch (error) {
+
+      console.error(
+        error
+      );
 
       setBusy(false);
 
       showMessage(
-        error.message ||
-        'خطا هنگام ثبت‌نام.'
+        'خطایی هنگام ثبت‌نام رخ داد.'
       );
 
     }
@@ -1245,124 +1438,362 @@
   }
 
 
-  /* =======================================================
-     EVENTS
-     ======================================================= */
+  /* =====================================================
+     AUTH STATE
+  ===================================================== */
 
-  if (loginForm) {
-    loginForm.addEventListener(
+  function setupAuthListener() {
+
+    supabase.auth
+      .onAuthStateChange(
+        async (
+          event,
+          session
+        ) => {
+
+          console.log(
+            'ADINEH AUTH EVENT:',
+            event
+          );
+
+
+          /*
+          -----------------------------------------------
+          Password Recovery
+          -----------------------------------------------
+          */
+
+          if (
+            event ===
+            'PASSWORD_RECOVERY'
+          ) {
+
+            showRecovery();
+
+            return;
+
+          }
+
+
+          /*
+          -----------------------------------------------
+          Signed Out
+          -----------------------------------------------
+          */
+
+          if (
+            event ===
+            'SIGNED_OUT'
+          ) {
+
+            showLogin();
+
+            setBusy(false);
+
+            return;
+
+          }
+
+
+          /*
+          -----------------------------------------------
+          Signed In
+          -----------------------------------------------
+          */
+
+          if (
+            event ===
+            'SIGNED_IN' &&
+            session?.user
+          ) {
+
+            /*
+              اگر URL فعلی Recovery باشد،
+              هرگز به index نرو.
+            */
+
+            const url =
+              getUrlData();
+
+
+            if (
+              url.hasRecovery
+            ) {
+
+              showRecovery();
+
+              return;
+
+            }
+
+
+            /*
+              اگر Recovery قبلاً تشخیص داده شده،
+              باز هم Redirect ممنوع.
+            */
+
+            if (
+              recoveryMode
+            ) {
+
+              return;
+
+            }
+
+
+            /*
+              ورود معمولی / Magic Link
+            */
+
+            await goToApplication(
+              session.user
+            );
+
+          }
+
+        }
+      );
+
+  }
+
+
+  /* =====================================================
+     INITIAL SESSION CHECK
+  ===================================================== */
+
+  async function initializeAuth() {
+
+    const url =
+      getUrlData();
+
+
+    /*
+    ------------------------------------------------------
+    اگر لینک Recovery است
+    ------------------------------------------------------
+    */
+
+    if (
+      url.hasRecovery
+    ) {
+
+      /*
+        ابتدا Listener فعال شده است.
+        Session باید توسط Supabase ساخته شده باشد.
+      */
+
+      const {
+        data,
+        error
+      } =
+        await supabase.auth
+          .getSession();
+
+
+      if (error) {
+
+        console.error(
+          'RECOVERY SESSION:',
+          error
+        );
+
+        showMessage(
+          'لینک بازیابی معتبر نیست یا منقضی شده است.'
+        );
+
+        setBusy(false);
+
+        return;
+
+      }
+
+
+      if (
+        data?.session
+      ) {
+
+        showRecovery();
+
+        return;
+
+      }
+
+
+      showMessage(
+        'جلسه بازیابی رمز پیدا نشد. لطفاً دوباره درخواست بازیابی کنید.'
+      );
+
+      setBusy(false);
+
+      return;
+
+    }
+
+
+    /*
+    ------------------------------------------------------
+    اگر خطای Callback وجود دارد
+    ------------------------------------------------------
+    */
+
+    if (
+      url.hasError
+    ) {
+
+      const errorText =
+        url.query.error_description ||
+        url.hash.get(
+          'error_description'
+        ) ||
+        'احراز هویت انجام نشد.';
+
+
+      showMessage(
+        decodeURIComponent(
+          errorText
+        )
+      );
+
+      cleanAuthUrl();
+
+      setBusy(false);
+
+      return;
+
+    }
+
+
+    /*
+    ------------------------------------------------------
+    Session معمولی
+    ------------------------------------------------------
+    */
+
+    const {
+      data,
+      error
+    } =
+      await supabase.auth
+        .getSession();
+
+
+    if (error) {
+
+      console.error(
+        'GET SESSION:',
+        error
+      );
+
+      setBusy(false);
+
+      return;
+
+    }
+
+
+    if (
+      data?.session?.user
+    ) {
+
+      await goToApplication(
+        data.session.user
+      );
+
+      return;
+
+    }
+
+
+    showLogin();
+
+    setBusy(false);
+
+  }
+
+
+  /* =====================================================
+     EVENTS
+  ===================================================== */
+
+  loginForm
+    ?.addEventListener(
       'submit',
       login
     );
-  }
 
 
-  if (registerForm) {
-    registerForm.addEventListener(
+  registerForm
+    ?.addEventListener(
       'submit',
       register
     );
-  }
 
 
-  if (resetForm) {
-    resetForm.addEventListener(
+  resetForm
+    ?.addEventListener(
       'submit',
       updatePassword
     );
-  }
 
 
-  if (loginModeBtn) {
-
-    loginModeBtn.addEventListener(
+  loginModeBtn
+    ?.addEventListener(
       'click',
-      () => {
-
-        clearIntent();
-
-        showLogin();
-
-      }
+      showLogin
     );
 
-  }
 
-
-  if (registerModeBtn) {
-
-    registerModeBtn.addEventListener(
+  registerModeBtn
+    ?.addEventListener(
       'click',
-      () => {
-
-        clearIntent();
-
-        showRegister();
-
-      }
+      showRegister
     );
 
-  }
+
+  forgotBtn
+    ?.addEventListener(
+      'click',
+      forgotPassword
+    );
 
 
-  if (magicLinkBtn) {
-
-    magicLinkBtn.addEventListener(
+  magicLinkBtn
+    ?.addEventListener(
       'click',
       sendMagicLink
     );
 
-  }
 
-
-  if (forgotBtn) {
-
-    forgotBtn.addEventListener(
-      'click',
-      requestPasswordReset
-    );
-
-  }
-
-
-  if (backToLoginBtn) {
-
-    backToLoginBtn.addEventListener(
+  backToLoginBtn
+    ?.addEventListener(
       'click',
       async () => {
 
-        recoveryMode = false;
+        recoveryMode =
+          false;
 
-        clearIntent();
+        await supabase.auth
+          .signOut();
 
-        try {
-          await supabase.auth.signOut();
-        } catch (e) {
-          console.warn(e);
-        }
-
-        cleanCodeFromUrl();
+        cleanAuthUrl();
 
         showLogin();
-
-        setBusy(false);
 
         showMessage('');
 
       }
     );
 
-  }
 
+  /* =====================================================
+     START
+  ===================================================== */
 
-  /* =======================================================
-     BOOT
-     ======================================================= */
-
-  async function boot() {
+  async function start() {
 
     /*
-      Listener قبل از بررسی Session نصب می‌شود.
+      اول Listener
+      سپس بررسی Session
     */
 
     setupAuthListener();
@@ -1371,50 +1802,11 @@
 
     setBusy(false);
 
-    /*
-      اگر URL دارای code است،
-      Supabase با detectSessionInUrl آن را
-      پردازش می‌کند و برای Recovery باید
-      PASSWORD_RECOVERY ایجاد شود.
-    */
-
-    if (
-      hasCodeInUrl()
-    ) {
-
-      /*
-        اگر کاربر از قبل روی Forgot Password
-        کلیک کرده باشد، intent recovery است.
-      */
-
-      if (
-        getIntent() === RECOVERY_INTENT
-      ) {
-
-        recoveryMode = true;
-
-        showRecovery();
-
-      }
-
-      /*
-        URL را بلافاصله پاک نمی‌کنیم؛
-        چون Supabase باید code را پردازش کند.
-      */
-
-      return;
-    }
-
-    /*
-      اگر هیچ Callback نداریم،
-      صفحه عادی Login باقی می‌ماند.
-    */
-
-    setBusy(false);
+    await initializeAuth();
 
   }
 
 
-  boot();
+  start();
 
 })();
