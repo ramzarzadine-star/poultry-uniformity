@@ -850,36 +850,7 @@ function bindJalaliDate(
   sync();
 
 }
-  return [
-
-    toPersianDigits(
-      jy
-    ),
-
-    String(jm)
-      .padStart(2, '0')
-      .replace(
-        /\d/g,
-        digit =>
-          '۰۱۲۳۴۵۶۷۸۹'[
-            Number(digit)
-          ]
-      ),
-
-    String(jd)
-      .padStart(2, '0')
-      .replace(
-        /\d/g,
-        digit =>
-          '۰۱۲۳۴۵۶۷۸۹'[
-            Number(digit)
-          ]
-      )
-
-  ].join('/');
-
-}
-
+  
 
 /*
   تبدیل اعداد انگلیسی به فارسی برای نمایش
