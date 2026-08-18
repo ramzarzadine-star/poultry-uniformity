@@ -4,806 +4,664 @@
 /*
 =========================================================
 مرکز تخصصی سلامت طیور آدینه
-Cloud Database Layer
-Supabase V1
-=========================================================
-
-وظیفه:
-- اتصال امن برنامه به Supabase
-- ذخیره و خواندن اطلاعات
-- استفاده از user فعلی
-- آماده‌سازی برای انتقال کامل از localStorage
+CLOUD DATABASE
+Supabase-first Data Layer
 =========================================================
 */
 
 (function () {
 
-  const client =
-    window.supabaseClient ||
-    window.adinehSupabase;
+    const TABLE = 'poultry_records';
+
+    const client =
+        window.adinehSupabase ||
+        window.supabaseClient ||
+        null;
+
+    if (!client) {
+        console.error(
+            '[Adineh CloudDB] Supabase client not found.'
+        );
+        return;
+    }
 
 
-  if (!client) {
+    /* =====================================================
+       USER
+    ===================================================== */
 
-    console.error(
-      'Adineh CloudDB: Supabase client not found.'
-    );
+    async function getUser() {
 
-    return;
+        const {
+            data,
+            error
+        } = await client.auth.getUser();
 
-  }
+        if (error) {
+            throw error;
+        }
 
-
-  /* =====================================================
-     USER
-  ===================================================== */
-
-  async function currentUser() {
-
-    const {
-      data,
-      error
-    } =
-      await client.auth.getUser();
+        return data?.user || null;
+    }
 
 
-    if (error)
-      throw error;
+    async function requireUser() {
+
+        const user = await getUser();
+
+        if (!user) {
+            throw new Error(
+                'کاربر وارد نشده است.'
+            );
+        }
+
+        return user;
+    }
 
 
-    return data?.user || null;
+    /* =====================================================
+       NORMALIZE
+    ===================================================== */
 
-  }
+    function normalize(record) {
+
+        if (!record) {
+            return null;
+        }
+
+        return {
+
+            id:
+                record.id,
+
+            type:
+                record.record_type,
+
+            date:
+                record.record_date || null,
+
+            flockId:
+                record.flock_id || null,
+
+            ...(
+                record.payload || {}
+            ),
+
+            _createdAt:
+                record.created_at,
+
+            _updatedAt:
+                record.updated_at
+
+        };
+    }
 
 
-  async function requireUser() {
+    /* =====================================================
+       LIST
+    ===================================================== */
 
-    const user =
-      await currentUser();
+    async function list(
+        type,
+        options = {}
+    ) {
 
+        const user =
+            await requireUser();
 
-    if (!user) {
+        let query =
+            client
+                .from(TABLE)
+                .select('*')
+                .eq(
+                    'owner_user_id',
+                    user.id
+                )
+                .eq(
+                    'record_type',
+                    type
+                );
 
-      throw new Error(
-        'کاربر وارد نشده است.'
-      );
+        if (
+            options.flockId
+        ) {
+
+            query =
+                query.eq(
+                    'flock_id',
+                    options.flockId
+                );
+
+        }
+
+        if (
+            options.from
+        ) {
+
+            query =
+                query.gte(
+                    'record_date',
+                    options.from
+                );
+
+        }
+
+        if (
+            options.to
+        ) {
+
+            query =
+                query.lte(
+                    'record_date',
+                    options.to
+                );
+
+        }
+
+        query =
+            query.order(
+                'record_date',
+                {
+                    ascending:
+                        options.ascending === true
+                }
+            );
+
+        if (
+            Number.isInteger(
+                options.limit
+            )
+        ) {
+
+            query =
+                query.limit(
+                    options.limit
+                );
+
+        }
+
+        const {
+            data,
+            error
+        } = await query;
+
+        if (error) {
+            throw error;
+        }
+
+        return (
+            data || []
+        ).map(
+            normalize
+        );
 
     }
 
 
-    return user;
+    /* =====================================================
+       GET
+    ===================================================== */
 
-  }
+    async function get(
+        id
+    ) {
+
+        const user =
+            await requireUser();
+
+        const {
+            data,
+            error
+        } =
+            await client
+                .from(TABLE)
+                .select('*')
+                .eq(
+                    'id',
+                    id
+                )
+                .eq(
+                    'owner_user_id',
+                    user.id
+                )
+                .maybeSingle();
+
+        if (error) {
+            throw error;
+        }
+
+        return normalize(data);
+    }
 
 
-  /* =====================================================
-     GENERIC INSERT
-  ===================================================== */
+    /* =====================================================
+       CREATE
+    ===================================================== */
 
-  async function insert(
-    table,
-    data
-  ) {
+    async function create(
+        type,
+        payload = {},
+        options = {}
+    ) {
 
-    const user =
-      await requireUser();
+        const user =
+            await requireUser();
+
+        const row = {
+
+            owner_user_id:
+                user.id,
+
+            record_type:
+                type,
+
+            record_date:
+                options.date ||
+                payload.date ||
+                null,
+
+            flock_id:
+                options.flockId ||
+                payload.flockId ||
+                payload.flock ||
+                null,
+
+            payload:
+                {
+                    ...payload
+                }
+
+        };
+
+        const {
+            data,
+            error
+        } =
+            await client
+                .from(TABLE)
+                .insert(row)
+                .select('*')
+                .single();
+
+        if (error) {
+            throw error;
+        }
+
+        return normalize(data);
+    }
 
 
-    const payload = {
+    /* =====================================================
+       UPDATE
+    ===================================================== */
 
-      ...data,
+    async function update(
+        id,
+        payload = {},
+        options = {}
+    ) {
 
-      owner_user_id:
-        user.id
+        const user =
+            await requireUser();
+
+        const changes = {
+
+            payload:
+                {
+                    ...payload
+                }
+
+        };
+
+        if (
+            options.date !== undefined
+        ) {
+
+            changes.record_date =
+                options.date;
+
+        }
+
+        if (
+            options.flockId !== undefined
+        ) {
+
+            changes.flock_id =
+                options.flockId;
+
+        }
+
+        const {
+            data,
+            error
+        } =
+            await client
+                .from(TABLE)
+                .update(changes)
+                .eq(
+                    'id',
+                    id
+                )
+                .eq(
+                    'owner_user_id',
+                    user.id
+                )
+                .select('*')
+                .single();
+
+        if (error) {
+            throw error;
+        }
+
+        return normalize(data);
+    }
+
+
+    /* =====================================================
+       DELETE
+    ===================================================== */
+
+    async function remove(
+        id
+    ) {
+
+        const user =
+            await requireUser();
+
+        const {
+            error
+        } =
+            await client
+                .from(TABLE)
+                .delete()
+                .eq(
+                    'id',
+                    id
+                )
+                .eq(
+                    'owner_user_id',
+                    user.id
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        return true;
+    }
+
+
+    /* =====================================================
+       DELETE TYPE
+    ===================================================== */
+
+    async function clearType(
+        type
+    ) {
+
+        const user =
+            await requireUser();
+
+        const {
+            error
+        } =
+            await client
+                .from(TABLE)
+                .delete()
+                .eq(
+                    'owner_user_id',
+                    user.id
+                )
+                .eq(
+                    'record_type',
+                    type
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        return true;
+    }
+
+
+    /* =====================================================
+       TEST
+    ===================================================== */
+
+    async function test() {
+
+        try {
+
+            const user =
+                await getUser();
+
+            if (!user) {
+
+                return {
+
+                    ok: false,
+
+                    message:
+                        'کاربر وارد نشده است.'
+
+                };
+
+            }
+
+            const {
+                count,
+                error
+            } =
+                await client
+                    .from(TABLE)
+                    .select(
+                        'id',
+                        {
+                            count:
+                                'exact',
+                            head:
+                                true
+                        }
+                    )
+                    .eq(
+                        'owner_user_id',
+                        user.id
+                    );
+
+            if (error) {
+                throw error;
+            }
+
+            return {
+
+                ok: true,
+
+                userId:
+                    user.id,
+
+                count:
+                    count || 0
+
+            };
+
+        }
+
+        catch (error) {
+
+            console.error(
+                '[Adineh CloudDB]',
+                error
+            );
+
+            return {
+
+                ok: false,
+
+                message:
+                    error.message ||
+                    'خطای اتصال'
+
+            };
+
+        }
+
+    }
+
+
+    /* =====================================================
+       BACKUP
+    ===================================================== */
+
+    async function backup() {
+
+        const user =
+            await requireUser();
+
+        const {
+            data,
+            error
+        } =
+            await client
+                .from(TABLE)
+                .select('*')
+                .eq(
+                    'owner_user_id',
+                    user.id
+                )
+                .order(
+                    'created_at',
+                    {
+                        ascending:
+                            true
+                    }
+                );
+
+        if (error) {
+            throw error;
+        }
+
+        return {
+
+            version:
+                1,
+
+            exportedAt:
+                new Date().toISOString(),
+
+            records:
+                data || []
+
+        };
+
+    }
+
+
+    /* =====================================================
+       RESTORE
+    ===================================================== */
+
+    async function restore(
+        backupData
+    ) {
+
+        const user =
+            await requireUser();
+
+        if (
+            !backupData ||
+            !Array.isArray(
+                backupData.records
+            )
+        ) {
+
+            throw new Error(
+                'فایل پشتیبان معتبر نیست.'
+            );
+
+        }
+
+        const rows =
+            backupData.records.map(
+                row => ({
+
+                    owner_user_id:
+                        user.id,
+
+                    record_type:
+                        row.record_type,
+
+                    record_date:
+                        row.record_date ||
+                        null,
+
+                    flock_id:
+                        row.flock_id ||
+                        null,
+
+                    payload:
+                        row.payload ||
+                        {}
+
+                })
+            );
+
+        if (!rows.length) {
+            return 0;
+        }
+
+        const {
+            error
+        } =
+            await client
+                .from(TABLE)
+                .insert(rows);
+
+        if (error) {
+            throw error;
+        }
+
+        return rows.length;
+    }
+
+
+    /* =====================================================
+       PUBLIC API
+    ===================================================== */
+
+    window.AdinehCloudDB = {
+
+        TABLE,
+
+        client,
+
+        getUser,
+
+        requireUser,
+
+        list,
+
+        get,
+
+        create,
+
+        update,
+
+        remove,
+
+        clearType,
+
+        test,
+
+        backup,
+
+        restore
 
     };
 
 
-    const {
-      data: result,
-      error
-    } =
-      await client
-        .from(table)
-        .insert(payload)
-        .select()
-        .single();
-
-
-    if (error) {
-
-      console.error(
-        `CloudDB INSERT ${table}:`,
-        error
-      );
-
-      throw error;
-
-    }
-
-
-    return result;
-
-  }
-
-
-  /* =====================================================
-     GENERIC SELECT
-  ===================================================== */
-
-  async function select(
-    table,
-    options = {}
-  ) {
-
-    const user =
-      await requireUser();
-
-
-    let query =
-      client
-        .from(table)
-        .select(
-          options.columns || '*'
-        );
-
-
-    /*
-      به‌صورت پیش‌فرض فقط اطلاعات
-      کاربر فعلی دریافت می‌شود.
-
-      برای Owner:
-      می‌توانیم بعداً گزینه
-      allUsers=true اضافه کنیم.
-    */
-
-    if (
-      options.allUsers !== true
-    ) {
-
-      query =
-        query.eq(
-          'owner_user_id',
-          user.id
-        );
-
-    }
-
-
-    if (options.orderBy) {
-
-      query =
-        query.order(
-          options.orderBy,
-          {
-            ascending:
-              options.ascending !== false
-          }
-        );
-
-    }
-
-
-    if (
-      Number.isInteger(
-        options.limit
-      )
-    ) {
-
-      query =
-        query.limit(
-          options.limit
-        );
-
-    }
-
-
-    const {
-      data,
-      error
-    } =
-      await query;
-
-
-    if (error) {
-
-      console.error(
-        `CloudDB SELECT ${table}:`,
-        error
-      );
-
-      throw error;
-
-    }
-
-
-    return data || [];
-
-  }
-
-
-  /* =====================================================
-     UPDATE
-  ===================================================== */
-
-  async function update(
-    table,
-    id,
-    changes
-  ) {
-
-    const user =
-      await requireUser();
-
-
-    const {
-      data,
-      error
-    } =
-      await client
-        .from(table)
-        .update(changes)
-        .eq(
-          'id',
-          id
-        )
-        .eq(
-          'owner_user_id',
-          user.id
-        )
-        .select()
-        .single();
-
-
-    if (error) {
-
-      console.error(
-        `CloudDB UPDATE ${table}:`,
-        error
-      );
-
-      throw error;
-
-    }
-
-
-    return data;
-
-  }
-
-
-  /* =====================================================
-     DELETE
-  ===================================================== */
-
-  async function remove(
-    table,
-    id
-  ) {
-
-    const user =
-      await requireUser();
-
-
-    const {
-      error
-    } =
-      await client
-        .from(table)
-        .delete()
-        .eq(
-          'id',
-          id
-        )
-        .eq(
-          'owner_user_id',
-          user.id
-        );
-
-
-    if (error) {
-
-      console.error(
-        `CloudDB DELETE ${table}:`,
-        error
-      );
-
-      throw error;
-
-    }
-
-
-    return true;
-
-  }
-
-
-  /* =====================================================
-     SPECIALIZED METHODS
-  ===================================================== */
-
-  const farms = {
-
-    list:
-      () =>
-        select('farms', {
-          orderBy:
-            'created_at',
-          ascending:
-            false
-        }),
-
-
-    create:
-      data =>
-        insert(
-          'farms',
-          data
-        ),
-
-
-    update:
-      (id, changes) =>
-        update(
-          'farms',
-          id,
-          changes
-        ),
-
-
-    remove:
-      id =>
-        remove(
-          'farms',
-          id
-        )
-
-  };
-
-
-  const houses = {
-
-    list:
-      () =>
-        select('houses', {
-          orderBy:
-            'created_at',
-          ascending:
-            false
-        }),
-
-
-    create:
-      data =>
-        insert(
-          'houses',
-          data
-        ),
-
-
-    update:
-      (id, changes) =>
-        update(
-          'houses',
-          id,
-          changes
-        ),
-
-
-    remove:
-      id =>
-        remove(
-          'houses',
-          id
-        )
-
-  };
-
-
-  const flocks = {
-
-    list:
-      () =>
-        select('flocks', {
-          orderBy:
-            'created_at',
-          ascending:
-            false
-        }),
-
-
-    create:
-      data =>
-        insert(
-          'flocks',
-          data
-        ),
-
-
-    update:
-      (id, changes) =>
-        update(
-          'flocks',
-          id,
-          changes
-        ),
-
-
-    remove:
-      id =>
-        remove(
-          'flocks',
-          id
-        )
-
-  };
-
-
-  const weights = {
-
-    list:
-      () =>
-        select('weights', {
-          orderBy:
-            'evaluation_date',
-          ascending:
-            false
-        }),
-
-
-    create:
-      data =>
-        insert(
-          'weights',
-          data
-        )
-
-  };
-
-
-  const feed = {
-
-    list:
-      () =>
-        select(
-          'feed_records',
-          {
-            orderBy:
-              'record_date',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'feed_records',
-          data
-        )
-
-  };
-
-
-  const water = {
-
-    list:
-      () =>
-        select(
-          'water_records',
-          {
-            orderBy:
-              'record_date',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'water_records',
-          data
-        )
-
-  };
-
-
-  const eggs = {
-
-    list:
-      () =>
-        select(
-          'egg_records',
-          {
-            orderBy:
-              'record_date',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'egg_records',
-          data
-        )
-
-  };
-
-
-  const health = {
-
-    list:
-      () =>
-        select(
-          'health_records',
-          {
-            orderBy:
-              'record_date',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'health_records',
-          data
-        )
-
-  };
-
-
-  const vaccinations = {
-
-    list:
-      () =>
-        select(
-          'vaccinations',
-          {
-            orderBy:
-              'vaccination_date',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'vaccinations',
-          data
-        )
-
-  };
-
-
-  const medications = {
-
-    list:
-      () =>
-        select(
-          'medications',
-          {
-            orderBy:
-              'start_date',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'medications',
-          data
-        )
-
-  };
-
-
-  const labs = {
-
-    list:
-      () =>
-        select(
-          'lab_records',
-          {
-            orderBy:
-              'sample_date',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'lab_records',
-          data
-        )
-
-  };
-
-
-  const environment = {
-
-    list:
-      () =>
-        select(
-          'environment_records',
-          {
-            orderBy:
-              'record_date',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'environment_records',
-          data
-        )
-
-  };
-
-
-  const tasks = {
-
-    list:
-      () =>
-        select(
-          'tasks',
-          {
-            orderBy:
-              'created_at',
-            ascending:
-              false
-          }
-        ),
-
-
-    create:
-      data =>
-        insert(
-          'tasks',
-          data
-        )
-
-  };
-
-
-  /* =====================================================
-     TEST CONNECTION
-  ===================================================== */
-
-  async function test() {
-
-    try {
-
-      const user =
-        await currentUser();
-
-
-      if (!user) {
-
-        return {
-
-          ok: false,
-
-          message:
-            'کاربر وارد نشده است.'
-
-        };
-
-      }
-
-
-      const farmsList =
-        await farms.list();
-
-
-      return {
-
-        ok: true,
-
-        userId:
-          user.id,
-
-        farms:
-          farmsList.length
-
-      };
-
-    }
-
-    catch (error) {
-
-      console.error(
-        'CloudDB test failed:',
-        error
-      );
-
-
-      return {
-
-        ok: false,
-
-        error
-
-      };
-
-    }
-
-  }
-
-
-  /* =====================================================
-     PUBLIC API
-  ===================================================== */
-
-  window.AdinehCloudDB = {
-
-    client,
-
-    currentUser,
-
-    requireUser,
-
-    insert,
-
-    select,
-
-    update,
-
-    remove,
-
-    farms,
-
-    houses,
-
-    flocks,
-
-    weights,
-
-    feed,
-
-    water,
-
-    eggs,
-
-    health,
-
-    vaccinations,
-
-    medications,
-
-    labs,
-
-    environment,
-
-    tasks,
-
-    test
-
-  };
-
-
-  console.log(
-    'Adineh CloudDB loaded successfully.'
-  );
+    console.info(
+        '[Adineh] Cloud database ready.'
+    );
 
 })();
