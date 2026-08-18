@@ -1,88 +1,42 @@
 <!doctype html>
-
-<html
-    lang="fa"
-    dir="rtl"
->
-
+<html lang="fa" dir="rtl">
 <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="سلامت طیور آدینه">
 
-    <meta charset="utf-8">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="Style.css">
 
-    <meta
-        name="viewport"
-        content="width=device-width,initial-scale=1,viewport-fit=cover"
-    >
-
-    <meta
-        name="theme-color"
-        content="#0b766e"
-    >
-
-    <meta
-        name="apple-mobile-web-app-capable"
-        content="yes"
-    >
-
-    <meta
-        name="apple-mobile-web-app-title"
-        content="سلامت طیور آدینه"
-    >
-
-    <link
-        rel="manifest"
-        href="manifest.json"
-    >
-
-    <link
-        rel="stylesheet"
-        href="Style.css"
-    >
-
-    <title>
-        مرکز تخصصی سلامت طیور آدینه
-    </title>
-
+  <title>مرکز تخصصی سلامت طیور آدینه</title>
 </head>
-
 
 <body>
 
 <div id="app">
-
-    <div class="app-loading">
-
-        <div class="loading-logo">
-            🐔
-        </div>
-
-        <strong>
-            مرکز تخصصی سلامت طیور آدینه
-        </strong>
-
-        <span>
-            در حال آماده‌سازی سامانه...
-        </span>
-
-    </div>
-
+  <div style="
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:Tahoma,sans-serif;
+    color:#16766f;
+    font-size:20px;
+    font-weight:bold;
+  ">
+    در حال آماده‌سازی سامانه...
+  </div>
 </div>
 
-
-<script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
-></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <script src="supabase.js"></script>
-
 <script src="auth.js"></script>
-
-<script src="cloudDB.js"></script>
-
-<script src="app-loader.js?v=20260818-01"></script>
-
+<script src="cloudDB.js?v=20260818-cloud1"></script>
+<script src="app-loader.js?v=20260818-cloud1"></script>
 
 </body>
-
 </html>
