@@ -24,78 +24,219 @@
 
 
 /* =========================================================
-   DATABASE KEY
+   DATABASE — SUPABASE FIRST
 ========================================================= */
 
-const DB_KEY =
-  window.ADINEH_DB_KEY ||
-  'adineh_poultry_db_v7';
+const defaultDB = {
+
+  farms: [],
+
+  houses: [],
+
+  flocks: [],
+
+  weights: [],
+
+  feed: [],
+
+  water: [],
+
+  mortality: [],
+
+  eggs: [],
+
+  health: [],
+
+  vaccines: [],
+
+  meds: [],
+
+  labs: [],
+
+  environment: [],
+
+  tasks: [],
+
+  settings: {
+
+    clinic:
+      'مرکز تخصصی سلامت طیور آدینه'
+
+  }
+
+};
 
 
+function createDefaultDB() {
+
+  return JSON.parse(
+    JSON.stringify(
+      defaultDB
+    )
+  );
+
+}
+
+
+function loadDB() {
+
+  const source =
+    window.ADINEH_INITIAL_DB;
+
+
+  if (
+    !source ||
+    typeof source !== 'object'
+  ) {
+
+    console.warn(
+      '[Adineh] Initial cloud database was not provided.'
+    );
+
+
+    return createDefaultDB();
+
+  }
+
+
+  const result =
+    createDefaultDB();
+
+
+  Object.keys(result)
+    .forEach(
+      key => {
+
+        if (
+          source[key] !== undefined
+        ) {
+
+          result[key] =
+            source[key];
+
+        }
+
+      }
+    );
+
+
+  return result;
+
+}
+
+
+let db =
+  loadDB();
+
+
+function saveDB() {
+
+  if (
+    !window.AdinehCloudDB
+  ) {
+
+    toast(
+      'لایه پایگاه داده در دسترس نیست'
+    );
+
+
+    return false;
+
+  }
+
+
+  window.AdinehCloudDB
+    .queueSync(
+      db
+    )
+    .catch(
+      error => {
+
+        console.error(
+          '[Adineh] Cloud save error:',
+          error
+        );
+
+
+        toast(
+          'ذخیره اطلاعات در سرور ناموفق بود'
+        );
+
+      }
+    );
+
+
+  return true;
+
+}
 /* =========================================================
    GENERAL HELPERS
 ========================================================= */
 
-const uid = () =>
-  Date.now().toString(36) +
-  Math.random().toString(36).slice(2, 10);
-
-
-const esc = value =>
-  String(value ?? '').replace(
-    /[&<>'"]/g,
-    c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[c])
-  );
-
-
-const num = value => {
+const uid = () => {
 
   if (
-    value === null ||
-    value === undefined ||
-    value === ''
+    window.crypto &&
+    typeof window.crypto.randomUUID === 'function'
   ) {
-    return null;
+
+    return window.crypto.randomUUID();
+
   }
 
-  const n = Number(value);
 
-  return Number.isFinite(n)
-    ? n
-    : null;
+  const bytes =
+    new Uint8Array(16);
 
-};
-
-
-const fmt = (
-  value,
-  digits = 1
-) => {
 
   if (
-    value === null ||
-    value === undefined ||
-    !Number.isFinite(Number(value))
+    window.crypto &&
+    typeof window.crypto.getRandomValues === 'function'
   ) {
-    return '—';
+
+    window.crypto.getRandomValues(
+      bytes
+    );
+
+
+    bytes[6] =
+      (
+        bytes[6] &
+        0x0f
+      ) |
+      0x40;
+
+
+    bytes[8] =
+      (
+        bytes[8] &
+        0x3f
+      ) |
+      0x80;
+
+
+    const hex =
+      Array
+        .from(
+          bytes,
+          byte =>
+            byte
+              .toString(16)
+              .padStart(2, '0')
+        )
+        .join('');
+
+
+    return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+
   }
 
-  return Number(value).toLocaleString(
-    'fa-IR',
-    {
-      maximumFractionDigits: digits,
-      minimumFractionDigits: digits
-    }
+
+  throw new Error(
+    'تولید شناسه امن امکان‌پذیر نیست.'
   );
 
 };
-
 
 /* =========================================================
    DATE
